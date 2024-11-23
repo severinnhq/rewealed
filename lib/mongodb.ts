@@ -30,6 +30,3 @@ if (process.env.NODE_ENV === "development") {
 
 export default clientPromise
 
-// This line ensures the global declaration is treated as a module
-export {}
-

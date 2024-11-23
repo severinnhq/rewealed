@@ -1,5 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Product } from '../models/Product'
 
 export default function ProductList() {
@@ -27,7 +28,15 @@ export default function ProductList() {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map((product) => (
         <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-sm">
-          <img src={product.image} alt={product.name} className="w-full h-48 object-cover mb-4 rounded" />
+          <div className="relative w-full h-48 mb-4">
+            <Image 
+              src={product.image} 
+              alt={product.name} 
+              layout="fill" 
+              objectFit="cover" 
+              className="rounded"
+            />
+          </div>
           <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
           <p className="text-gray-600 mb-2">{product.description}</p>
           <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
