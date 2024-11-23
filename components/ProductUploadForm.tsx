@@ -14,14 +14,14 @@ export default function ProductUploadForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setProduct(prev => ({ ...prev, [name]: value }))
+    setProduct(prev => ({ ...prev, [name]: name === 'price' ? parseFloat(value) : value }))
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('Image size should be less than 5MB')
+        setError('Image size should be less than 5MB')
         return
       }
       const reader = new FileReader()
@@ -38,24 +38,35 @@ export default function ProductUploadForm() {
     setError(null)
     
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(product),
+        signal: controller.signal
       })
 
-      const data = await response.json()
+      clearTimeout(timeoutId)
 
-      if (response.ok) {
-        alert('Product uploaded successfully!')
-        setProduct({ name: '', description: '', price: 0, image: '' })
-      } else {
-        throw new Error(data.message || 'Failed to upload product')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      alert('Product uploaded successfully!')
+      setProduct({ name: '', description: '', price: 0, image: '' })
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      let errorMessage = 'An unknown error occurred'
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        errorMessage = 'The request timed out. Please try again.'
+      }
       setError(errorMessage)
       alert(`Failed to upload product. ${errorMessage}`)
     } finally {

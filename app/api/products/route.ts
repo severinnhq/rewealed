@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
 import { Product } from '../../../models/Product'
 
+export const runtime = 'edge' // Add this line to use Edge Runtime
+
 export async function POST(request: Request) {
   try {
     console.log('Received product upload request');
@@ -25,7 +27,7 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ 
       message: "Product created successfully", 
-      productId: result.insertedId 
+      productId: result.insertedId.toString() 
     }, { status: 201 });
   } catch (error: unknown) {
     console.error('Error in product upload:', error);
