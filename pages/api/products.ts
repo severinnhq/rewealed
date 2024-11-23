@@ -2,6 +2,14 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from '../../lib/mongodb'
 import { Product } from '../../models/Product'
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
@@ -42,13 +50,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else {
     res.status(405).json({ message: "Method not allowed" })
   }
-}
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
 }
 

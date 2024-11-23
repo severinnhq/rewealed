@@ -38,16 +38,23 @@ export default function ProductUploadForm() {
     setError(null)
     
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(product),
+        signal: controller.signal
       })
 
+      clearTimeout(timeoutId)
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json()
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
       await response.json()
@@ -57,6 +64,9 @@ export default function ProductUploadForm() {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {
         errorMessage = error.message
+      }
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        errorMessage = 'The request timed out. Please try again or upload a smaller image.'
       }
       setError(errorMessage)
       alert(`Failed to upload product. ${errorMessage}`)
