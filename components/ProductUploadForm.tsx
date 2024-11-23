@@ -57,12 +57,12 @@ export default function ProductUploadForm() {
 
       clearTimeout(timeoutId)
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+        throw new Error(data.message || `HTTP error! status: ${response.status}`)
       }
 
-      await response.json()
       alert('Product uploaded successfully!')
       setProduct({ name: '', description: '', price: 0, image: '' })
     } catch (error: unknown) {
@@ -75,7 +75,6 @@ export default function ProductUploadForm() {
       }
       setError(errorMessage)
       console.error('Upload error:', errorMessage)
-      alert(`Failed to upload product. ${errorMessage}`)
     } finally {
       setIsUploading(false)
     }

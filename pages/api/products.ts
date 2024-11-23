@@ -20,8 +20,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       const { name, description, price, image } = req.body;
       
-      if (!name || !description || typeof price !== 'number' || !image) {
-        console.error('Invalid product data:', { name, description, price, image: image ? 'present' : 'missing' });
+      console.log('Received product data:', { name, description, price, imageLength: image?.length });
+
+      if (!name || !description || typeof price !== 'number' || isNaN(price) || !image) {
+        console.error('Invalid product data:', { name, description, price, imagePresent: !!image });
         return res.status(400).json({ message: "Invalid product data" });
       }
 
@@ -34,12 +36,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log('Inserting product into database');
       const result = await db.collection("products").insertOne(product);
-      console.log('Product inserted successfully');
+      console.log('Product inserted successfully, ID:', result.insertedId);
       
       res.status(201).json({ message: "Product created successfully", productId: result.insertedId });
     } catch (error: unknown) {
       console.error('Error in product upload:', error);
-      res.status(500).json({ message: "Error creating product", error: error instanceof Error ? error.message : 'An unknown error occurred' });
+      res.status(500).json({ 
+        message: "Error creating product", 
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   } else if (req.method === 'GET') {
     try {
@@ -51,7 +57,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(200).json(products)
     } catch (error: unknown) {
       console.error('Error fetching products:', error);
-      res.status(500).json({ message: "Error fetching products", error: error instanceof Error ? error.message : 'An unknown error occurred' })
+      res.status(500).json({ 
+        message: "Error fetching products", 
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+        stack: error instanceof Error ? error.stack : undefined
+      })
     }
   } else {
     res.status(405).json({ message: "Method not allowed" })
