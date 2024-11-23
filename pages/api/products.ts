@@ -7,6 +7,7 @@ export const config = {
     bodyParser: {
       sizeLimit: '10mb',
     },
+    responseLimit: false,
   },
 }
 
@@ -44,7 +45,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(500).json({ 
         message: "Error creating product", 
         error: error instanceof Error ? error.message : 'An unknown error occurred',
-        stack: error instanceof Error ? error.stack : undefined
       })
     }
   } else if (req.method === 'GET') {
@@ -61,7 +61,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(500).json({ 
         message: "Error fetching products", 
         error: error instanceof Error ? error.message : 'An unknown error occurred',
-        stack: error instanceof Error ? error.stack : undefined
       })
     }
   } else {
