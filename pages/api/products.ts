@@ -20,10 +20,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       const { name, description, price, image } = req.body;
       
+      if (!name || !description || typeof price !== 'number' || !image) {
+        console.error('Invalid product data:', { name, description, price, image: image ? 'present' : 'missing' });
+        return res.status(400).json({ message: "Invalid product data" });
+      }
+
       const product: Product = {
         name,
         description,
-        price: parseFloat(price),
+        price,
         image
       };
 
@@ -45,6 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       res.status(200).json(products)
     } catch (error: unknown) {
+      console.error('Error fetching products:', error);
       res.status(500).json({ message: "Error fetching products", error: error instanceof Error ? error.message : 'An unknown error occurred' })
     }
   } else {

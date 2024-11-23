@@ -14,7 +14,12 @@ export default function ProductUploadForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setProduct(prev => ({ ...prev, [name]: name === 'price' ? parseFloat(value) : value }))
+    if (name === 'price') {
+      const parsedValue = parseFloat(value)
+      setProduct(prev => ({ ...prev, [name]: isNaN(parsedValue) ? 0 : parsedValue }))
+    } else {
+      setProduct(prev => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +74,7 @@ export default function ProductUploadForm() {
         errorMessage = 'The request timed out. Please try again or upload a smaller image.'
       }
       setError(errorMessage)
+      console.error('Upload error:', errorMessage)
       alert(`Failed to upload product. ${errorMessage}`)
     } finally {
       setIsUploading(false)
