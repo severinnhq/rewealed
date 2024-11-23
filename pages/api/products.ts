@@ -12,15 +12,16 @@ export const config = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
+    console.log('Received POST request to /api/products');
     try {
-      console.log('Received product upload request');
+      console.log('Attempting to connect to MongoDB');
       const client = await clientPromise;
-      console.log('MongoDB client connected');
+      console.log('MongoDB client connected successfully');
       const db = client.db("clothingstore");
       
       const { name, description, price, image } = req.body;
       
-      console.log('Received product data:', { name, description, price, imageLength: image?.length });
+      console.log('Received product data:', { name, description, price, imageSize: image?.length });
 
       if (!name || !description || typeof price !== 'number' || isNaN(price) || !image) {
         console.error('Invalid product data:', { name, description, price, imagePresent: !!image });
@@ -34,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         image
       };
 
-      console.log('Inserting product into database');
+      console.log('Attempting to insert product into database');
       const result = await db.collection("products").insertOne(product);
       console.log('Product inserted successfully, ID:', result.insertedId);
       
@@ -48,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
   } else if (req.method === 'GET') {
+    console.log('Received GET request to /api/products');
     try {
       const client = await clientPromise
       const db = client.db("clothingstore")
