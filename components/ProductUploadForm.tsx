@@ -1,0 +1,107 @@
+import React, { useState } from 'react'
+import { Product } from '../models/Product'
+
+export default function ProductUploadForm() {
+  const [product, setProduct] = useState<Omit<Product, '_id'>>({
+    name: '',
+    description: '',
+    price: 0,
+    image: '',
+  })
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setProduct(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProduct(prev => ({ ...prev, image: reader.result as string }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product),
+      })
+      if (response.ok) {
+        alert('Product uploaded successfully!')
+        setProduct({ name: '', description: '', price: 0, image: '' })
+      } else {
+        throw new Error('Failed to upload product')
+      }
+    } catch (error) {
+      console.error('Error uploading product:', error)
+      alert('Failed to upload product. Please try again.')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={product.name}
+          onChange={handleInputChange}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          value={product.description}
+          onChange={handleInputChange}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
+      <div>
+        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
+        <input
+          type="number"
+          id="price"
+          name="price"
+          value={product.price}
+          onChange={handleInputChange}
+          required
+          min="0"
+          step="0.01"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
+      <div>
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
+        <input
+          type="file"
+          id="image"
+          name="image"
+          onChange={handleImageUpload}
+          accept="image/*"
+          required
+          className="mt-1 block w-full"
+        />
+      </div>
+      <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        Upload Product
+      </button>
+    </form>
+  )
+}
+
