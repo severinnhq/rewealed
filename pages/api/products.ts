@@ -7,7 +7,6 @@ export const config = {
     bodyParser: {
       sizeLimit: '10mb',
     },
-    responseLimit: false,
   },
 }
 
@@ -15,8 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     console.log('Received POST request to /api/products')
     try {
+      console.log('Attempting to connect to MongoDB')
       const client = await clientPromise
-      console.log('MongoDB client connected')
+      console.log('MongoDB client connected successfully')
       const db = client.db("clothingstore")
       
       const { name, description, price, image } = req.body
@@ -42,6 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(201).json({ message: "Product created successfully", productId: result.insertedId })
     } catch (error: unknown) {
       console.error('Error in product upload:', error)
+      if (error instanceof Error) {
+        console.error('Error stack:', error.stack)
+      }
       res.status(500).json({ 
         message: "Error creating product", 
         error: error instanceof Error ? error.message : 'An unknown error occurred',
@@ -50,7 +53,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (req.method === 'GET') {
     console.log('Received GET request to /api/products')
     try {
+      console.log('Attempting to connect to MongoDB')
       const client = await clientPromise
+      console.log('MongoDB client connected successfully')
       const db = client.db("clothingstore")
       
       const products = await db.collection("products").find({}).toArray()
@@ -58,6 +63,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(200).json(products)
     } catch (error: unknown) {
       console.error('Error fetching products:', error)
+      if (error instanceof Error) {
+        console.error('Error stack:', error.stack)
+      }
       res.status(500).json({ 
         message: "Error fetching products", 
         error: error instanceof Error ? error.message : 'An unknown error occurred',
