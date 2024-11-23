@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(201).json({ message: "Product created successfully", productId: result.insertedId });
     } catch (error: unknown) {
       console.error('Error in product upload:', error);
-      res.status(500).json({ message: "Error creating product", error: error instanceof Error ? error.toString() : 'An unknown error occurred' });
+      res.status(500).json({ message: "Error creating product", error: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
   } else if (req.method === 'GET') {
     try {
@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       res.status(200).json(products)
     } catch (error: unknown) {
-      res.status(500).json({ message: "Error fetching products", error: error instanceof Error ? error.toString() : 'An unknown error occurred' })
+      res.status(500).json({ message: "Error fetching products", error: error instanceof Error ? error.message : 'An unknown error occurred' })
     }
   } else {
     res.status(405).json({ message: "Method not allowed" })
@@ -49,6 +49,7 @@ export const config = {
     bodyParser: {
       sizeLimit: '10mb',
     },
+    responseLimit: false,
   },
 }
 

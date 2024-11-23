@@ -9,6 +9,7 @@ export default function ProductUploadForm() {
     price: 0,
     image: '',
   })
+  const [isUploading, setIsUploading] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -28,6 +29,7 @@ export default function ProductUploadForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUploading(true);
     try {
       const response = await fetch('/api/products', {
         method: 'POST',
@@ -48,6 +50,8 @@ export default function ProductUploadForm() {
     } catch (error: unknown) {
       console.error('Error uploading product:', error);
       alert(`Failed to upload product. Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -102,8 +106,12 @@ export default function ProductUploadForm() {
           className="mt-1 block w-full"
         />
       </div>
-      <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-        Upload Product
+      <button 
+        type="submit" 
+        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        disabled={isUploading}
+      >
+        {isUploading ? 'Uploading...' : 'Upload Product'}
       </button>
     </form>
   )
