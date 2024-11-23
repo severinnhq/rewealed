@@ -27,7 +27,7 @@ export default function ProductUploadForm() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const response = await fetch('/api/products', {
         method: 'POST',
@@ -35,16 +35,19 @@ export default function ProductUploadForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(product),
-      })
+      });
       if (response.ok) {
-        alert('Product uploaded successfully!')
-        setProduct({ name: '', description: '', price: 0, image: '' })
+        const data = await response.json();
+        console.log('Upload successful:', data);
+        alert('Product uploaded successfully!');
+        setProduct({ name: '', description: '', price: 0, image: '' });
       } else {
-        throw new Error('Failed to upload product')
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload product');
       }
-    } catch (error) {
-      console.error('Error uploading product:', error)
-      alert('Failed to upload product. Please try again.')
+    } catch (error: unknown) {
+      console.error('Error uploading product:', error);
+      alert(`Failed to upload product. Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
     }
   }
 
