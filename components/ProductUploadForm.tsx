@@ -10,6 +10,7 @@ export default function ProductUploadForm() {
     image: '',
   })
   const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -19,6 +20,10 @@ export default function ProductUploadForm() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('Image size should be less than 5MB')
+        return
+      }
       const reader = new FileReader()
       reader.onloadend = () => {
         setProduct(prev => ({ ...prev, image: reader.result as string }))
@@ -28,8 +33,10 @@ export default function ProductUploadForm() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsUploading(true);
+    e.preventDefault()
+    setIsUploading(true)
+    setError(null)
+    
     try {
       const response = await fetch('/api/products', {
         method: 'POST',
@@ -37,26 +44,32 @@ export default function ProductUploadForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(product),
-      });
+      })
+
+      const data = await response.json()
+
       if (response.ok) {
-        const data = await response.json();
-        console.log('Upload successful:', data);
-        alert('Product uploaded successfully!');
-        setProduct({ name: '', description: '', price: 0, image: '' });
+        alert('Product uploaded successfully!')
+        setProduct({ name: '', description: '', price: 0, image: '' })
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to upload product');
+        throw new Error(data.message || 'Failed to upload product')
       }
     } catch (error: unknown) {
-      console.error('Error uploading product:', error);
-      alert(`Failed to upload product. Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      setError(errorMessage)
+      alert(`Failed to upload product. ${errorMessage}`)
     } finally {
-      setIsUploading(false);
+      setIsUploading(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded">
+          {error}
+        </div>
+      )}
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
         <input
@@ -108,7 +121,7 @@ export default function ProductUploadForm() {
       </div>
       <button 
         type="submit" 
-        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
         disabled={isUploading}
       >
         {isUploading ? 'Uploading...' : 'Upload Product'}
