@@ -22,37 +22,18 @@ export default function ProductUploadForm() {
     }
   }
 
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const scaleFactor = Math.min(1, 800 / img.width);
-          canvas.width = img.width * scaleFactor;
-          canvas.height = img.height * scaleFactor;
-          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', 0.7));
-        };
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      try {
-        const compressedImage = await compressImage(file);
-        setProduct(prev => ({ ...prev, image: compressedImage }))
-      } catch (error) {
-        console.error('Error compressing image:', error);
-        setError('Error processing image. Please try again.');
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('Image size should be less than 5MB')
+        return
       }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProduct(prev => ({ ...prev, image: reader.result as string }))
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -62,19 +43,13 @@ export default function ProductUploadForm() {
     setError(null)
     
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
-
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(product),
-        signal: controller.signal
       })
-
-      clearTimeout(timeoutId)
 
       const data = await response.json()
 
@@ -88,9 +63,6 @@ export default function ProductUploadForm() {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {
         errorMessage = error.message
-      }
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        errorMessage = 'The request timed out. Please try again or upload a smaller image.'
       }
       setError(errorMessage)
       console.error('Upload error:', errorMessage)
