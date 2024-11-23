@@ -1,8 +1,23 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ['rewealed.com', 'https://rewealed.com'],
-  },
-}
-
-module.exports = nextConfig
-
+    reactStrictMode: true,
+    images: {
+      domains: ['rewealed.com'],
+    },
+    webpack: (config, { isServer }) => {
+      if (!isServer) {
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          fs: false,
+          net: false,
+          tls: false,
+          crypto: false,
+        }
+      }
+      return config
+    },
+  }
+  
+  module.exports = nextConfig
+  
+  
