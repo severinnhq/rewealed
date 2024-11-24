@@ -25,21 +25,32 @@ export default function ProductList() {
   }, [])
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {products.map((product) => (
-        <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-sm">
-          <div className="relative w-full h-48 mb-4">
+        <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-sm flex flex-col">
+          <div className="relative w-full pb-[100%] mb-4">
             <Image 
               src={product.image} 
-              alt={product.name} 
-              layout="fill" 
-              objectFit="cover" 
+              alt={product.name}
+              fill
+              style={{ objectFit: 'contain' }}
               className="rounded"
             />
           </div>
           <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-          <p className="text-gray-600 mb-2">{product.description}</p>
-          <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
+          <p className="text-gray-600 mb-2 flex-grow">{product.description}</p>
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
+              {product.salePrice && (
+                <p className="text-sm text-red-600 line-through">${product.salePrice.toFixed(2)}</p>
+              )}
+            </div>
+            <div className="text-sm text-gray-500">
+              {product.sizes.join(', ')}
+            </div>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">{product.category}</p>
         </div>
       ))}
     </div>
