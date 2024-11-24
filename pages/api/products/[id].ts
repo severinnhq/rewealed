@@ -1,152 +1,38 @@
-'use client'
+import { NextApiRequest, NextApiResponse } from 'next'
+import clientPromise from '../../../lib/mongodb'
+import { ObjectId } from 'mongodb'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<{ message: string; error?: string }>
+) {
+  if (req.method === 'DELETE') {
+    const { id } = req.query
 
-interface Product {
-  _id?: string
-  name: string
-  description: string
-  price: number
-  mainImage: string
-  gallery?: string[]
-  category?: string
-  sizes?: string[]
-  salePrice?: number
-}
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ message: 'Invalid product ID' })
+    }
 
-export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchProducts()
-  }, [])
-
-  async function fetchProducts() {
     try {
-      const response = await fetch('/api/products')
-      if (!response.ok) {
-        throw new Error('Failed to fetch products')
+      const client = await clientPromise
+      const db = client.db("clothingstore")
+      
+      const result = await db.collection("products").deleteOne({ _id: new ObjectId(id) })
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: 'Product not found' })
       }
-      const data: Product[] = await response.json()
-      console.log('Fetched products:', data)
-      setProducts(data)
-    } catch (err) {
-      setError('Error fetching products. Please try again later.')
-      console.error('Error fetching products:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
-  async function deleteProduct(id: string) {
-    if (!confirm('Are you sure you want to delete this product?')) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
+      res.status(200).json({ message: 'Product deleted successfully' })
+    } catch (error: unknown) {
+      console.error('Error deleting product:', error)
+      res.status(500).json({ 
+        message: "Error deleting product", 
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete product')
-      }
-
-      // Refresh the product list
-      fetchProducts()
-    } catch (err) {
-      console.error('Error deleting product:', err)
-      alert('Failed to delete product. Please try again.')
     }
+  } else {
+    res.status(405).json({ message: "Method not allowed" })
   }
-
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error: {error}</div>
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Admin: Product List</h1>
-      {products.length === 0 ? (
-        <p>No products found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product._id} className="border rounded-lg p-4 shadow-md">
-              <div className="relative w-full h-64 mb-4">
-                <Image
-                  src={product.mainImage || '/placeholder.svg'}
-                  alt={product.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-md cursor-pointer"
-                  onClick={() => setSelectedImage(product.mainImage)}
-                />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-              <p className="text-gray-600 mb-2">{product.description}</p>
-              <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
-              {product.salePrice && (
-                <p className="text-red-600 font-bold">Sale: ${product.salePrice.toFixed(2)}</p>
-              )}
-              {product.category && (
-                <p className="text-sm text-gray-500">Category: {product.category}</p>
-              )}
-              <div className="mt-2">
-                <p className="text-sm font-medium text-gray-700">Sizes:</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {product.sizes && product.sizes.map((size) => (
-                    <span key={size} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs font-medium rounded-full">
-                      {size}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              {product.gallery && product.gallery.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Image Gallery:</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {product.gallery.map((image, index) => (
-                      <div key={index} className="relative w-full h-20">
-                        <Image
-                          src={image}
-                          alt={`${product.name} - Image ${index + 1}`}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-md cursor-pointer"
-                          onClick={() => setSelectedImage(image)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <button
-                onClick={() => product._id && deleteProduct(product._id)}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              >
-                Delete Product
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setSelectedImage(null)}>
-          <div className="max-w-3xl max-h-3xl relative">
-            <Image
-              src={selectedImage}
-              alt="Full size product image"
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  )
 }
 
