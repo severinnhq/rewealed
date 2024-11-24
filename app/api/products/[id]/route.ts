@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '../../../../lib/mongodb'
 import { ObjectId } from 'mongodb'
 import { Product } from '../../../../models/Product'
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
@@ -51,7 +51,10 @@ export async function PUT(
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
   try {
     const client = await clientPromise
     const db = client.db("clothingstore")
