@@ -109,6 +109,7 @@ export async function PUT(request: Request) {
     const id = searchParams.get('id')
 
     if (!id) {
+      console.error('Product ID is missing')
       return NextResponse.json({ message: "Product ID is required" }, { status: 400 })
     }
 
@@ -116,9 +117,12 @@ export async function PUT(request: Request) {
     const db = client.db("clothingstore")
     
     const body = await request.json()
+    console.log('Received update data:', body)
+
     const { name, description, price, salePrice, sizes, category, image, gallery } = body
 
     if (!name || !description || !price || !sizes || !category || !image) {
+      console.error('Invalid product data:', { name, description, price, salePrice, sizes, category, imagePresent: !!image, galleryPresent: !!gallery })
       return NextResponse.json({ message: "Invalid product data" }, { status: 400 })
     }
 
@@ -133,12 +137,17 @@ export async function PUT(request: Request) {
       gallery: gallery || []
     }
 
+    console.log('Attempting to update product:', id, updatedProduct)
+
     const result = await db.collection("products").updateOne(
       { _id: new ObjectId(id) },
       { $set: updatedProduct }
     )
 
+    console.log('Update result:', result)
+
     if (result.matchedCount === 0) {
+      console.error('Product not found:', id)
       return NextResponse.json({ message: "Product not found" }, { status: 404 })
     }
 

@@ -21,7 +21,11 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setEditedProduct(prev => ({ ...prev, [name]: value }))
+    setEditedProduct(prev => {
+      const updatedProduct = { ...prev, [name]: value }
+      console.log('Updated product state:', updatedProduct)
+      return updatedProduct
+    })
   }
 
   const handleSizeChange = (size: string) => {
@@ -74,6 +78,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
     e.preventDefault()
     setIsUploading(true)
     try {
+      console.log('Submitting product update:', editedProduct)
       const response = await fetch(`/api/products?id=${product._id}`, {
         method: 'PUT',
         headers: {
@@ -83,12 +88,15 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update product')
+        const errorData = await response.json()
+        console.error('Server response:', errorData)
+        throw new Error(errorData.message || 'Failed to update product')
       }
 
       onSave(editedProduct)
     } catch (error) {
       console.error('Error updating product:', error)
+      // You might want to show an error message to the user here
     } finally {
       setIsUploading(false)
     }
