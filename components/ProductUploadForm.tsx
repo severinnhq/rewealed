@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Product, Size } from '../models/Product'
 import { resizeImage } from '../utils/imageUtils'
 import { uploadFile } from '../utils/uploadUtils'
+import Image from 'next/image'
 
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -91,7 +92,7 @@ export default function ProductUploadForm() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      const result = await response.json()
+      await response.json()
       alert('Product upload complete!')
       setProduct({ name: '', description: '', price: 0, mainImage: '', gallery: [], category: '', sizes: [], salePrice: undefined })
     } catch (error: unknown) {
@@ -216,7 +217,13 @@ export default function ProductUploadForm() {
       </div>
       {product.mainImage && (
         <div className="mt-2">
-          <img src={product.mainImage} alt="Main product image" className="w-full h-32 object-cover rounded-md" />
+          <Image 
+            src={product.mainImage} 
+            alt="Main product image" 
+            width={500}
+            height={320}
+            className="w-full h-32 object-cover rounded-md"
+          />
         </div>
       )}
       <div>
@@ -234,7 +241,14 @@ export default function ProductUploadForm() {
       {product.gallery.length > 0 && (
         <div className="mt-2 grid grid-cols-3 gap-2">
           {product.gallery.map((image, index) => (
-            <img key={index} src={image} alt={`Gallery image ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+            <Image 
+              key={index} 
+              src={image} 
+              alt={`Gallery image ${index + 1}`} 
+              width={200}
+              height={200}
+              className="w-full h-24 object-cover rounded-md"
+            />
           ))}
         </div>
       )}

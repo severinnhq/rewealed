@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from '../../lib/mongodb'
-import { WithId, Document, ObjectId } from 'mongodb'
+import { WithId, Document } from 'mongodb'
 import { Product, Size } from '../../models/Product'
 
 export default async function handler(
