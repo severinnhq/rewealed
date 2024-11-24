@@ -82,7 +82,7 @@ export default function AdminProductsPage() {
 
   async function updateProduct(product: Product) {
     try {
-      let updatedProduct = { ...product }
+      const updatedProduct = { ...product }
 
       if (product.mainImage && product.mainImage.startsWith('data:')) {
         const file = dataURItoFile(product.mainImage, 'mainImage.jpg')
@@ -295,7 +295,13 @@ export default function AdminProductsPage() {
                       className="mt-1 block w-full"
                     />
                     {editingProduct.mainImage && (
-                      <img src={editingProduct.mainImage} alt="Main" className="mt-2 h-20 object-cover" />
+                      <Image
+                        src={editingProduct.mainImage}
+                        alt="Main"
+                        width={80}
+                        height={80}
+                        className="mt-2 h-20 object-cover"
+                      />
                     )}
                   </div>
                   <div className="mb-4">
@@ -309,7 +315,13 @@ export default function AdminProductsPage() {
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {editingProduct.gallery?.map((image, index) => (
                         <div key={index} className="relative group">
-                          <img src={image} alt={`Gallery ${index}`} className="h-20 object-cover rounded-md" />
+                          <Image
+                            src={image}
+                            alt={`Gallery ${index}`}
+                            width={80}
+                            height={80}
+                            className="h-20 object-cover rounded-md"
+                          />
                           <button
                             onClick={() => {
                               if (editingProduct._id) {
@@ -339,8 +351,7 @@ export default function AdminProductsPage() {
                     </button>
                     <button
                       type="submit"
-                      className="px
--4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                       Save Changes
                     </button>
