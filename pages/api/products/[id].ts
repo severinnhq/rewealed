@@ -56,7 +56,35 @@ export default async function handler(
         error: error instanceof Error ? error.message : 'An unknown error occurred'
       })
     }
-  } else {
+  } else if (req.method === 'PATCH') {
+  try {
+    const client = await clientPromise
+    const db = client.db("clothingstore")
+    
+    const { imageUrl } = req.body
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: 'Image URL is required' })
+    }
+
+    const result = await db.collection("products").updateOne(
+      { _id: new ObjectId(id) },
+      { $pull: { gallery: imageUrl } }
+    )
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'Product not found' })
+    }
+
+    res.status(200).json({ message: 'Image deleted successfully' })
+  } catch (error: unknown) {
+    console.error('Error deleting image:', error)
+    res.status(500).json({ 
+      message: "Error deleting image", 
+      error: error instanceof Error ? error.message : 'An unknown error occurred'
+    })
+  }
+} else {
     res.status(405).json({ message: "Method not allowed" })
   }
 }

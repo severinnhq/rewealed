@@ -86,6 +86,27 @@ export default function AdminProductsPage() {
     }
   }
 
+  async function deleteImage(productId: string, imageUrl: string) {
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete image')
+      }
+
+      fetchProducts()
+    } catch (err) {
+      console.error('Error deleting image:', err)
+      alert('Failed to delete image. Please try again.')
+    }
+  }
+
   function handleEditChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     if (editingProduct) {
       setEditingProduct({
@@ -231,7 +252,24 @@ export default function AdminProductsPage() {
                     />
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {editingProduct.gallery?.map((image, index) => (
-                        <img key={index} src={image} alt={`Gallery ${index}`} className="h-20 object-cover" />
+                        <div key={index} className="relative group">
+                          <img src={image} alt={`Gallery ${index}`} className="h-20 object-cover rounded-md" />
+                          <button
+                            onClick={() => {
+                              if (editingProduct._id) {
+                                deleteImage(editingProduct._id, image)
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  gallery: editingProduct.gallery?.filter((img) => img !== image),
+                                })
+                              }
+                            }}
+                            className="absolute top-0 right-0 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Delete image"
+                          >
+                            X
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -287,7 +325,7 @@ export default function AdminProductsPage() {
                       <p className="text-sm font-medium text-gray-700 mb-2">Image Gallery:</p>
                       <div className="grid grid-cols-3 gap-2">
                         {product.gallery.map((image, index) => (
-                          <div key={index} className="relative w-full h-20">
+                          <div key={index} className="relative w-full h-20 group">
                             <Image
                               src={image}
                               alt={`${product.name} - Image ${index + 1}`}
@@ -296,10 +334,16 @@ export default function AdminProductsPage() {
                               className="rounded-md cursor-pointer"
                               onClick={() => setSelectedImage(image)}
                             />
+                            <button
+                              onClick={() => product._id && deleteImage(product._id, image)}
+                              className="absolute top-0 right-0 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label="Delete image"
+                            >
+                              X
+                            </button>
                           </div>
                         ))}
-                
-</div>
+                      </div>
                     </div>
                   )}
                   <div className="mt-4 flex space-x-2">
