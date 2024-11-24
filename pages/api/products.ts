@@ -1,9 +1,22 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from '../../lib/mongodb'
+import { WithId, Document } from 'mongodb'
+
+interface Product {
+  _id?: string
+  name: string
+  description: string
+  price: number
+  mainImage: string
+  gallery?: string[]
+  category?: string
+  sizes?: string[]
+  salePrice?: number
+}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<any>
+  res: NextApiResponse<Product[] | { message: string; error?: string }>
 ) {
   if (req.method === 'GET') {
     console.log('Received GET request to /api/products')
@@ -11,9 +24,21 @@ export default async function handler(
       const client = await clientPromise
       const db = client.db("clothingstore")
       
-      const products = await db.collection("products").find({}).toArray()
+      const rawProducts: WithId<Document>[] = await db.collection("products").find({}).toArray()
       
-      console.log('Fetched products:', products) // Log the fetched products
+      const products: Product[] = rawProducts.map(product => ({
+        _id: product._id.toString(),
+        name: product.name as string,
+        description: product.description as string,
+        price: product.price as number,
+        mainImage: product.mainImage as string,
+        gallery: product.gallery as string[] | undefined,
+        category: product.category as string | undefined,
+        sizes: product.sizes as string[] | undefined,
+        salePrice: product.salePrice as number | undefined
+      }))
+
+      console.log('Fetched products:', products)
 
       res.status(200).json(products)
     } catch (error: unknown) {

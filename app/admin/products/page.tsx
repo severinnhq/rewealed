@@ -3,8 +3,20 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 
+interface Product {
+  _id?: string
+  name: string
+  description: string
+  price: number
+  mainImage: string
+  gallery?: string[]
+  category?: string
+  sizes?: string[]
+  salePrice?: number
+}
+
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -16,8 +28,8 @@ export default function AdminProductsPage() {
         if (!response.ok) {
           throw new Error('Failed to fetch products')
         }
-        const data = await response.json()
-        console.log('Fetched products:', data) // Log the fetched data
+        const data: Product[] = await response.json()
+        console.log('Fetched products:', data)
         setProducts(data)
       } catch (err) {
         setError('Error fetching products. Please try again later.')
@@ -41,7 +53,7 @@ export default function AdminProductsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-md">
+            <div key={product._id} className="border rounded-lg p-4 shadow-md">
               <div className="relative w-full h-64 mb-4">
                 <Image
                   src={product.mainImage || '/placeholder.svg'}
@@ -64,7 +76,7 @@ export default function AdminProductsPage() {
               <div className="mt-2">
                 <p className="text-sm font-medium text-gray-700">Sizes:</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {product.sizes && product.sizes.map((size: string) => (
+                  {product.sizes && product.sizes.map((size) => (
                     <span key={size} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs font-medium rounded-full">
                       {size}
                     </span>
@@ -75,14 +87,17 @@ export default function AdminProductsPage() {
                 <div className="mt-4">
                   <p className="text-sm font-medium text-gray-700 mb-2">Image Gallery:</p>
                   <div className="grid grid-cols-3 gap-2">
-                    {product.gallery.map((image: string, index: number) => (
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`${product.name} - Image ${index + 1}`}
-                        className="w-full h-20 object-cover rounded-md cursor-pointer"
-                        onClick={() => setSelectedImage(image)}
-                      />
+                    {product.gallery.map((image, index) => (
+                      <div key={index} className="relative w-full h-20">
+                        <Image
+                          src={image}
+                          alt={`${product.name} - Image ${index + 1}`}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-md cursor-pointer"
+                          onClick={() => setSelectedImage(image)}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -93,8 +108,13 @@ export default function AdminProductsPage() {
       )}
       {selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setSelectedImage(null)}>
-          <div className="max-w-3xl max-h-3xl">
-            <img src={selectedImage} alt="Full size product image" className="max-w-full max-h-full object-contain" />
+          <div className="max-w-3xl max-h-3xl relative">
+            <Image
+              src={selectedImage}
+              alt="Full size product image"
+              layout="fill"
+              objectFit="contain"
+            />
           </div>
         </div>
       )}
