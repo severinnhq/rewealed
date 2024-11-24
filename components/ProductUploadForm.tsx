@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from 'react'
 import { Product, Size } from '../models/Product'
+import { resizeImage } from '../utils/imageUtils';
 
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -37,39 +38,44 @@ export default function ProductUploadForm() {
     }))
   }
 
-  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('Main image size should be less than 5MB')
-        return
+      try {
+        const resizedImage = await resizeImage(file, 1920, 1080); // Resize to max 1920x1080
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setProduct(prev => ({ ...prev, mainImage: reader.result as string }))
+        }
+        reader.readAsDataURL(resizedImage)
+      } catch (error) {
+        console.error('Error resizing image:', error)
+        setError('Failed to process the image. Please try again.')
       }
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProduct(prev => ({ ...prev, mainImage: reader.result as string }))
-      }
-      reader.readAsDataURL(file)
     }
   }
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
       const newImages: string[] = []
-      Array.from(files).forEach(file => {
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          setError('Each gallery image size should be less than 5MB')
-          return
+      for (let i = 0; i < files.length; i++) {
+        try {
+          const resizedImage = await resizeImage(files[i], 1920, 1080); // Resize to max 1920x1080
+          const reader = new FileReader()
+          await new Promise<void>((resolve) => {
+            reader.onloadend = () => {
+              newImages.push(reader.result as string)
+              resolve()
+            }
+            reader.readAsDataURL(resizedImage)
+          })
+        } catch (error) {
+          console.error('Error resizing image:', error)
+          setError('Failed to process one or more images. Please try again.')
         }
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          newImages.push(reader.result as string)
-          if (newImages.length === files.length) {
-            setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...newImages] }))
-          }
-        }
-        reader.readAsDataURL(file)
-      })
+      }
+      setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...newImages] }))
     }
   }
 

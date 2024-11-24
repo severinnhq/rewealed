@@ -17,6 +17,11 @@ const nextConfig = {
       config.externals = [...(config.externals || []), 'formidable'];
       return config
     },
+    api: {
+      bodyParser: {
+        sizeLimit: '10mb' // Set the maximum allowed payload size to 10MB
+      }
+    }
   }
   
   module.exports = nextConfig
