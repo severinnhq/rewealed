@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Product } from '../../../models/Product'
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -65,7 +64,7 @@ export default function AdminProductsPage() {
               <div className="mt-2">
                 <p className="text-sm font-medium text-gray-700">Sizes:</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {product.sizes && product.sizes.map((size) => (
+                  {product.sizes && product.sizes.map((size: string) => (
                     <span key={size} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs font-medium rounded-full">
                       {size}
                     </span>

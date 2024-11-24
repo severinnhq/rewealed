@@ -1,8 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from '../../lib/mongodb'
-import { Product } from '../../models/Product'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<any>
+) {
   if (req.method === 'GET') {
     console.log('Received GET request to /api/products')
     try {
