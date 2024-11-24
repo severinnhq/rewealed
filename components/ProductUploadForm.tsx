@@ -1,75 +1,41 @@
 "use client"
 import React, { useState } from 'react'
-import { Product, Size } from '../models/Product'
-import { resizeImage } from '../utils/imageUtils'
-import { uploadFile } from '../utils/uploadUtils'
-import Image from 'next/image'
-
-const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+import { Product } from '../models/Product'
 
 export default function ProductUploadForm() {
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
     name: '',
     description: '',
     price: 0,
-    mainImage: '',
-    gallery: [],
-    category: '',
-    sizes: [],
-    salePrice: undefined,
+    image: '',
   })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [imageSize, setImageSize] = useState<number | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    if (name === 'price' || name === 'salePrice') {
+    if (name === 'price') {
       const parsedValue = parseFloat(value)
-      setProduct(prev => ({ ...prev, [name]: isNaN(parsedValue) ? undefined : parsedValue }))
+      setProduct(prev => ({ ...prev, [name]: isNaN(parsedValue) ? 0 : parsedValue }))
     } else {
       setProduct(prev => ({ ...prev, [name]: value }))
     }
   }
 
-  const handleSizeChange = (size: Size) => {
-    setProduct(prev => ({
-      ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
-    }))
-  }
-
-  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      try {
-        const resizedImage = await resizeImage(file, 1920, 1080)
-        const fileName = await uploadFile(new File([resizedImage], file.name, { type: resizedImage.type }), setUploadProgress)
-        setProduct(prev => ({ ...prev, mainImage: `/uploads/${fileName}` }))
-      } catch (error) {
-        console.error('Error uploading image:', error)
-        setError('Failed to upload the image. Please try again.')
+      setImageSize(file.size)
+      if (file.size > 20 * 1024 * 1024) { // 20MB limit
+        setError('Image size should be less than 20MB')
+        return
       }
-    }
-  }
-
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files) {
-      const newImages: string[] = []
-      for (let i = 0; i < files.length; i++) {
-        try {
-          const resizedImage = await resizeImage(files[i], 1920, 1080)
-          const fileName = await uploadFile(new File([resizedImage], files[i].name, { type: resizedImage.type }), setUploadProgress)
-          newImages.push(`/uploads/${fileName}`)
-        } catch (error) {
-          console.error('Error uploading image:', error)
-          setError('Failed to upload one or more images. Please try again.')
-        }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProduct(prev => ({ ...prev, image: reader.result as string }))
       }
-      setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...newImages] }))
+      reader.readAsDataURL(file)
     }
   }
 
@@ -79,32 +45,41 @@ export default function ProductUploadForm() {
     setError(null)
     
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(product),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      await response.json()
-      alert('Product upload complete!')
-      setProduct({ name: '', description: '', price: 0, mainImage: '', gallery: [], category: '', sizes: [], salePrice: undefined })
+      const data = await response.json()
+      alert('Product uploaded successfully!')
+      setProduct({ name: '', description: '', price: 0, image: '' })
+      setImageSize(null)
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {
         errorMessage = error.message
       }
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        errorMessage = 'The request timed out. Please try again or upload a smaller image.'
+      }
       setError(errorMessage)
       console.error('Upload error:', errorMessage)
     } finally {
       setIsUploading(false)
-      setUploadProgress(0)
     }
   }
 
@@ -153,105 +128,22 @@ export default function ProductUploadForm() {
         />
       </div>
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-        <input
-          type="text"
-          id="category"
-          name="category"
-          value={product.category}
-          onChange={handleInputChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Sizes</label>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {SIZES.map(size => (
-            <label key={size} className="inline-flex items-center">
-              <input
-                type="checkbox"
-                checked={product.sizes.includes(size)}
-                onChange={() => handleSizeChange(size)}
-                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-              <span className="ml-2">{size}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">Sale Price</label>
-        <input
-          type="number"
-          id="salePrice"
-          name="salePrice"
-          value={product.salePrice || ''}
-          onChange={handleInputChange}
-          min="0"
-          step="0.01"
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        />
-      </div>
-      <div>
-        <label htmlFor="mainImage" className="block text-sm font-medium text-gray-700">Main Image</label>
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
         <input
           type="file"
-          id="mainImage"
-          name="mainImage"
-          onChange={handleMainImageUpload}
+          id="image"
+          name="image"
+          onChange={handleImageUpload}
           accept="image/*"
           required
           className="mt-1 block w-full"
         />
-        {uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="mt-2">
-            <div className="bg-blue-100 h-2 rounded-full">
-              <div
-                className="bg-blue-500 h-2 rounded-full"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-            </div>
-            <p className="text-sm text-gray-600 mt-1">Uploading: {uploadProgress.toFixed(0)}%</p>
-          </div>
+        {imageSize && (
+          <p className="mt-1 text-sm text-gray-500">
+            Image size: {(imageSize / (1024 * 1024)).toFixed(2)} MB
+          </p>
         )}
       </div>
-      {product.mainImage && (
-        <div className="mt-2">
-          <Image 
-            src={product.mainImage} 
-            alt="Main product image" 
-            width={500}
-            height={320}
-            className="w-full h-32 object-cover rounded-md"
-          />
-        </div>
-      )}
-      <div>
-        <label htmlFor="gallery" className="block text-sm font-medium text-gray-700">Gallery Images</label>
-        <input
-          type="file"
-          id="gallery"
-          name="gallery"
-          onChange={handleGalleryUpload}
-          accept="image/*"
-          multiple
-          className="mt-1 block w-full"
-        />
-      </div>
-      {product.gallery.length > 0 && (
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          {product.gallery.map((image, index) => (
-            <Image 
-              key={index} 
-              src={image} 
-              alt={`Gallery image ${index + 1}`} 
-              width={200}
-              height={200}
-              className="w-full h-24 object-cover rounded-md"
-            />
-          ))}
-        </div>
-      )}
       <button 
         type="submit" 
         className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"

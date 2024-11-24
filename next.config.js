@@ -14,14 +14,8 @@ const nextConfig = {
           crypto: false,
         }
       }
-      config.externals = [...(config.externals || []), 'formidable'];
       return config
     },
-    api: {
-      bodyParser: {
-        sizeLimit: '50mb' // Increase from 10mb to 50mb
-      }
-    }
   }
   
   module.exports = nextConfig
