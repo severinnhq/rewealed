@@ -19,7 +19,7 @@ const nextConfig = {
     },
     api: {
       bodyParser: {
-        sizeLimit: '10mb' // Set the maximum allowed payload size to 10MB
+        sizeLimit: '50mb' // Increase from 10mb to 50mb
       }
     }
   }

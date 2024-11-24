@@ -1,22 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import clientPromise from '../../lib/mongodb'
-import { WithId, Document } from 'mongodb'
-
-interface Product {
-  _id?: string
-  name: string
-  description: string
-  price: number
-  mainImage: string
-  gallery?: string[]
-  category?: string
-  sizes?: string[]
-  salePrice?: number
-}
+import { WithId, Document, ObjectId } from 'mongodb'
+import { Product, Size } from '../../models/Product'
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Product[] | { message: string; error?: string }>
+  res: NextApiResponse<Product[] | Product | { message: string; error?: string }>
 ) {
   if (req.method === 'GET') {
     console.log('Received GET request to /api/products')
@@ -27,14 +16,14 @@ export default async function handler(
       const rawProducts: WithId<Document>[] = await db.collection("products").find({}).toArray()
       
       const products: Product[] = rawProducts.map(product => ({
-        _id: product._id.toString(),
+        _id: product._id,
         name: product.name as string,
         description: product.description as string,
         price: product.price as number,
         mainImage: product.mainImage as string,
-        gallery: product.gallery as string[] | undefined,
+        gallery: product.gallery as string[] || [],
         category: product.category as string | undefined,
-        sizes: product.sizes as string[] | undefined,
+        sizes: product.sizes as Size[] || [],
         salePrice: product.salePrice as number | undefined
       }))
 
@@ -45,6 +34,27 @@ export default async function handler(
       console.error('Error fetching products:', error)
       res.status(500).json({ 
         message: "Error fetching products", 
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      })
+    }
+  } else if (req.method === 'POST') {
+    try {
+      const client = await clientPromise
+      const db = client.db("clothingstore")
+      
+      const product: Omit<Product, '_id'> = req.body
+      
+      const result = await db.collection("products").insertOne(product)
+      
+      res.status(201).json({ 
+        message: "Product created successfully", 
+        _id: result.insertedId,
+        ...product
+      })
+    } catch (error: unknown) {
+      console.error('Error creating product:', error)
+      res.status(500).json({ 
+        message: "Error creating product", 
         error: error instanceof Error ? error.message : 'An unknown error occurred',
       })
     }

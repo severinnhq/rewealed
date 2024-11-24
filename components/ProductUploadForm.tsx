@@ -91,6 +91,7 @@ export default function ProductUploadForm() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
+      const result = await response.json()
       alert('Product upload complete!')
       setProduct({ name: '', description: '', price: 0, mainImage: '', gallery: [], category: '', sizes: [], salePrice: undefined })
     } catch (error: unknown) {
