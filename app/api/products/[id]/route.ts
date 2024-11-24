@@ -5,8 +5,9 @@ import { Product } from '../../../../models/Product'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ): Promise<NextResponse> {
+  const { id } = context.params
   try {
     const client = await clientPromise
     const db = client.db("clothingstore")
@@ -30,7 +31,7 @@ export async function PUT(
     }
 
     const result = await db.collection("products").updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updatedProduct }
     )
 
@@ -38,7 +39,7 @@ export async function PUT(
       return NextResponse.json({ message: "Product not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ message: "Product updated successfully", productId: params.id })
+    return NextResponse.json({ message: "Product updated successfully", productId: id })
   } catch (error: unknown) {
     console.error('Error in product update:', error)
     return NextResponse.json(
@@ -53,13 +54,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ): Promise<NextResponse> {
+  const { id } = context.params
   try {
     const client = await clientPromise
     const db = client.db("clothingstore")
     
-    const result = await db.collection("products").deleteOne({ _id: new ObjectId(params.id) })
+    const result = await db.collection("products").deleteOne({ _id: new ObjectId(id) })
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ message: "Product not found" }, { status: 404 })
