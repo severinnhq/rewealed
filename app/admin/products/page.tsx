@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 
 interface Product {
   _id?: string
@@ -23,25 +22,47 @@ export default function AdminProductsPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const response = await fetch('/api/products')
-        if (!response.ok) {
-          throw new Error('Failed to fetch products')
-        }
-        const data: Product[] = await response.json()
-        console.log('Fetched products:', data)
-        setProducts(data)
-      } catch (err) {
-        setError('Error fetching products. Please try again later.')
-        console.error('Error fetching products:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     fetchProducts()
   }, [])
+
+  async function fetchProducts() {
+    try {
+      const response = await fetch('/api/products')
+      if (!response.ok) {
+        throw new Error('Failed to fetch products')
+      }
+      const data: Product[] = await response.json()
+      console.log('Fetched products:', data)
+      setProducts(data)
+    } catch (err) {
+      setError('Error fetching products. Please try again later.')
+      console.error('Error fetching products:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function deleteProduct(id: string) {
+    if (!confirm('Are you sure you want to delete this product?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product')
+      }
+
+      // Refresh the product list
+      fetchProducts()
+    } catch (err) {
+      console.error('Error deleting product:', err)
+      alert('Failed to delete product. Please try again.')
+    }
+  }
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error}</div>
@@ -103,9 +124,12 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
               )}
-              <Link href={`/admin/products/edit/${product._id}`} className="mt-2 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Edit
-              </Link>
+              <button
+                onClick={() => product._id && deleteProduct(product._id)}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                Delete Product
+              </button>
             </div>
           ))}
         </div>
