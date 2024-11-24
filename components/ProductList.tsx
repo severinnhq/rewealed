@@ -46,11 +46,15 @@ export default function ProductList() {
                 <p className="text-sm text-red-600 line-through">${product.salePrice.toFixed(2)}</p>
               )}
             </div>
-            <div className="text-sm text-gray-500">
-              {product.sizes.join(', ')}
-            </div>
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="text-sm text-gray-500">
+                {product.sizes.join(', ')}
+              </div>
+            )}
           </div>
-          <p className="text-sm text-gray-500 mt-2">{product.category}</p>
+          {product.category && (
+            <p className="text-sm text-gray-500 mt-2">{product.category}</p>
+          )}
         </div>
       ))}
     </div>

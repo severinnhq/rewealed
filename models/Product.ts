@@ -6,9 +6,9 @@ export interface Product {
   description: string
   price: number
   salePrice?: number
-  sizes: string[]
-  category: string
+  sizes?: string[]
+  category?: string
   image: string
-  gallery: string[]
+  gallery?: string[]
 }
 

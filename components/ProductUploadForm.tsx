@@ -33,9 +33,9 @@ export default function ProductUploadForm() {
   const handleSizeChange = (size: string) => {
     setProduct(prev => ({
       ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
+      sizes: prev.sizes ? 
+        (prev.sizes.includes(size) ? prev.sizes.filter(s => s !== size) : [...prev.sizes, size])
+        : [size]
     }))
   }
 
@@ -66,7 +66,10 @@ export default function ProductUploadForm() {
       try {
         const compressedImages = await Promise.all(Array.from(files).map(compressImage));
         if (isGallery) {
-          setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...compressedImages] }))
+          setProduct(prev => ({ 
+            ...prev, 
+            gallery: prev.gallery ? [...prev.gallery, ...compressedImages] : compressedImages 
+          }))
         } else {
           setProduct(prev => ({ ...prev, image: compressedImages[0] }))
           const compressedSize = Math.round((compressedImages[0].length * 3) / 4);
@@ -105,7 +108,16 @@ export default function ProductUploadForm() {
       }
 
       alert('Product uploaded successfully!')
-      setProduct({ name: '', description: '', price: 0, salePrice: undefined, sizes: [], category: '', image: '', gallery: [] })
+      setProduct({ 
+        name: '', 
+        description: '', 
+        price: 0, 
+        salePrice: undefined, 
+        sizes: [], 
+        category: '', 
+        image: '', 
+        gallery: [] 
+      })
       setImageSize(null)
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
@@ -188,7 +200,7 @@ export default function ProductUploadForm() {
               type="button"
               onClick={() => handleSizeChange(size)}
               className={`px-3 py-1 rounded ${
-                product.sizes.includes(size)
+                product.sizes && product.sizes.includes(size)
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-200 text-gray-700'
               }`}
@@ -242,7 +254,7 @@ export default function ProductUploadForm() {
           multiple
           className="mt-1 block w-full"
         />
-        {product.gallery.length > 0 && (
+        {product.gallery && product.gallery.length > 0 && (
           <p className="mt-1 text-sm text-gray-500">
             {product.gallery.length} image(s) selected for gallery
           </p>
