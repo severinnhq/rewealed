@@ -103,3 +103,55 @@ export async function DELETE(request: Request) {
   }
 }
 
+export async function PUT(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ message: "Product ID is required" }, { status: 400 })
+    }
+
+    const client = await clientPromise
+    const db = client.db("clothingstore")
+    
+    const body = await request.json()
+    const { name, description, price, salePrice, sizes, category, image, gallery } = body
+
+    if (!name || !description || !price || !sizes || !category || !image) {
+      return NextResponse.json({ message: "Invalid product data" }, { status: 400 })
+    }
+
+    const updatedProduct: Partial<Product> = {
+      name,
+      description,
+      price: parseFloat(price),
+      salePrice: salePrice ? parseFloat(salePrice) : undefined,
+      sizes,
+      category,
+      image,
+      gallery: gallery || []
+    }
+
+    const result = await db.collection("products").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedProduct }
+    )
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ message: "Product not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ message: "Product updated successfully" }, { status: 200 })
+  } catch (error: unknown) {
+    console.error('Error updating product:', error)
+    return NextResponse.json(
+      { 
+        message: "Error updating product", 
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
+      }, 
+      { status: 500 }
+    )
+  }
+}
+
