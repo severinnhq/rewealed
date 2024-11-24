@@ -30,6 +30,7 @@ export default function ProductDisplay() {
 
   if (loading) return <div>Loading products...</div>
   if (error) return <div className="text-red-500">{error}</div>
+  if (!products || products.length === 0) return <div>No products found.</div>
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
