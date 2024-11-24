@@ -29,12 +29,11 @@ async function getProduct(id: string): Promise<Product | null> {
   return null
 }
 
-export interface PageProps {
+export default async function EditProductPage({
+  params,
+}: {
   params: { id: string }
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
-export default async function EditProductPage({ params }: PageProps) {
+}) {
   const product = await getProduct(params.id)
 
   if (!product) {
@@ -43,4 +42,7 @@ export default async function EditProductPage({ params }: PageProps) {
 
   return <EditProductForm initialProduct={product} />
 }
+
+// This is added to satisfy TypeScript for file-based routing
+export const dynamicParams = true
 
