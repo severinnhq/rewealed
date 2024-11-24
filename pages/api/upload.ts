@@ -15,7 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const form = new formidable.IncomingForm();
+    const form = new formidable.IncomingForm({
+      maxFileSize: 50 * 1024 * 1024, // 50MB
+      keepExtensions: true,
+    });
+
     const [fields, files] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
@@ -38,37 +42,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const chunkNumber = parseInt(Array.isArray(fields.chunkNumber) ? fields.chunkNumber[0] : fields.chunkNumber || '0', 10);
-    const totalChunks = parseInt(Array.isArray(fields.totalChunks) ? fields.totalChunks[0] : fields.totalChunks || '0', 10);
-    const originalFilename = Array.isArray(fields.originalFilename) ? fields.originalFilename[0] : fields.originalFilename || 'unnamed_file';
+    const fileName = `${Date.now()}_${file.originalFilename}`;
+    const filePath = path.join(uploadDir, fileName);
 
-    const chunkDir = path.join(uploadDir, originalFilename + '.chunks');
-    if (!fs.existsSync(chunkDir)) {
-      fs.mkdirSync(chunkDir, { recursive: true });
-    }
+    await fs.promises.copyFile(file.filepath, filePath);
+    await fs.promises.unlink(file.filepath);
 
-    const chunkPath = path.join(chunkDir, `chunk.${chunkNumber}`);
-    await fs.promises.rename(file.filepath, chunkPath);
-
-    if (chunkNumber === totalChunks) {
-      // All chunks received, combine them
-      const filePath = path.join(uploadDir, originalFilename);
-      const writeStream = fs.createWriteStream(filePath);
-
-      for (let i = 1; i <= totalChunks; i++) {
-        const chunkPath = path.join(chunkDir, `chunk.${i}`);
-        const chunkBuffer = await fs.promises.readFile(chunkPath);
-        writeStream.write(chunkBuffer);
-        await fs.promises.unlink(chunkPath);
-      }
-
-      writeStream.end();
-      await fs.promises.rmdir(chunkDir);
-
-      res.status(200).json({ message: 'File uploaded successfully', fileName: originalFilename });
-    } else {
-      res.status(200).json({ message: 'Chunk received' });
-    }
+    res.status(200).json({ message: 'File uploaded successfully', fileName: `/uploads/${fileName}` });
   } catch (error) {
     console.error('Error handling file:', error);
     console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
