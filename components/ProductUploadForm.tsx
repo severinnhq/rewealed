@@ -8,15 +8,18 @@ export default function ProductUploadForm() {
     description: '',
     price: 0,
     image: '',
+    category: '',
+    size: undefined,
+    salePrice: undefined,
   })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    if (name === 'price') {
+    if (name === 'price' || name === 'salePrice') {
       const parsedValue = parseFloat(value)
-      setProduct(prev => ({ ...prev, [name]: isNaN(parsedValue) ? 0 : parsedValue }))
+      setProduct(prev => ({ ...prev, [name]: isNaN(parsedValue) ? undefined : parsedValue }))
     } else {
       setProduct(prev => ({ ...prev, [name]: value }))
     }
@@ -56,9 +59,8 @@ export default function ProductUploadForm() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      // const data = await response.json() //Removed as per update 1
-      alert('Product upload complete!') //Updated as per update 2
-      setProduct({ name: '', description: '', price: 0, image: '' })
+      alert('Product upload complete!')
+      setProduct({ name: '', description: '', price: 0, image: '', category: '', size: undefined, salePrice: undefined })
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {
@@ -110,6 +112,48 @@ export default function ProductUploadForm() {
           value={product.price}
           onChange={handleInputChange}
           required
+          min="0"
+          step="0.01"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+        <input
+          type="text"
+          id="category"
+          name="category"
+          value={product.category}
+          onChange={handleInputChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
+      <div>
+        <label htmlFor="size" className="block text-sm font-medium text-gray-700">Size</label>
+        <select
+          id="size"
+          name="size"
+          value={product.size}
+          onChange={handleInputChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        >
+          <option value="">Select a size</option>
+          <option value="XS">XS</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+          <option value="XXL">XXL</option>
+        </select>
+      </div>
+      <div>
+        <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">Sale Price</label>
+        <input
+          type="number"
+          id="salePrice"
+          name="salePrice"
+          value={product.salePrice || ''}
+          onChange={handleInputChange}
           min="0"
           step="0.01"
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"

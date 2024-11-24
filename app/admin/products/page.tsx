@@ -50,6 +50,15 @@ export default function AdminProductsPage() {
             <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
             <p className="text-gray-600 mb-2">{product.description}</p>
             <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
+            {product.salePrice && (
+              <p className="text-red-600 font-bold">Sale: ${product.salePrice.toFixed(2)}</p>
+            )}
+            {product.category && (
+              <p className="text-sm text-gray-500">Category: {product.category}</p>
+            )}
+            {product.size && (
+              <p className="text-sm text-gray-500">Size: {product.size}</p>
+            )}
           </div>
         ))}
       </div>

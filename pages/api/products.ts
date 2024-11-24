@@ -17,9 +17,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const client = await clientPromise
       const db = client.db("clothingstore")
       
-      const { name, description, price, image } = req.body
+      const { name, description, price, image, category, size, salePrice } = req.body
       
-      console.log('Received product data:', { name, description, price, imageSize: image?.length })
+      console.log('Received product data:', { name, description, price, imageSize: image?.length, category, size, salePrice })
 
       if (!name || !description || typeof price !== 'number' || isNaN(price) || !image) {
         console.error('Invalid product data:', { name, description, price, imagePresent: !!image })
@@ -30,7 +30,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name,
         description,
         price,
-        image
+        image,
+        ...(category && { category }),
+        ...(size && { size }),
+        ...(salePrice && { salePrice }),
       }
 
       console.log('Attempting to insert product into database')
