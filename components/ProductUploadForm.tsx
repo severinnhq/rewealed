@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import { Product } from '../models/Product'
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
-const CATEGORIES = ['Shirts', 'Pants', 'Dresses', 'Accessories', 'Shoes']
 
 export default function ProductUploadForm() {
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
@@ -200,19 +199,16 @@ export default function ProductUploadForm() {
       </div>
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-        <select
+        <input
+          type="text"
           id="category"
           name="category"
           value={product.category}
           onChange={handleInputChange}
           required
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="">Select a category</option>
-          {CATEGORIES.map(category => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
+          placeholder="Enter product category"
+        />
       </div>
       <div>
         <label htmlFor="image" className="block text-sm font-medium text-gray-700">Main Image</label>

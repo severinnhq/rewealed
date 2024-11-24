@@ -1,5 +1,5 @@
 import ProductUploadForm from '../components/ProductUploadForm'
-import ProductList from '../components/ProductList'
+import ProductDisplay from '../components/ProductDisplay'
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
       </div>
       <div>
         <h2 className="text-2xl font-semibold mb-4">Our Products</h2>
-        <ProductList />
+        <ProductDisplay />
       </div>
     </div>
   )
