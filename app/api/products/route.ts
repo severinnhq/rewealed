@@ -121,7 +121,7 @@ export async function PUT(request: Request) {
 
     const { name, description, price, salePrice, sizes, category, image, gallery } = body
 
-    if (!name || !description || !price || !sizes || !category || !image) {
+    if (!name || !description || price === undefined || !category) {
       console.error('Invalid product data:', { name, description, price, salePrice, sizes, category, imagePresent: !!image, galleryPresent: !!gallery })
       return NextResponse.json({ message: "Invalid product data" }, { status: 400 })
     }
@@ -131,9 +131,9 @@ export async function PUT(request: Request) {
       description,
       price: parseFloat(price),
       salePrice: salePrice ? parseFloat(salePrice) : undefined,
-      sizes,
+      sizes: sizes || [],
       category,
-      image,
+      image: image || undefined,
       gallery: gallery || []
     }
 

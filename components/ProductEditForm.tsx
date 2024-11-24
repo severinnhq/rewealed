@@ -18,6 +18,7 @@ interface ProductEditFormProps {
 export default function ProductEditForm({ product, onSave, onCancel }: ProductEditFormProps) {
   const [editedProduct, setEditedProduct] = useState<Product>(product)
   const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -77,6 +78,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsUploading(true)
+    setError(null)
     try {
       console.log('Submitting product update:', editedProduct)
       const response = await fetch(`/api/products?id=${product._id}`, {
@@ -96,7 +98,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
       onSave(editedProduct)
     } catch (error) {
       console.error('Error updating product:', error)
-      // You might want to show an error message to the user here
+      setError(error instanceof Error ? error.message : 'An unknown error occurred')
     } finally {
       setIsUploading(false)
     }
@@ -104,6 +106,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <div className="text-red-500">{error}</div>}
       <div>
         <Label htmlFor="name">Name</Label>
         <Input
