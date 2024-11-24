@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import clientPromise from '../../../lib/mongodb'
 import { Product } from '../../../models/Product'
+import { ObjectId } from 'mongodb'
 
 export async function POST(request: Request) {
   try {
@@ -64,6 +65,37 @@ export async function GET() {
     return NextResponse.json(
       { 
         message: "Error fetching products", 
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
+      }, 
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ message: "Product ID is required" }, { status: 400 })
+    }
+
+    const client = await clientPromise
+    const db = client.db("clothingstore")
+    
+    const result = await db.collection("products").deleteOne({ _id: new ObjectId(id) })
+    
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ message: "Product not found" }, { status: 404 })
+    }
+    
+    return NextResponse.json({ message: "Product deleted successfully" }, { status: 200 })
+  } catch (error: unknown) {
+    console.error('Error deleting product:', error)
+    return NextResponse.json(
+      { 
+        message: "Error deleting product", 
         error: error instanceof Error ? error.message : 'An unknown error occurred'
       }, 
       { status: 500 }
