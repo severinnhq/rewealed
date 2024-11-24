@@ -29,11 +29,12 @@ async function getProduct(id: string): Promise<Product | null> {
   return null
 }
 
-export default async function EditProductPage({
-  params,
-}: {
+export interface PageProps {
   params: { id: string }
-}) {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function EditProductPage({ params }: PageProps) {
   const product = await getProduct(params.id)
 
   if (!product) {
