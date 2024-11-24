@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File } from 'formidable';
+import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 
