@@ -1,10 +1,12 @@
 "use client"
 import React, { useState } from 'react'
 import { Product } from '../models/Product'
+import { useRouter } from 'next/navigation'
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
 
 export default function ProductUploadForm() {
+  const router = useRouter()
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
     name: '',
     description: '',
@@ -106,6 +108,7 @@ export default function ProductUploadForm() {
       alert('Product uploaded successfully!')
       setProduct({ name: '', description: '', price: 0, salePrice: undefined, sizes: [], category: '', image: '', gallery: [] })
       setImageSize(null)
+      router.refresh() // Refresh the page to update the product list
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {

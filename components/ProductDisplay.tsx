@@ -1,35 +1,12 @@
-"use client"
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { Product } from '../models/Product'
 
-export default function ProductDisplay() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+interface ProductDisplayProps {
+  products: Product[]
+}
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('/api/products')
-        if (!response.ok) {
-          throw new Error('Failed to fetch products')
-        }
-        const data = await response.json()
-        setProducts(data)
-      } catch (err) {
-        setError('Error fetching products. Please try again later.')
-        console.error('Error fetching products:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProducts()
-  }, [])
-
-  if (loading) return <div>Loading products...</div>
-  if (error) return <div className="text-red-500">{error}</div>
+export default function ProductDisplay({ products }: ProductDisplayProps) {
   if (!products || products.length === 0) return <div>No products found.</div>
 
   return (
@@ -40,8 +17,8 @@ export default function ProductDisplay() {
             <Image 
               src={product.image} 
               alt={product.name}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: 'cover' }}
               className="rounded-t-lg"
             />
           </div>
@@ -70,8 +47,8 @@ export default function ProductDisplay() {
                     <Image 
                       src={img} 
                       alt={`${product.name} gallery image ${index + 1}`}
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: 'cover' }}
                       className="rounded"
                     />
                   </div>
