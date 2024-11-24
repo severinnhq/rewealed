@@ -200,8 +200,14 @@ export default function AdminProductsPage() {
                     <input
                       type="number"
                       name="salePrice"
-                      value={editingProduct.salePrice || ''}
-                      onChange={handleEditChange}
+                      value={editingProduct.salePrice ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? undefined : Number(e.target.value);
+                        setEditingProduct({
+                          ...editingProduct,
+                          salePrice: value
+                        });
+                      }}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                     />
                   </div>
