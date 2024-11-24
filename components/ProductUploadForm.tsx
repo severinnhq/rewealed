@@ -1,7 +1,8 @@
 "use client"
 import React, { useState } from 'react'
 import { Product, Size } from '../models/Product'
-import { resizeImage } from '../utils/imageUtils';
+import { resizeImage } from '../utils/imageUtils'
+import { uploadFile } from '../utils/uploadUtils'
 
 const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -18,6 +19,7 @@ export default function ProductUploadForm() {
   })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -42,15 +44,12 @@ export default function ProductUploadForm() {
     const file = e.target.files?.[0]
     if (file) {
       try {
-        const resizedImage = await resizeImage(file, 1920, 1080); // Resize to max 1920x1080
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setProduct(prev => ({ ...prev, mainImage: reader.result as string }))
-        }
-        reader.readAsDataURL(resizedImage)
+        const resizedImage = await resizeImage(file, 1920, 1080)
+        const fileName = await uploadFile(new File([resizedImage], file.name, { type: resizedImage.type }), setUploadProgress)
+        setProduct(prev => ({ ...prev, mainImage: `/uploads/${fileName}` }))
       } catch (error) {
-        console.error('Error resizing image:', error)
-        setError('Failed to process the image. Please try again.')
+        console.error('Error uploading image:', error)
+        setError('Failed to upload the image. Please try again.')
       }
     }
   }
@@ -61,18 +60,12 @@ export default function ProductUploadForm() {
       const newImages: string[] = []
       for (let i = 0; i < files.length; i++) {
         try {
-          const resizedImage = await resizeImage(files[i], 1920, 1080); // Resize to max 1920x1080
-          const reader = new FileReader()
-          await new Promise<void>((resolve) => {
-            reader.onloadend = () => {
-              newImages.push(reader.result as string)
-              resolve()
-            }
-            reader.readAsDataURL(resizedImage)
-          })
+          const resizedImage = await resizeImage(files[i], 1920, 1080)
+          const fileName = await uploadFile(new File([resizedImage], files[i].name, { type: resizedImage.type }), setUploadProgress)
+          newImages.push(`/uploads/${fileName}`)
         } catch (error) {
-          console.error('Error resizing image:', error)
-          setError('Failed to process one or more images. Please try again.')
+          console.error('Error uploading image:', error)
+          setError('Failed to upload one or more images. Please try again.')
         }
       }
       setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...newImages] }))
@@ -109,6 +102,7 @@ export default function ProductUploadForm() {
       console.error('Upload error:', errorMessage)
     } finally {
       setIsUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -207,6 +201,17 @@ export default function ProductUploadForm() {
           required
           className="mt-1 block w-full"
         />
+        {uploadProgress > 0 && uploadProgress < 100 && (
+          <div className="mt-2">
+            <div className="bg-blue-100 h-2 rounded-full">
+              <div
+                className="bg-blue-500 h-2 rounded-full"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">Uploading: {uploadProgress.toFixed(0)}%</p>
+          </div>
+        )}
       </div>
       {product.mainImage && (
         <div className="mt-2">
