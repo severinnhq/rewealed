@@ -20,6 +20,7 @@ export default function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
   useEffect(() => {
     fetchProducts()
@@ -56,11 +57,74 @@ export default function AdminProductsPage() {
         throw new Error('Failed to delete product')
       }
 
-      // Refresh the product list
       fetchProducts()
     } catch (err) {
       console.error('Error deleting product:', err)
       alert('Failed to delete product. Please try again.')
+    }
+  }
+
+  async function updateProduct(product: Product) {
+    try {
+      const response = await fetch(`/api/products/${product._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update product')
+      }
+
+      fetchProducts()
+      setEditingProduct(null)
+    } catch (err) {
+      console.error('Error updating product:', err)
+      alert('Failed to update product. Please try again.')
+    }
+  }
+
+  function handleEditChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    if (editingProduct) {
+      setEditingProduct({
+        ...editingProduct,
+        [e.target.name]: e.target.value,
+      })
+    }
+  }
+
+  function handleSizeChange(size: string) {
+    if (editingProduct) {
+      const updatedSizes = editingProduct.sizes?.includes(size)
+        ? editingProduct.sizes.filter(s => s !== size)
+        : [...(editingProduct.sizes || []), size]
+      setEditingProduct({
+        ...editingProduct,
+        sizes: updatedSizes,
+      })
+    }
+  }
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, isMainImage: boolean) {
+    if (editingProduct && e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        if (isMainImage) {
+          setEditingProduct({
+            ...editingProduct,
+            mainImage: reader.result as string,
+          })
+        } else {
+          setEditingProduct({
+            ...editingProduct,
+            gallery: [...(editingProduct.gallery || []), reader.result as string],
+          })
+        }
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -76,60 +140,184 @@ export default function AdminProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <div key={product._id} className="border rounded-lg p-4 shadow-md">
-              <div className="relative w-full h-64 mb-4">
-                <Image
-                  src={product.mainImage || '/placeholder.svg'}
-                  alt={product.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-md cursor-pointer"
-                  onClick={() => setSelectedImage(product.mainImage)}
-                />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-              <p className="text-gray-600 mb-2">{product.description}</p>
-              <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
-              {product.salePrice && (
-                <p className="text-red-600 font-bold">Sale: ${product.salePrice.toFixed(2)}</p>
-              )}
-              {product.category && (
-                <p className="text-sm text-gray-500">Category: {product.category}</p>
-              )}
-              <div className="mt-2">
-                <p className="text-sm font-medium text-gray-700">Sizes:</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {product.sizes && product.sizes.map((size) => (
-                    <span key={size} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs font-medium rounded-full">
-                      {size}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              {product.gallery && product.gallery.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Image Gallery:</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {product.gallery.map((image, index) => (
-                      <div key={index} className="relative w-full h-20">
-                        <Image
-                          src={image}
-                          alt={`${product.name} - Image ${index + 1}`}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-md cursor-pointer"
-                          onClick={() => setSelectedImage(image)}
-                        />
-                      </div>
-                    ))}
+              {editingProduct && editingProduct._id === product._id ? (
+                <form onSubmit={(e) => {
+                  e.preventDefault()
+                  updateProduct(editingProduct)
+                }}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={editingProduct.name}
+                      onChange={handleEditChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
                   </div>
-                </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      name="description"
+                      value={editingProduct.description}
+                      onChange={handleEditChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Price</label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={editingProduct.price}
+                      onChange={handleEditChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Sale Price</label>
+                    <input
+                      type="number"
+                      name="salePrice"
+                      value={editingProduct.salePrice || ''}
+                      onChange={handleEditChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Category</label>
+                    <input
+                      type="text"
+                      name="category"
+                      value={editingProduct.category || ''}
+                      onChange={handleEditChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Sizes</label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
+                        <label key={size} className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={editingProduct.sizes?.includes(size)}
+                            onChange={() => handleSizeChange(size)}
+                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                          <span className="ml-2">{size}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Main Image</label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, true)}
+                      className="mt-1 block w-full"
+                    />
+                    {editingProduct.mainImage && (
+                      <img src={editingProduct.mainImage} alt="Main" className="mt-2 h-20 object-cover" />
+                    )}
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Gallery Images</label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, false)}
+                      className="mt-1 block w-full"
+                      multiple
+                    />
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {editingProduct.gallery?.map((image, index) => (
+                        <img key={index} src={image} alt={`Gallery ${index}`} className="h-20 object-cover" />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingProduct(null)}
+                      className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div className="relative w-full h-64 mb-4">
+                    <Image
+                      src={product.mainImage || '/placeholder.svg'}
+                      alt={product.name}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-md cursor-pointer"
+                      onClick={() => setSelectedImage(product.mainImage)}
+                    />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
+                  <p className="text-gray-600 mb-2">{product.description}</p>
+                  <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
+                  {product.salePrice && (
+                    <p className="text-red-600 font-bold">Sale: ${product.salePrice.toFixed(2)}</p>
+                  )}
+                  {product.category && (
+                    <p className="text-sm text-gray-500">Category: {product.category}</p>
+                  )}
+                  <div className="mt-2">
+                    <p className="text-sm font-medium text-gray-700">Sizes:</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {product.sizes && product.sizes.map((size) => (
+                        <span key={size} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs font-medium rounded-full">
+                          {size}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  {product.gallery && product.gallery.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Image Gallery:</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {product.gallery.map((image, index) => (
+                          <div key={index} className="relative w-full h-20">
+                            <Image
+                              src={image}
+                              alt={`${product.name} - Image ${index + 1}`}
+                              layout="fill"
+                              objectFit="cover"
+                              className="rounded-md cursor-pointer"
+                              onClick={() => setSelectedImage(image)}
+                            />
+                          </div>
+                        ))}
+                
+</div>
+                    </div>
+                  )}
+                  <div className="mt-4 flex space-x-2">
+                    <button
+                      onClick={() => setEditingProduct(product)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Edit Product
+                    </button>
+                    <button
+                      onClick={() => product._id && deleteProduct(product._id)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      Delete Product
+                    </button>
+                  </div>
+                </>
               )}
-              <button
-                onClick={() => product._id && deleteProduct(product._id)}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              >
-                Delete Product
-              </button>
             </div>
           ))}
         </div>
