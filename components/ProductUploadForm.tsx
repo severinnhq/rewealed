@@ -2,25 +2,41 @@
 import React, { useState } from 'react'
 import { Product } from '../models/Product'
 
+const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+const CATEGORIES = ['Shirts', 'Pants', 'Dresses', 'Accessories', 'Shoes']
+
 export default function ProductUploadForm() {
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
     name: '',
     description: '',
     price: 0,
+    salePrice: undefined,
+    sizes: [],
+    category: '',
     image: '',
+    gallery: [],
   })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [imageSize, setImageSize] = useState<number | null>(null)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    if (name === 'price') {
+    if (name === 'price' || name === 'salePrice') {
       const parsedValue = parseFloat(value)
       setProduct(prev => ({ ...prev, [name]: isNaN(parsedValue) ? 0 : parsedValue }))
     } else {
       setProduct(prev => ({ ...prev, [name]: value }))
     }
+  }
+
+  const handleSizeChange = (size: string) => {
+    setProduct(prev => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter(s => s !== size)
+        : [...prev.sizes, size]
+    }))
   }
 
   const compressImage = (file: File): Promise<string> => {
@@ -44,15 +60,18 @@ export default function ProductUploadForm() {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageSize(file.size)
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isGallery: boolean = false) => {
+    const files = e.target.files
+    if (files) {
       try {
-        const compressedImage = await compressImage(file);
-        setProduct(prev => ({ ...prev, image: compressedImage }))
-        const compressedSize = Math.round((compressedImage.length * 3) / 4); // Estimate size of base64 string
-        setImageSize(compressedSize);
+        const compressedImages = await Promise.all(Array.from(files).map(compressImage));
+        if (isGallery) {
+          setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...compressedImages] }))
+        } else {
+          setProduct(prev => ({ ...prev, image: compressedImages[0] }))
+          const compressedSize = Math.round((compressedImages[0].length * 3) / 4);
+          setImageSize(compressedSize);
+        }
       } catch (error) {
         console.error('Error compressing image:', error);
         setError('Error processing image. Please try again.');
@@ -86,7 +105,7 @@ export default function ProductUploadForm() {
       }
 
       alert('Product uploaded successfully!')
-      setProduct({ name: '', description: '', price: 0, image: '' })
+      setProduct({ name: '', description: '', price: 0, salePrice: undefined, sizes: [], category: '', image: '', gallery: [] })
       setImageSize(null)
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
@@ -148,12 +167,60 @@ export default function ProductUploadForm() {
         />
       </div>
       <div>
-        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
+        <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">Sale Price (optional)</label>
+        <input
+          type="number"
+          id="salePrice"
+          name="salePrice"
+          value={product.salePrice || ''}
+          onChange={handleInputChange}
+          min="0"
+          step="0.01"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Sizes</label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {SIZES.map(size => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => handleSizeChange(size)}
+              className={`px-3 py-1 rounded ${
+                product.sizes.includes(size)
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+        <select
+          id="category"
+          name="category"
+          value={product.category}
+          onChange={handleInputChange}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        >
+          <option value="">Select a category</option>
+          {CATEGORIES.map(category => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Main Image</label>
         <input
           type="file"
           id="image"
           name="image"
-          onChange={handleImageUpload}
+          onChange={(e) => handleImageUpload(e, false)}
           accept="image/*"
           required
           className="mt-1 block w-full"
@@ -161,6 +228,23 @@ export default function ProductUploadForm() {
         {imageSize && (
           <p className="mt-1 text-sm text-gray-500">
             Image size: {(imageSize / (1024 * 1024)).toFixed(2)} MB
+          </p>
+        )}
+      </div>
+      <div>
+        <label htmlFor="gallery" className="block text-sm font-medium text-gray-700">Gallery Images</label>
+        <input
+          type="file"
+          id="gallery"
+          name="gallery"
+          onChange={(e) => handleImageUpload(e, true)}
+          accept="image/*"
+          multiple
+          className="mt-1 block w-full"
+        />
+        {product.gallery.length > 0 && (
+          <p className="mt-1 text-sm text-gray-500">
+            {product.gallery.length} image(s) selected for gallery
           </p>
         )}
       </div>

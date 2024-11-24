@@ -5,7 +5,7 @@ import { Product } from '../../models/Product'
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '20mb', // Increased from 10mb to 20mb
+      sizeLimit: '20mb', // Increased to accommodate gallery images
     },
   },
 }
@@ -17,12 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const client = await clientPromise
       const db = client.db("clothingstore")
       
-      const { name, description, price, image } = req.body
+      const { name, description, price, salePrice, sizes, category, image, gallery } = req.body
       
-      console.log('Received product data:', { name, description, price, imageSize: image?.length })
+      console.log('Received product data:', { name, description, price, salePrice, sizes, category, imageSize: image?.length, gallerySize: gallery?.length })
 
-      if (!name || !description || typeof price !== 'number' || isNaN(price) || !image) {
-        console.error('Invalid product data:', { name, description, price, imagePresent: !!image })
+      if (!name || !description || typeof price !== 'number' || !sizes || !category || !image) {
+        console.error('Invalid product data:', { name, description, price, salePrice, sizes, category, imagePresent: !!image, galleryPresent: !!gallery })
         return res.status(400).json({ message: "Invalid product data" })
       }
 
@@ -30,7 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name,
         description,
         price,
-        image
+        salePrice,
+        sizes,
+        category,
+        image,
+        gallery: gallery || []
       }
 
       console.log('Attempting to insert product into database')
