@@ -64,11 +64,44 @@ export default function AdminProductsPage() {
     }
   }
 
+  async function uploadLargeFile(file: File): Promise<string> {
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    const chunks = Math.ceil(file.size / chunkSize);
+    const fileName = `${Date.now()}-${file.name}`;
+    
+    for (let i = 0; i < chunks; i++) {
+      const chunk = file.slice(i * chunkSize, (i + 1) * chunkSize);
+      const formData = new FormData();
+      formData.append('file', chunk, fileName);
+      formData.append('chunk', i.toString());
+      formData.append('chunks', chunks.toString());
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file chunk');
+      }
+    }
+
+    return `/uploads/${fileName}`;
+  }
+
   async function updateProduct(product: Product) {
     try {
       const updatedProduct = {
         ...product,
-        salePrice: product.salePrice === undefined ? null : product.salePrice
+        salePrice: product.salePrice === undefined ? null : product.salePrice,
+        mainImage: product.mainImage.startsWith('data:') 
+          ? await uploadLargeFile(new File([dataURItoBlob(product.mainImage)], 'mainImage.jpg', { type: 'image/jpeg' })) 
+          : product.mainImage,
+        gallery: await Promise.all((product.gallery || []).map(async (img) => 
+          img.startsWith('data:') 
+            ? await uploadLargeFile(new File([dataURItoBlob(img)], 'galleryImage.jpg', { type: 'image/jpeg' }))
+            : img
+        ))
       };
       const response = await fetch(`/api/products/${product._id}`, {
         method: 'PUT',
@@ -132,25 +165,38 @@ export default function AdminProductsPage() {
     }
   }
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, isMainImage: boolean) {
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, isMainImage: boolean) {
     if (editingProduct && e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      const reader = new FileReader()
-      reader.onloadend = () => {
+      const file = e.target.files[0];
+      try {
+        const uploadedUrl = await uploadLargeFile(file);
         if (isMainImage) {
           setEditingProduct({
             ...editingProduct,
-            mainImage: reader.result as string,
-          })
+            mainImage: uploadedUrl,
+          });
         } else {
           setEditingProduct({
             ...editingProduct,
-            gallery: [...(editingProduct.gallery || []), reader.result as string],
-          })
+            gallery: [...(editingProduct.gallery || []), uploadedUrl],
+          });
         }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('Failed to upload file. Please try again.');
       }
-      reader.readAsDataURL(file)
     }
+  }
+
+  function dataURItoBlob(dataURI: string): Blob {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
   }
 
   if (isLoading) return <div>Loading...</div>
