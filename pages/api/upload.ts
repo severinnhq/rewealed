@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (chunkIndex === totalChunks - 1) {
-      // All  chunks received, file is complete
+      // All chunks received, file is complete
       res.status(200).json({ message: 'File uploaded successfully' });
     } else {
       res.status(200).json({ message: 'Chunk received' });
