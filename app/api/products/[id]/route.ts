@@ -6,7 +6,7 @@ import { Product } from '../../../../models/Product'
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   const id = params.id
   try {
     const client = await clientPromise
@@ -55,7 +55,7 @@ export async function PUT(
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   const id = params.id
   try {
     const client = await clientPromise
