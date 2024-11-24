@@ -30,7 +30,7 @@ export default function ProductList() {
         <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-sm">
           <div className="relative w-full h-48 mb-4">
             <Image 
-              src={product.image} 
+              src={product.mainImage} 
               alt={product.name} 
               layout="fill" 
               objectFit="cover" 

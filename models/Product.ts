@@ -1,13 +1,16 @@
 import { ObjectId } from 'mongodb'
 
+export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
+
 export interface Product {
   _id?: ObjectId
   name: string
   description: string
   price: number
-  image: string
+  mainImage: string
+  gallery: string[]
   category?: string
-  size?: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
+  sizes: Size[]
   salePrice?: number
 }
 

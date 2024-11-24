@@ -17,12 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const client = await clientPromise
       const db = client.db("clothingstore")
       
-      const { name, description, price, image, category, size, salePrice } = req.body
+      const { name, description, price, mainImage, gallery, category, sizes, salePrice } = req.body
       
-      console.log('Received product data:', { name, description, price, imageSize: image?.length, category, size, salePrice })
+      console.log('Received product data:', { name, description, price, mainImagePresent: !!mainImage, galleryCount: gallery?.length, category, sizes, salePrice })
 
-      if (!name || !description || typeof price !== 'number' || isNaN(price) || !image) {
-        console.error('Invalid product data:', { name, description, price, imagePresent: !!image })
+      if (!name || !description || typeof price !== 'number' || isNaN(price) || !mainImage) {
+        console.error('Invalid product data:', { name, description, price, mainImagePresent: !!mainImage })
         return res.status(400).json({ message: "Invalid product data" })
       }
 
@@ -30,9 +30,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name,
         description,
         price,
-        image,
+        mainImage,
+        gallery: gallery || [],
+        sizes,
         ...(category && { category }),
-        ...(size && { size }),
         ...(salePrice && { salePrice }),
       }
 

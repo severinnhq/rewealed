@@ -1,21 +1,24 @@
 "use client"
 import React, { useState } from 'react'
-import { Product } from '../models/Product'
+import { Product, Size } from '../models/Product'
+
+const SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export default function ProductUploadForm() {
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
     name: '',
     description: '',
     price: 0,
-    image: '',
+    mainImage: '',
+    gallery: [],
     category: '',
-    size: undefined,
+    sizes: [],
     salePrice: undefined,
   })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     if (name === 'price' || name === 'salePrice') {
       const parsedValue = parseFloat(value)
@@ -25,18 +28,48 @@ export default function ProductUploadForm() {
     }
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSizeChange = (size: Size) => {
+    setProduct(prev => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter(s => s !== size)
+        : [...prev.sizes, size]
+    }))
+  }
+
+  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('Image size should be less than 5MB')
+        setError('Main image size should be less than 5MB')
         return
       }
       const reader = new FileReader()
       reader.onloadend = () => {
-        setProduct(prev => ({ ...prev, image: reader.result as string }))
+        setProduct(prev => ({ ...prev, mainImage: reader.result as string }))
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newImages: string[] = []
+      Array.from(files).forEach(file => {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+          setError('Each gallery image size should be less than 5MB')
+          return
+        }
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          newImages.push(reader.result as string)
+          if (newImages.length === files.length) {
+            setProduct(prev => ({ ...prev, gallery: [...prev.gallery, ...newImages] }))
+          }
+        }
+        reader.readAsDataURL(file)
+      })
     }
   }
 
@@ -60,7 +93,7 @@ export default function ProductUploadForm() {
       }
 
       alert('Product upload complete!')
-      setProduct({ name: '', description: '', price: 0, image: '', category: '', size: undefined, salePrice: undefined })
+      setProduct({ name: '', description: '', price: 0, mainImage: '', gallery: [], category: '', sizes: [], salePrice: undefined })
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {
@@ -129,22 +162,20 @@ export default function ProductUploadForm() {
         />
       </div>
       <div>
-        <label htmlFor="size" className="block text-sm font-medium text-gray-700">Size</label>
-        <select
-          id="size"
-          name="size"
-          value={product.size}
-          onChange={handleInputChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="">Select a size</option>
-          <option value="XS">XS</option>
-          <option value="S">S</option>
-          <option value="M">M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-          <option value="XXL">XXL</option>
-        </select>
+        <label className="block text-sm font-medium text-gray-700">Sizes</label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {SIZES.map(size => (
+            <label key={size} className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={product.sizes.includes(size)}
+                onChange={() => handleSizeChange(size)}
+                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+              <span className="ml-2">{size}</span>
+            </label>
+          ))}
+        </div>
       </div>
       <div>
         <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">Sale Price</label>
@@ -160,17 +191,41 @@ export default function ProductUploadForm() {
         />
       </div>
       <div>
-        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
+        <label htmlFor="mainImage" className="block text-sm font-medium text-gray-700">Main Image</label>
         <input
           type="file"
-          id="image"
-          name="image"
-          onChange={handleImageUpload}
+          id="mainImage"
+          name="mainImage"
+          onChange={handleMainImageUpload}
           accept="image/*"
           required
           className="mt-1 block w-full"
         />
       </div>
+      {product.mainImage && (
+        <div className="mt-2">
+          <img src={product.mainImage} alt="Main product image" className="w-full h-32 object-cover rounded-md" />
+        </div>
+      )}
+      <div>
+        <label htmlFor="gallery" className="block text-sm font-medium text-gray-700">Gallery Images</label>
+        <input
+          type="file"
+          id="gallery"
+          name="gallery"
+          onChange={handleGalleryUpload}
+          accept="image/*"
+          multiple
+          className="mt-1 block w-full"
+        />
+      </div>
+      {product.gallery.length > 0 && (
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {product.gallery.map((image, index) => (
+            <img key={index} src={image} alt={`Gallery image ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+          ))}
+        </div>
+      )}
       <button 
         type="submit" 
         className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
