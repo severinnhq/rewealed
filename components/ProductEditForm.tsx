@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 
-const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 const CATEGORIES = ['Shirts', 'Pants', 'Dresses', 'Accessories', 'Shoes']
 
 interface ProductEditFormProps {

@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { Product } from '../models/Product'
 
-const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 const CATEGORIES = ['Shirts', 'Pants', 'Dresses', 'Accessories', 'Shoes']
 
 export default function ProductUploadForm() {
