@@ -29,15 +29,11 @@ async function getProduct(id: string): Promise<Product | null> {
   return null
 }
 
-type Params = {
-  id: string
-}
-
-type Props = {
-  params: Params
-}
-
-export default async function EditProductPage({ params }: Props) {
+export default async function EditProductPage({
+  params,
+}: {
+  params: { id: string }
+}) {
   const product = await getProduct(params.id)
 
   if (!product) {
