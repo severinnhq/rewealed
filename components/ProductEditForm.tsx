@@ -16,7 +16,11 @@ interface ProductEditFormProps {
 }
 
 export default function ProductEditForm({ product, onSave, onCancel }: ProductEditFormProps) {
-  const [editedProduct, setEditedProduct] = useState<Product>(product)
+  const [editedProduct, setEditedProduct] = useState<Product>({
+    ...product,
+    sizes: product.sizes || [],
+    category: product.category || CATEGORIES[0]
+  })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
