@@ -23,19 +23,40 @@ export default function ProductUploadForm() {
     }
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const scaleFactor = Math.min(1, 1600 / img.width);
+          canvas.width = img.width * scaleFactor;
+          canvas.height = img.height * scaleFactor;
+          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setImageSize(file.size)
-      if (file.size > 20 * 1024 * 1024) { // 20MB limit
-        setError('Image size should be less than 20MB')
-        return
+      try {
+        const compressedImage = await compressImage(file);
+        setProduct(prev => ({ ...prev, image: compressedImage }))
+        const compressedSize = Math.round((compressedImage.length * 3) / 4); // Estimate size of base64 string
+        setImageSize(compressedSize);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        setError('Error processing image. Please try again.');
       }
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProduct(prev => ({ ...prev, image: reader.result as string }))
-      }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -64,7 +85,7 @@ export default function ProductUploadForm() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      alert(response.status === 201 ? 'Product uploaded successfully!' : 'Product upload completed')
+      alert('Product uploaded successfully!')
       setProduct({ name: '', description: '', price: 0, image: '' })
       setImageSize(null)
     } catch (error: unknown) {
