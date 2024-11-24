@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     
     console.log('Received product data:', { name, description, price, salePrice, sizes, category, imageSize: image?.length, gallerySize: gallery?.length })
 
-    if (!name || !description || typeof price !== 'number' || !sizes || !category || !image) {
+    if (!name || !description || !price || !sizes || !category || !image) {
       console.error('Invalid product data:', { name, description, price, salePrice, sizes, category, imagePresent: !!image, galleryPresent: !!gallery })
       return NextResponse.json({ message: "Invalid product data" }, { status: 400 })
     }
@@ -23,8 +23,8 @@ export async function POST(request: Request) {
     const product: Product = {
       name,
       description,
-      price,
-      salePrice,
+      price: parseFloat(price),
+      salePrice: salePrice ? parseFloat(salePrice) : undefined,
       sizes,
       category,
       image,

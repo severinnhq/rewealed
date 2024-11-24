@@ -1,12 +1,11 @@
 "use client"
 import React, { useState } from 'react'
 import { Product } from '../models/Product'
-import { useRouter } from 'next/navigation'
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+const CATEGORIES = ['Shirts', 'Pants', 'Dresses', 'Accessories', 'Shoes']
 
 export default function ProductUploadForm() {
-  const router = useRouter()
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
     name: '',
     description: '',
@@ -108,7 +107,6 @@ export default function ProductUploadForm() {
       alert('Product uploaded successfully!')
       setProduct({ name: '', description: '', price: 0, salePrice: undefined, sizes: [], category: '', image: '', gallery: [] })
       setImageSize(null)
-      router.refresh() // Refresh the page to update the product list
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
       if (error instanceof Error) {
@@ -202,16 +200,19 @@ export default function ProductUploadForm() {
       </div>
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-        <input
-          type="text"
+        <select
           id="category"
           name="category"
           value={product.category}
           onChange={handleInputChange}
           required
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          placeholder="Enter product category"
-        />
+        >
+          <option value="">Select a category</option>
+          {CATEGORIES.map(category => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label htmlFor="image" className="block text-sm font-medium text-gray-700">Main Image</label>
