@@ -27,7 +27,11 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setEditedProduct(prev => {
-      const updatedProduct = { ...prev, [name]: value }
+      let updatedValue: string | number | null = value
+      if (name === 'price' || name === 'salePrice') {
+        updatedValue = value === '' ? null : parseFloat(value)
+      }
+      const updatedProduct = { ...prev, [name]: updatedValue }
       console.log('Updated product state:', updatedProduct)
       return updatedProduct
     })
@@ -150,7 +154,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
           type="number"
           id="salePrice"
           name="salePrice"
-          value={editedProduct.salePrice || ''}
+          value={editedProduct.salePrice ?? ''}
           onChange={handleInputChange}
           min="0"
           step="0.01"

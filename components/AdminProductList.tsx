@@ -82,7 +82,7 @@ export default function AdminProductList() {
                 <p className="text-gray-600 mb-4">{product.description}</p>
                 <div className="flex items-center gap-4 mb-2">
                   <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
-                  {product.salePrice && (
+                  {product.salePrice != null && typeof product.salePrice === 'number' && (
                     <p className="text-sm text-red-600 line-through">${product.salePrice.toFixed(2)}</p>
                   )}
                 </div>

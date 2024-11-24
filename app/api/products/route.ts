@@ -130,7 +130,7 @@ export async function PUT(request: Request) {
       name,
       description,
       price: parseFloat(price),
-      salePrice: salePrice ? parseFloat(salePrice) : undefined,
+      salePrice: salePrice === null ? null : (salePrice ? parseFloat(salePrice) : undefined),
       sizes: sizes || [],
       category,
       image: image || undefined,

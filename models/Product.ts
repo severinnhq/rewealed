@@ -5,7 +5,7 @@ export interface Product {
   name: string
   description: string
   price: number
-  salePrice?: number
+  salePrice?: number | null
   sizes?: string[]
   category?: string
   image: string
