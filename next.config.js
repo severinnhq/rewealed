@@ -2,7 +2,7 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-      domains: ['rewealed.com'], 
+      domains: ['rewealed.com'],
     },
     webpack: (config, { isServer }) => {
       if (!isServer) {
@@ -14,6 +14,7 @@ const nextConfig = {
           crypto: false,
         }
       }
+      config.externals = [...(config.externals || []), 'formidable'];
       return config
     },
   }

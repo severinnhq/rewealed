@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
 
@@ -13,25 +14,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const chunks: Buffer[] = [];
-  req.on('data', (chunk) => {
-    chunks.push(chunk);
-  });
+  try {
+    const form = new formidable.IncomingForm();
+    const [fields, files] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        resolve([fields, files]);
+      });
+    });
 
-  req.on('end', () => {
-    const data = Buffer.concat(chunks);
-    const boundary = req.headers['content-type']?.split('boundary=')[1];
-    if (!boundary) {
-      return res.status(400).json({ message: 'Invalid content type' });
-    }
-    const parts = parseParts(data, boundary);
+    const file = Array.isArray(files.file) ? files.file[0] : files.file;
 
-    const file = parts.find((part) => part.name === 'file');
-    const chunkIndex = parseInt(parts.find((part) => part.name === 'chunk')?.value || '0', 10);
-    const totalChunks = parseInt(parts.find((part) => part.name === 'chunks')?.value || '1', 10);
-
-    if (!file) {
-      return res.status(400).json({ message: 'No file provided' });
+    if (!file || !(file instanceof formidable.File)) {
+      return res.status(400).json({ message: 'No file provided or invalid file type' });
     }
 
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
@@ -39,32 +34,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const filePath = path.join(uploadDir, file.filename || 'unnamed_file');
+    const filePath = path.join(uploadDir, file.originalFilename || 'unnamed_file');
 
-    if (chunkIndex === 0) {
-      fs.writeFileSync(filePath, file.data);
-    } else {
-      fs.appendFileSync(filePath, file.data);
-    }
+    await fs.promises.rename(file.filepath, filePath);
 
-    if (chunkIndex === totalChunks - 1) {
-      // All chunks received, file is complete
-      res.status(200).json({ message: 'File uploaded successfully' });
-    } else {
-      res.status(200).json({ message: 'Chunk received' });
-    }
-  });
-}
-
-function parseParts(data: Buffer, boundary: string) {
-  const parts = data.toString().split(`--${boundary}`);
-  return parts
-    .filter((part) => part.trim() !== '' && part.trim() !== '--')
-    .map((part) => {
-      const [headers, body] = part.split('\r\n\r\n');
-      const name = headers.match(/name="([^"]+)"/)?.[1];
-      const filename = headers.match(/filename="([^"]+)"/)?.[1];
-      return { name, filename, value: body.trim(), data: Buffer.from(body.trim()) };
-    });
+    res.status(200).json({ message: 'File uploaded successfully', fileName: path.basename(filePath) });
+  } catch (error) {
+    console.error('Error handling file:', error);
+    res.status(500).json({ message: 'Error uploading file', error: error instanceof Error ? error.message : 'Unknown error' });
+  }
 }
 

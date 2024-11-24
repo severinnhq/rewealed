@@ -33,7 +33,6 @@ export default function AdminProductsPage() {
         throw new Error('Failed to fetch products')
       }
       const data: Product[] = await response.json()
-      console.log('Fetched products:', data)
       setProducts(data)
     } catch (err) {
       setError('Error fetching products. Please try again later.')
@@ -64,45 +63,47 @@ export default function AdminProductsPage() {
     }
   }
 
-  async function uploadLargeFile(file: File): Promise<string> {
-    const chunkSize = 1024 * 1024; // 1MB chunks
-    const chunks = Math.ceil(file.size / chunkSize);
-    const fileName = `${Date.now()}-${file.name}`;
-    
-    for (let i = 0; i < chunks; i++) {
-      const chunk = file.slice(i * chunkSize, (i + 1) * chunkSize);
-      const formData = new FormData();
-      formData.append('file', chunk, fileName);
-      formData.append('chunk', i.toString());
-      formData.append('chunks', chunks.toString());
+  async function uploadFile(file: File): Promise<string> {
+    const formData = new FormData()
+    formData.append('file', file)
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
 
-      if (!response.ok) {
-        throw new Error('Failed to upload file chunk');
-      }
+    if (!response.ok) {
+      throw new Error('Failed to upload file')
     }
 
-    return `/uploads/${fileName}`;
+    const data = await response.json()
+    return data.fileName
   }
 
   async function updateProduct(product: Product) {
     try {
-      const updatedProduct = {
-        ...product,
-        salePrice: product.salePrice === undefined ? null : product.salePrice,
-        mainImage: product.mainImage.startsWith('data:') 
-          ? await uploadLargeFile(new File([dataURItoBlob(product.mainImage)], 'mainImage.jpg', { type: 'image/jpeg' })) 
-          : product.mainImage,
-        gallery: await Promise.all((product.gallery || []).map(async (img) => 
-          img.startsWith('data:') 
-            ? await uploadLargeFile(new File([dataURItoBlob(img)], 'galleryImage.jpg', { type: 'image/jpeg' }))
-            : img
-        ))
-      };
+      let updatedProduct = { ...product }
+
+      if (product.mainImage && product.mainImage.startsWith('data:')) {
+        const file = dataURItoFile(product.mainImage, 'mainImage.jpg')
+        const uploadedFileName = await uploadFile(file)
+        updatedProduct.mainImage = `/uploads/${uploadedFileName}`
+      }
+
+      if (product.gallery) {
+        const updatedGallery = await Promise.all(
+          product.gallery.map(async (img) => {
+            if (img.startsWith('data:')) {
+              const file = dataURItoFile(img, 'galleryImage.jpg')
+              const uploadedFileName = await uploadFile(file)
+              return `/uploads/${uploadedFileName}`
+            }
+            return img
+          })
+        )
+        updatedProduct.gallery = updatedGallery
+      }
+
       const response = await fetch(`/api/products/${product._id}`, {
         method: 'PUT',
         headers: {
@@ -165,38 +166,37 @@ export default function AdminProductsPage() {
     }
   }
 
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, isMainImage: boolean) {
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, isMainImage: boolean) {
     if (editingProduct && e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      try {
-        const uploadedUrl = await uploadLargeFile(file);
+      const file = e.target.files[0]
+      const reader = new FileReader()
+      reader.onloadend = () => {
         if (isMainImage) {
           setEditingProduct({
             ...editingProduct,
-            mainImage: uploadedUrl,
-          });
+            mainImage: reader.result as string,
+          })
         } else {
           setEditingProduct({
             ...editingProduct,
-            gallery: [...(editingProduct.gallery || []), uploadedUrl],
-          });
+            gallery: [...(editingProduct.gallery || []), reader.result as string],
+          })
         }
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        alert('Failed to upload file. Please try again.');
       }
+      reader.readAsDataURL(file)
     }
   }
 
-  function dataURItoBlob(dataURI: string): Blob {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
+  function dataURItoFile(dataURI: string, fileName: string): File {
+    const arr = dataURI.split(',')
+    const mime = arr[0].match(/:(.*?);/)![1]
+    const bstr = atob(arr[1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n)
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n)
     }
-    return new Blob([ab], { type: mimeString });
+    return new File([u8arr], fileName, { type: mime })
   }
 
   if (isLoading) return <div>Loading...</div>
@@ -339,7 +339,8 @@ export default function AdminProductsPage() {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      className="px
+-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                       Save Changes
                     </button>
