@@ -56,8 +56,8 @@ export default function ProductUploadForm() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json()
-      alert('Product uploaded successfully!')
+      // const data = await response.json() //Removed as per update 1
+      alert('Product upload complete!') //Updated as per update 2
       setProduct({ name: '', description: '', price: 0, image: '' })
     } catch (error: unknown) {
       let errorMessage = 'An unknown error occurred'
