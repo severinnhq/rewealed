@@ -31,9 +31,10 @@ async function getProduct(id: string): Promise<Product | null> {
 
 interface PageProps {
   params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default async function EditProductPage({ params }: PageProps) {
+export default async function EditProductPage({ params, searchParams }: PageProps) {
   const product = await getProduct(params.id)
 
   if (!product) {
