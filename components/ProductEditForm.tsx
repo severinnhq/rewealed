@@ -1,10 +1,12 @@
 "use client"
 import React, { useState } from 'react'
+import Image from 'next/legacy/image'
 import { Product } from '../models/Product'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { X } from 'lucide-react'
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 const CATEGORIES = ['Shirts', 'Pants', 'Dresses', 'Accessories', 'Shoes']
@@ -19,7 +21,8 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
   const [editedProduct, setEditedProduct] = useState<Product>({
     ...product,
     sizes: product.sizes || [],
-    category: product.category || CATEGORIES[0]
+    category: product.category || CATEGORIES[0],
+    gallery: product.gallery || []
   })
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,6 +61,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
         }
       } catch (error) {
         console.error('Error compressing image:', error)
+        setError('Error processing image. Please try again.')
       }
     }
   }
@@ -67,7 +71,7 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
       const reader = new FileReader()
       reader.readAsDataURL(file)
       reader.onload = (event) => {
-        const img = new Image()
+        const img = new window.Image()
         img.src = event.target?.result as string
         img.onload = () => {
           const canvas = document.createElement('canvas')
@@ -81,6 +85,17 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
       }
       reader.onerror = (error) => reject(error)
     })
+  }
+
+  const handleDeleteImage = (index: number) => {
+    setEditedProduct(prev => ({
+      ...prev,
+      gallery: prev.gallery ? prev.gallery.filter((_, i) => i !== index) : []
+    }))
+  }
+
+  const handleDeleteMainImage = () => {
+    setEditedProduct(prev => ({ ...prev, image: '' }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,6 +207,26 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
       </div>
       <div>
         <Label htmlFor="image">Main Image</Label>
+        {editedProduct.image && (
+          <div className="relative w-full h-64 mb-2">
+            <Image
+              src={editedProduct.image}
+              alt="Main product image"
+              layout="fill"
+              objectFit="contain"
+              className="rounded"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={handleDeleteMainImage}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
         <Input
           type="file"
           id="image"
@@ -202,6 +237,28 @@ export default function ProductEditForm({ product, onSave, onCancel }: ProductEd
       </div>
       <div>
         <Label htmlFor="gallery">Gallery Images</Label>
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          {editedProduct.gallery?.map((img, index) => (
+            <div key={index} className="relative h-32">
+              <Image
+                src={img}
+                alt={`Product gallery image ${index + 1}`}
+                layout="fill"
+                objectFit="cover"
+                className="rounded"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="absolute top-1 right-1"
+                onClick={() => handleDeleteImage(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
         <Input
           type="file"
           id="gallery"
