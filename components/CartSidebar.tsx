@@ -54,7 +54,9 @@ export default function CartSidebar() {
         </div>
         {sidebarItems.length > 0 && (
           <div className="mt-6">
-            <Button className="w-full">Proceed to Checkout</Button>
+            <Button className="w-full" onClick={() => window.location.href = '/checkout'}>
+              Proceed to Checkout
+            </Button>
           </div>
         )}
       </SheetContent>
