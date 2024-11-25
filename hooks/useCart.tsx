@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import { Product } from '../models/Product'
 
 interface CartItem {
@@ -35,6 +35,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
+  // Load cart data from local storage on initial render
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cart')
+    const storedSidebarItems = localStorage.getItem('sidebarItems')
+    
+    if (storedCart) {
+      setCart(JSON.parse(storedCart))
+    }
+    if (storedSidebarItems) {
+      setSidebarItems(JSON.parse(storedSidebarItems))
+    }
+  }, [])
+
+  // Update local storage when cart or sidebarItems change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cart', JSON.stringify(cart))
+      localStorage.setItem('sidebarItems', JSON.stringify(sidebarItems))
+    }
+  }, [cart, sidebarItems])
+
   const addToCart = (product: Product) => {
     setCart({ product, selectedSize: null })
     setIsOpen(true)
@@ -50,12 +71,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const addToSidebar = (product: Product, size: string) => {
-    setSidebarItems([...sidebarItems, { product, size }])
+    setSidebarItems(prevItems => [...prevItems, { product, size }])
     setIsSidebarOpen(true)
   }
 
   const removeSidebarItem = (index: number) => {
-    setSidebarItems(sidebarItems.filter((_, i) => i !== index))
+    setSidebarItems(prevItems => prevItems.filter((_, i) => i !== index))
   }
 
   const openSidebar = () => setIsSidebarOpen(true)

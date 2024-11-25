@@ -21,7 +21,7 @@ export default function CartSidebar() {
           <SheetTitle>Cart</SheetTitle>
         </SheetHeader>
         <div className="mt-6 space-y-4">
-          {sidebarItems.map((item, index) => (
+          {sidebarItems && sidebarItems.map((item, index) => (
             <div key={index} className="flex items-center space-x-4 border-b pb-4">
               <div className="relative w-20 h-20">
                 <Image
@@ -42,7 +42,7 @@ export default function CartSidebar() {
             </div>
           ))}
         </div>
-        {sidebarItems.length > 0 && (
+        {sidebarItems && sidebarItems.length > 0 && (
           <div className="mt-6">
             <Button className="w-full">Proceed to Checkout</Button>
           </div>
