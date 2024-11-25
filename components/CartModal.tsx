@@ -5,48 +5,64 @@ import { useCart } from '../hooks/useCart'
 import { Button } from "@/components/ui/button"
 import { X } from 'lucide-react'
 
-export default function CartModal() {
-  const { cart, removeFromCart, isOpen, closeCart } = useCart()
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-  if (!isOpen) return null
+export default function CartModal() {
+  const { cart, removeFromCart, isOpen, closeCart, selectSize } = useCart()
+
+  if (!isOpen || !cart) return null
+
+  const availableSizes = cart.product.sizes || []
 
   return (
-    <div className="fixed bottom-4 right-4 w-80 bg-white border rounded-lg shadow-lg p-4 z-50">
+    <div className="fixed bottom-4 right-4 w-96 bg-white border rounded-lg shadow-lg p-6 z-50">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Cart</h2>
+        <h2 className="text-xl font-semibold">Cart</h2>
         <Button variant="ghost" size="sm" onClick={closeCart}>
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </Button>
       </div>
-      {cart.length === 0 ? (
-        <p>Your cart is empty</p>
-      ) : (
-        <div className="space-y-4">
-          {cart.map((item) => (
-            <div key={item.product._id?.toString()} className="flex items-center space-x-2">
-              <div className="relative w-16 h-16">
-                <Image
-                  src={item.product.image}
-                  alt={item.product.name}
-                  layout="fill"
-                  objectFit="contain"
-                />
-              </div>
-              <div className="flex-grow">
-                <h3 className="text-sm font-medium">{item.product.name}</h3>
-                <p className="text-xs text-gray-500">Size: {item.size}</p>
-                <p className="text-sm">${item.product.price.toFixed(2)}</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.product._id?.toString() || '', item.size)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-          <div className="mt-4">
-            <Button className="w-full">Checkout</Button>
-          </div>
+      <div className="flex items-center space-x-4 mb-4">
+        <div className="relative w-24 h-24">
+          <Image
+            src={cart.product.image}
+            alt={cart.product.name}
+            layout="fill"
+            objectFit="contain"
+          />
         </div>
-      )}
+        <div className="flex-grow">
+          <h3 className="text-lg font-medium">{cart.product.name}</h3>
+          <p className="text-gray-600">${cart.product.price.toFixed(2)}</p>
+        </div>
+      </div>
+      <div className="mb-4">
+        <h4 className="text-sm font-medium mb-2">Select Size:</h4>
+        <div className="flex flex-wrap gap-2">
+          {SIZES.map((size) => (
+            <Button
+              key={size}
+              variant={cart.selectedSize === size ? "default" : "outline"}
+              size="sm"
+              className={`${!availableSizes.includes(size) ? 'line-through opacity-50' : ''}`}
+              onClick={() => availableSizes.includes(size) && selectSize(size)}
+              disabled={!availableSizes.includes(size)}
+            >
+              {size}
+            </Button>
+          ))}
+        </div>
+      </div>
+      <Button 
+        className="w-full" 
+        disabled={!cart.selectedSize}
+        onClick={() => {
+          // Implement checkout logic here
+          alert('Proceeding to checkout...')
+        }}
+      >
+        Checkout
+      </Button>
     </div>
   )
 }

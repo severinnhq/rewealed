@@ -4,38 +4,46 @@ import { Product } from '../models/Product'
 
 interface CartItem {
   product: Product
-  size: string
+  selectedSize: string | null
 }
 
 interface CartContextType {
-  cart: CartItem[]
+  cart: CartItem | null
   addToCart: (product: Product) => void
-  removeFromCart: (productId: string, size: string) => void
+  removeFromCart: () => void
   isOpen: boolean
   openCart: () => void
   closeCart: () => void
+  selectSize: (size: string) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([])
+  const [cart, setCart] = useState<CartItem | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
   const addToCart = (product: Product) => {
-    setCart((prevCart) => [...prevCart, { product, size: product.sizes?.[0] || 'One Size' }])
+    setCart({ product, selectedSize: null })
     setIsOpen(true)
   }
 
-  const removeFromCart = (productId: string, size: string) => {
-    setCart((prevCart) => prevCart.filter((item) => !(item.product._id?.toString() === productId && item.size === size)))
+  const removeFromCart = () => {
+    setCart(null)
+    setIsOpen(false)
   }
 
   const openCart = () => setIsOpen(true)
   const closeCart = () => setIsOpen(false)
 
+  const selectSize = (size: string) => {
+    if (cart) {
+      setCart({ ...cart, selectedSize: size })
+    }
+  }
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, isOpen, openCart, closeCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, isOpen, openCart, closeCart, selectSize }}>
       {children}
     </CartContext.Provider>
   )
