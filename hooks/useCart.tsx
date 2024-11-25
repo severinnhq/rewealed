@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import { Product } from '../models/Product'
 
 interface CartItem {
@@ -37,6 +37,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // Load cart data from local storage on initial render
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cart')
+    const storedSidebarItems = localStorage.getItem('sidebarItems')
+    
+    if (storedCart) {
+      setCart(JSON.parse(storedCart))
+    }
+    if (storedSidebarItems) {
+      setSidebarItems(JSON.parse(storedSidebarItems))
+    }
+  }, [])
+
+  // Update local storage when cart or sidebarItems change
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
+  useEffect(() => {
+    localStorage.setItem('sidebarItems', JSON.stringify(sidebarItems))
+  }, [sidebarItems])
 
   const addToCart = (product: Product) => {
     setCart({ product, selectedSize: null })
