@@ -94,15 +94,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeSidebarItem = (index: number) => {
-    setSidebarItems(prevItems => {
-      const updatedItems = [...prevItems];
-      if (updatedItems[index].quantity > 1) {
-        updatedItems[index].quantity -= 1;
-        return updatedItems;
-      } else {
-        return updatedItems.filter((_, i) => i !== index);
-      }
-    });
+    setSidebarItems(prevItems => prevItems.filter((_, i) => i !== index));
   };
 
   const openSidebar = () => setIsSidebarOpen(true)

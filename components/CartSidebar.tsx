@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 import Image from 'next/legacy/image'
-import { X, Plus, Minus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -16,10 +16,6 @@ export default function CartSidebar() {
 
   const handleIncreaseQuantity = (item: SidebarItem) => {
     addToSidebar(item.product, item.size)
-  }
-
-  const handleDecreaseQuantity = (index: number) => {
-    removeSidebarItem(index)
   }
 
   return (
@@ -44,18 +40,15 @@ export default function CartSidebar() {
                 <p className="text-gray-600">Size: {item.size}</p>
                 <p className="text-gray-600">${item.product.price.toFixed(2)}</p>
                 <div className="flex items-center mt-2">
-                  <Button variant="outline" size="sm" onClick={() => handleDecreaseQuantity(index)}>
-                    <Minus className="h-4 w-4" />
+                  <span className="mr-2">Quantity: {item.quantity}</span>
+                  <Button variant="outline" size="sm" onClick={() => removeSidebarItem(index)}>
+                    Remove
                   </Button>
-                  <span className="mx-2">{item.quantity}</span>
-                  <Button variant="outline" size="sm" onClick={() => handleIncreaseQuantity(item)}>
+                  <Button variant="outline" size="sm" onClick={() => handleIncreaseQuantity(item)} className="ml-2">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => removeSidebarItem(index)}>
-                <X className="h-5 w-5" />
-              </Button>
             </div>
           ))}
         </div>
