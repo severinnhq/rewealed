@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Product } from '../models/Product'
-import { Trash2, Edit, X } from 'lucide-react'
+import { Trash2, Edit } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import ProductEditForm from './ProductEditForm'
 
@@ -43,34 +43,6 @@ export default function AdminProductList() {
     }
   }
 
-  const deleteImage = async (productId: string, imageUrl: string, isMainImage: boolean) => {
-    try {
-      const response = await fetch(`/api/products/image?id=${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ imageUrl, isMainImage }),
-      })
-      if (response.ok) {
-        setProducts(products.map(product => {
-          if (product._id?.toString() === productId) {
-            if (isMainImage) {
-              return { ...product, image: '' }
-            } else {
-              return { ...product, gallery: product.gallery?.filter(img => img !== imageUrl) }
-            }
-          }
-          return product
-        }))
-      } else {
-        throw new Error('Failed to delete image')
-      }
-    } catch (error) {
-      console.error('Error deleting image:', error)
-    }
-  }
-
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
   }
@@ -96,47 +68,14 @@ export default function AdminProductList() {
             />
           ) : (
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-1/3 space-y-4">
-                <div className="relative">
-                  <Image 
-                    src={product.image || '/placeholder.svg'} 
-                    alt={product.name}
-                    width={300}
-                    height={300}
-                    className="rounded object-cover w-full h-[300px]"
-                  />
-                  {product.image && (
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={() => deleteImage(product._id!.toString(), product.image, true)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {product.gallery?.map((img, index) => (
-                    <div key={index} className="relative">
-                      <Image
-                        src={img}
-                        alt={`Gallery image ${index + 1}`}
-                        width={100}
-                        height={100}
-                        className="rounded object-cover w-full h-[100px]"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6"
-                        onClick={() => deleteImage(product._id!.toString(), img, false)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+              <div className="relative w-full md:w-1/4 aspect-square">
+                <Image 
+                  src={product.image} 
+                  alt={product.name}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  className="rounded"
+                />
               </div>
               <div className="flex-grow">
                 <h2 className="text-2xl font-semibold mb-2">{product.name}</h2>
