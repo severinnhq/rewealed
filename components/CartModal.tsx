@@ -8,7 +8,7 @@ import { X } from 'lucide-react'
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export default function CartModal() {
-  const { cart, isOpen, closeCart, selectSize } = useCart()
+  const { cart, isOpen, closeCart, selectSize, addToSidebar } = useCart()
 
   if (!isOpen || !cart) return null
 
@@ -57,11 +57,13 @@ export default function CartModal() {
         className="w-full" 
         disabled={!cart.selectedSize}
         onClick={() => {
-          // Implement checkout logic here
-          alert('Proceeding to checkout...')
+          if (cart.selectedSize) {
+            addToSidebar(cart.product, cart.selectedSize)
+            closeCart()
+          }
         }}
       >
-        Checkout
+        Add
       </Button>
     </div>
   )

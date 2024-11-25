@@ -7,14 +7,24 @@ interface CartItem {
   selectedSize: string | null
 }
 
+interface SidebarItem {
+  product: Product
+  size: string
+}
+
 interface CartContextType {
   cart: CartItem | null
   addToCart: (product: Product) => void
-  removeFromCart: () => void
   isOpen: boolean
   openCart: () => void
   closeCart: () => void
   selectSize: (size: string) => void
+  sidebarItems: SidebarItem[]
+  addToSidebar: (product: Product, size: string) => void
+  removeSidebarItem: (index: number) => void
+  isSidebarOpen: boolean
+  openSidebar: () => void
+  closeSidebar: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -22,15 +32,12 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([])
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const addToCart = (product: Product) => {
     setCart({ product, selectedSize: null })
     setIsOpen(true)
-  }
-
-  const removeFromCart = () => {
-    setCart(null)
-    setIsOpen(false)
   }
 
   const openCart = () => setIsOpen(true)
@@ -42,8 +49,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const addToSidebar = (product: Product, size: string) => {
+    setSidebarItems([...sidebarItems, { product, size }])
+    setIsSidebarOpen(true)
+  }
+
+  const removeSidebarItem = (index: number) => {
+    setSidebarItems(sidebarItems.filter((_, i) => i !== index))
+  }
+
+  const openSidebar = () => setIsSidebarOpen(true)
+  const closeSidebar = () => setIsSidebarOpen(false)
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, isOpen, openCart, closeCart, selectSize }}>
+    <CartContext.Provider 
+      value={{ 
+        cart, 
+        addToCart, 
+        isOpen, 
+        openCart, 
+        closeCart, 
+        selectSize,
+        sidebarItems,
+        addToSidebar,
+        removeSidebarItem,
+        isSidebarOpen,
+        openSidebar,
+        closeSidebar
+      }}
+    >
       {children}
     </CartContext.Provider>
   )

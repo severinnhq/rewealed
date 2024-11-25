@@ -1,5 +1,6 @@
 import ProductList from '../components/ProductList'
 import CartModal from '../components/CartModal'
+import CartSidebar from '../components/CartSidebar'
 import { CartProvider } from '../hooks/useCart'
 
 export default function Home() {
@@ -12,6 +13,7 @@ export default function Home() {
           <ProductList />
         </div>
         <CartModal />
+        <CartSidebar />
       </div>
     </CartProvider>
   )
