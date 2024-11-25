@@ -8,7 +8,7 @@ import { X } from 'lucide-react'
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export default function CartModal() {
-  const { cart, removeFromCart, isOpen, closeCart, selectSize } = useCart()
+  const { cart, isOpen, closeCart, selectSize } = useCart()
 
   if (!isOpen || !cart) return null
 
