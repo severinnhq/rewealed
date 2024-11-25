@@ -1,5 +1,5 @@
 "use client"
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useState, ReactNode } from 'react'
 import { Product } from '../models/Product'
 
 interface CartItem {
@@ -10,7 +10,10 @@ interface CartItem {
 interface SidebarItem {
   product: Product
   size: string
+  quantity: number
 }
+
+export type { SidebarItem };
 
 interface CartContextType {
   cart: CartItem | null
@@ -35,27 +38,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  // Load cart data from local storage on initial render
-  useEffect(() => {
-    const storedCart = localStorage.getItem('cart')
-    const storedSidebarItems = localStorage.getItem('sidebarItems')
-    
-    if (storedCart) {
-      setCart(JSON.parse(storedCart))
-    }
-    if (storedSidebarItems) {
-      setSidebarItems(JSON.parse(storedSidebarItems))
-    }
-  }, [])
-
-  // Update local storage when cart or sidebarItems change
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cart', JSON.stringify(cart))
-      localStorage.setItem('sidebarItems', JSON.stringify(sidebarItems))
-    }
-  }, [cart, sidebarItems])
-
   const addToCart = (product: Product) => {
     setCart({ product, selectedSize: null })
     setIsOpen(true)
@@ -71,13 +53,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const addToSidebar = (product: Product, size: string) => {
-    setSidebarItems(prevItems => [...prevItems, { product, size }])
-    setIsSidebarOpen(true)
-  }
+    setSidebarItems(prevItems => {
+      const existingItemIndex = prevItems.findIndex(
+        item => item.product._id === product._id && item.size === size
+      );
+      
+      if (existingItemIndex > -1) {
+        // If the item already exists, increase its quantity
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex].quantity += 1;
+        return updatedItems;
+      } else {
+        // If it's a new item, add it with quantity 1
+        return [...prevItems, { product, size, quantity: 1 }];
+      }
+    });
+    setIsSidebarOpen(true);
+  };
 
   const removeSidebarItem = (index: number) => {
-    setSidebarItems(prevItems => prevItems.filter((_, i) => i !== index))
-  }
+    setSidebarItems(prevItems => {
+      const updatedItems = [...prevItems];
+      if (updatedItems[index].quantity > 1) {
+        updatedItems[index].quantity -= 1;
+        return updatedItems;
+      } else {
+        return updatedItems.filter((_, i) => i !== index);
+      }
+    });
+  };
 
   const openSidebar = () => setIsSidebarOpen(true)
   const closeSidebar = () => setIsSidebarOpen(false)
