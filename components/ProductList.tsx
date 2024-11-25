@@ -1,10 +1,13 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import { Product } from '../models/Product'
+import { Button } from "@/components/ui/button"
+import { useCart } from '../hooks/useCart'
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
+  const { addToCart } = useCart()
 
   useEffect(() => {
     fetchProducts()
@@ -27,13 +30,13 @@ export default function ProductList() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {products.map((product) => (
-        <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-sm flex flex-col">
+        <div key={product._id?.toString()} className="border rounded-lg p-4 shadow-sm flex flex-col group relative">
           <div className="relative w-full pb-[100%] mb-4">
             <Image 
               src={product.image} 
               alt={product.name}
-              fill
-              style={{ objectFit: 'contain' }}
+              layout="fill"
+              objectFit="contain"
               className="rounded"
             />
           </div>
@@ -43,6 +46,11 @@ export default function ProductList() {
             {product.salePrice && (
               <p className="text-sm text-red-600 line-through">${product.salePrice.toFixed(2)}</p>
             )}
+          </div>
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Button onClick={() => addToCart(product)} className="bg-white text-black hover:bg-gray-200">
+              Add to Cart
+            </Button>
           </div>
         </div>
       ))}
