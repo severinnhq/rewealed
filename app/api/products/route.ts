@@ -5,13 +5,17 @@ export async function POST(request: Request) {
   try {
     const client = await clientPromise
     const db = client.db("webstore")
-    const { name, description, price, image } = await request.json()
+    const { name, description, price, salePrice, mainImage, category, sizes, galleryImages } = await request.json()
 
     const product = {
       name,
       description,
       price,
-      image,
+      salePrice,
+      mainImage,
+      category,
+      sizes,
+      galleryImages,
       createdAt: new Date(),
     }
 
