@@ -173,12 +173,14 @@ export default function ProductList() {
       threshold: 0.1
     })
 
-    productRefs.current.forEach((ref) => {
+    const currentProductRefs = productRefs.current
+
+    currentProductRefs.forEach((ref) => {
       if (ref) observer.observe(ref)
     })
 
     return () => {
-      productRefs.current.forEach((ref) => {
+      currentProductRefs.forEach((ref) => {
         if (ref) observer.unobserve(ref)
       })
     }
