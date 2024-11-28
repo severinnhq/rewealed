@@ -27,8 +27,8 @@ export default function AdminPage() {
   const fetchProducts = async () => {
     const response = await fetch('/api/products')
     if (response.ok) {
-      const data = await response.json()
-      setProducts(data.map((product: any) => ({
+      const data: Product[] = await response.json()
+      setProducts(data.map((product) => ({
         ...product,
         price: Number(product.price) || 0,
         salePrice: product.salePrice ? Number(product.salePrice) || 0 : undefined

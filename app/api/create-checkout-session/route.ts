@@ -5,13 +5,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 })
 
+interface CartItem {
+  product: {
+    _id: string
+    name: string
+    price: number
+    salePrice?: number
+    mainImage: string
+  }
+  size: string
+  quantity: number
+}
+
 export async function POST(request: NextRequest) {
-  const cartItems = await request.json()
+  const cartItems: CartItem[] = await request.json()
 
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: cartItems.map((item: any) => ({
+      line_items: cartItems.map((item) => ({
         price_data: {
           currency: 'usd',
           product_data: {
@@ -30,9 +42,9 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ sessionId: session.id })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'An unknown error occurred' }, { status: 500 })
   }
 }
 
