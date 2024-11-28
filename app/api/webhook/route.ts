@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
 
       try {
         await saveOrderToDatabase(session)
+        console.log('Order saved successfully')
       } catch (err) {
         console.error('Error saving order to database:', err)
         return NextResponse.json({ error: 'Error saving order' }, { status: 500 })
@@ -52,6 +53,7 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
 
   const cartItemsSummary = JSON.parse(session.metadata?.cartItemsSummary || '[]') as CompactCartItem[]
   const shippingDetails = session.shipping_details
+  const customerDetails = session.customer_details
 
   // Fetch full product details from the database
   const productIds = cartItemsSummary.map(item => item.id)
@@ -70,7 +72,8 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
 
   const order = {
     stripeSessionId: session.id,
-    customerEmail: session.customer_details?.email,
+    customerEmail: customerDetails?.email,
+    customerName: customerDetails?.name,
     orderItems,
     shippingAddress: {
       name: shippingDetails?.name,
@@ -83,13 +86,28 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
         country: shippingDetails?.address?.country,
       },
     },
+    billingAddress: {
+      name: session.customer_details?.name,
+      address: {
+        line1: session.customer_details?.address?.line1,
+        line2: session.customer_details?.address?.line2,
+        city: session.customer_details?.address?.city,
+        state: session.customer_details?.address?.state,
+        postalCode: session.customer_details?.address?.postal_code,
+        country: session.customer_details?.address?.country,
+      },
+    },
     totalAmount: session.amount_total ? session.amount_total / 100 : 0,
     currency: session.currency,
     paymentStatus: session.payment_status,
-    createdAt: new Date(),
+    paymentMethod: session.payment_method_types?.[0],
+    orderDate: new Date(),
   }
 
-  await db.collection("orders").insertOne(order)
+  const result = await db.collection("orders").insertOne(order)
+  console.log(`Order inserted with ID: ${result.insertedId}`)
+
+  return result
 }
 
 export const config = {

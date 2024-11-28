@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia' as const,
+  apiVersion: '2024-11-20.acacia',
 })
 
 interface CartItem {
@@ -50,8 +50,10 @@ export async function POST(request: NextRequest) {
     // Create a compact version of cart items for metadata
     const compactCartItems = cartItems.map(item => ({
       id: item.product._id,
+      name: item.product.name,
       size: item.size,
-      quantity: item.quantity
+      quantity: item.quantity,
+      price: item.product.salePrice || item.product.price
     }))
 
     const session = await stripe.checkout.sessions.create({
