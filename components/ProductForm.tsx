@@ -22,7 +22,7 @@ interface ProductFormProps {
   onCancel?: () => void
 }
 
-const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+const availableSizes = ['One Size', 'XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormProps) {
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
@@ -144,7 +144,7 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
               type="button"
               onClick={() => handleSizeToggle(size)}
               variant={product.sizes.includes(size) ? "default" : "outline"}
-              className="w-12 h-12 rounded-full"
+              className={size === 'One Size' ? "w-24 h-12 rounded-md" : "w-12 h-12 rounded-full"}
             >
               {size}
             </Button>

@@ -2,20 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Force white background and dark text */
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: white !important;
+  color: black !important;
 }
+
+/* Ensure all cards have a white background */
+.bg-card {
+  background-color: white !important;
+}
+
+/* Adjust text colors for better contrast on white */
+.text-card-foreground {
+  color: black !important;
+}
+
+.text-muted-foreground {
+  color: #555 !important;
+}
+

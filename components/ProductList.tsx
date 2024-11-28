@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import CartModal from "@/components/CartModal"
 import Sidebar from "@/components/Sidebar"
 import { loadStripe } from '@stripe/stripe-js'
+import { Header } from './Header'
 
 interface Product {
   _id: string
@@ -25,34 +26,13 @@ interface CartItem {
   quantity: number
 }
 
-export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [selectedImages, setSelectedImages] = useState<Record<string, string>>({})
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
-  const [cartProduct, setCartProduct] = useState<Product | null>(null)
+function useCart() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-
-  // Add this function after the other state declarations
-  const clearCart = () => {
-    setCartItems([])
-    localStorage.removeItem('cartItems')
-  }
 
   useEffect(() => {
-    async function fetchProducts() {
-      const response = await fetch('/api/products')
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data)
-      }
-    }
-    fetchProducts()
-
     const savedCartItems = localStorage.getItem('cartItems')
     if (savedCartItems) {
       setCartItems(JSON.parse(savedCartItems))
-      setIsSidebarOpen(true)
     }
   }, [])
 
@@ -60,12 +40,51 @@ export default function ProductList() {
     localStorage.setItem('cartItems', JSON.stringify(cartItems))
   }, [cartItems])
 
-  const handleImageSelect = (productId: string, image: string | null) => {
-    setSelectedImages(prev => ({
-      ...prev,
-      [productId]: image || ''
-    }))
-  }
+  const addToCart = useCallback((product: Product, size: string) => {
+    setCartItems(prev => {
+      const existingItemIndex = prev.findIndex(
+        item => item.product._id === product._id && item.size === size
+      );
+      if (existingItemIndex > -1) {
+        return prev.map((item, index) => 
+          index === existingItemIndex 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prev, { product, size, quantity: 1 }];
+      }
+    });
+  }, []);
+
+  const removeFromCart = useCallback((index: number) => {
+    setCartItems(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const updateQuantity = useCallback((index: number, newQuantity: number) => {
+    setCartItems(prev => {
+      const newItems = [...prev];
+      newItems[index].quantity = newQuantity;
+      return newItems;
+    });
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+    localStorage.removeItem('cartItems');
+  }, []);
+
+  return { cartItems, addToCart, removeFromCart, updateQuantity, clearCart };
+}
+
+export default function ProductList() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [cartProduct, setCartProduct] = useState<Product | null>(null)
+  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
+  const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
+  const productRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const handleAddToCart = (product: Product) => {
     setIsSidebarOpen(false)
@@ -78,41 +97,23 @@ export default function ProductList() {
 
   const handleConfirmAddToCart = (size: string) => {
     if (cartProduct) {
-      setCartItems(prev => {
-        const existingItemIndex = prev.findIndex(
-          item => item.product._id === cartProduct._id && item.size === size
-        );
-        if (existingItemIndex > -1) {
-          return prev.map((item, index) => 
-            index === existingItemIndex 
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          );
-        } else {
-          return [...prev, { product: cartProduct, size, quantity: 1 }];
-        }
-      });
+      addToCart(cartProduct, size);
       setCartProduct(null);
       setIsSidebarOpen(true);
     }
   };
 
   const handleRemoveCartItem = (index: number) => {
-    setCartItems(prev => prev.filter((_, i) => i !== index));
+    removeFromCart(index);
     if (cartItems.length === 1) {
       setIsSidebarOpen(false);
     }
   }
 
   const handleUpdateQuantity = (index: number, newQuantity: number) => {
-    setCartItems(prev => {
-      const newItems = [...prev];
-      newItems[index].quantity = newQuantity;
-      return newItems;
-    });
+    updateQuantity(index, newQuantity);
   }
 
-  // Update the handleCheckout function
   const handleCheckout = async () => {
     const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -134,116 +135,139 @@ export default function ProductList() {
         if (result?.error) {
           console.error('Stripe redirect error:', result.error)
         } else {
-          // Clear the cart after successful checkout
           clearCart()
         }
       } else {
         const errorData = await response.json()
         console.error('Failed to create checkout session:', errorData)
-        // Display error to the user
         alert(`Checkout failed: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      // Display error to the user
       alert(`Checkout error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
+  useEffect(() => {
+    async function fetchProducts() {
+      const response = await fetch('/api/products')
+      if (response.ok) {
+        const data = await response.json()
+        setProducts(data)
+      }
+    }
+    fetchProducts()
+  }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const productId = entry.target.id
+          setVisibleProducts((prev) => new Set(prev).add(productId))
+        }
+      })
+    }, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    })
+
+    productRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref)
+    })
+
+    return () => {
+      productRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref)
+      })
+    }
+  }, [products])
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Our Products</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {products.map((product) => (
-          <div 
-            key={product._id} 
-            className="border rounded p-4 relative group"
-            onMouseEnter={() => setHoveredProduct(product._id)}
-            onMouseLeave={() => setHoveredProduct(null)}
-          >
-            <div className="relative aspect-square mb-2">
-              <Image
-                src={`/uploads/${selectedImages[product._id] || product.mainImage}`}
-                alt={product.name}
-                fill
-                className="object-cover rounded"
-              />
-              {hoveredProduct === product._id && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300">
+    <>
+      <Header cartItems={cartItems} onCartClick={() => setIsSidebarOpen(true)} />
+      <div className="container mx-auto p-4">
+        <h2 className="text-3xl font-bold mb-8">Our Products</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {products.map((product, index) => (
+            <div 
+              key={product._id}
+              id={product._id}
+              ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
+              className={`rounded-lg overflow-hidden shadow-sm bg-white relative group transition-opacity duration-500 ease-in-out ${
+                visibleProducts.has(product._id) ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <div 
+                className="relative aspect-square overflow-hidden bg-gray-100"
+                onMouseEnter={() => setHoveredProduct(product._id)} 
+                onMouseLeave={() => setHoveredProduct(null)}
+              >
+                <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+                  hoveredProduct === product._id ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}>
+                  <Image
+                    src={`/uploads/${product.mainImage}`}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                {product.galleryImages.length > 0 && (
+                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+                    hoveredProduct === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  }`}>
+                    <Image
+                      src={`/uploads/${product.galleryImages[0]}`}
+                      alt={`${product.name} - Gallery`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="absolute bottom-4 right-4 transform translate-y-1/4 transition-all duration-300 ease-out group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
                   <Button 
                     onClick={() => handleAddToCart(product)}
-                    className="bg-white text-black hover:bg-gray-200"
+                    className="bg-black text-white hover:bg-gray-800 text-sm py-1 px-3"
                   >
-                    Add to Cart
+                    <span className="font-bold">+ Add to Cart</span>
                   </Button>
                 </div>
-              )}
-            </div>
-            {product.galleryImages && product.galleryImages.length > 0 && (
-              <div className="flex gap-2 mb-2 overflow-x-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleImageSelect(product._id, null)}
-                  className="flex-shrink-0"
-                >
-                  Main
-                </Button>
-                {product.galleryImages.map((image, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleImageSelect(product._id, image)}
-                    className="flex-shrink-0"
-                  >
-                    {index + 1}
-                  </Button>
-                ))}
               </div>
-            )}
-            <h2 className="text-xl font-semibold">{product.name}</h2>
-            <p className="text-gray-600">{product.description}</p>
-            <p className="text-sm text-gray-500 mt-1">Category: {product.category}</p>
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {product.sizes.map((size) => (
-                  <span key={size} className="px-2 py-1 bg-gray-200 rounded text-sm">
-                    {size}
-                  </span>
-                ))}
+              <div className="p-4">
+                <h2 className="text-xl font-semibold text-black">{product.name}</h2>
+                <div className="mt-2">
+                  {product.salePrice ? (
+                    <>
+                      <span className="text-lg font-bold text-red-600">${product.salePrice.toFixed(2)}</span>
+                      <span className="text-sm text-gray-500 line-through ml-2">${product.price.toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold text-black">${product.price.toFixed(2)}</span>
+                  )}
+                </div>
               </div>
-            )}
-            <div className="mt-2">
-              {product.salePrice ? (
-                <>
-                  <span className="text-lg font-bold text-red-600">${product.salePrice.toFixed(2)}</span>
-                  <span className="text-sm text-gray-500 line-through ml-2">${product.price.toFixed(2)}</span>
-                </>
-              ) : (
-                <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-              )}
             </div>
-          </div>
-        ))}
-      </div>
-      {cartProduct && (
-        <CartModal 
-          product={cartProduct} 
-          onClose={handleCloseModal} 
-          onAddToCart={handleConfirmAddToCart} 
-        />
-      )}
-      {isSidebarOpen && (
+          ))}
+        </div>
+        {cartProduct && (
+          <CartModal 
+            product={cartProduct} 
+            onClose={handleCloseModal} 
+            onAddToCart={handleConfirmAddToCart} 
+          />
+        )}
         <Sidebar 
+          isOpen={isSidebarOpen}
           cartItems={cartItems} 
           onClose={() => setIsSidebarOpen(false)} 
           onRemoveItem={handleRemoveCartItem}
           onUpdateQuantity={handleUpdateQuantity}
           onCheckout={handleCheckout}
         />
-      )}
-    </div>
+      </div>
+    </>
   )
 }
 

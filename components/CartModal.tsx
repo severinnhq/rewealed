@@ -22,7 +22,10 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
 
   const handleAddToCart = () => {
-    if (selectedSize) {
+    if (product.sizes.includes('One Size')) {
+      onAddToCart('One Size')
+      onClose()
+    } else if (selectedSize) {
       onAddToCart(selectedSize)
       onClose()
     }
@@ -60,25 +63,35 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
       <div className="mb-4">
         <p className="text-sm font-semibold mb-2">Select Size:</p>
         <div className="flex flex-wrap gap-2">
-          {allSizes.map((size) => {
-            const isAvailable = product.sizes.includes(size)
-            return (
-              <Button
-                key={size}
-                variant={selectedSize === size ? "default" : "outline"}
-                className={`w-10 h-10 p-0 ${!isAvailable && "line-through opacity-50"}`}
-                onClick={() => isAvailable && setSelectedSize(size)}
-                disabled={!isAvailable}
-              >
-                {size}
-              </Button>
-            )
-          })}
+          {product.sizes.includes('One Size') ? (
+            <Button
+              variant="default"
+              className="w-24 h-12 bg-white text-black border-gray-300"
+              onClick={() => setSelectedSize('One Size')}
+            >
+              One Size
+            </Button>
+          ) : (
+            allSizes.map((size) => {
+              const isAvailable = product.sizes.includes(size)
+              return (
+                <Button
+                  key={size}
+                  variant={selectedSize === size ? "default" : "outline"}
+                  className={`${size === 'One Size' ? "w-24 h-12" : "w-10 h-10"} p-0 ${!isAvailable && "line-through opacity-50"} bg-white text-black border-gray-300`}
+                  onClick={() => isAvailable && setSelectedSize(size)}
+                  disabled={!isAvailable}
+                >
+                  {size}
+                </Button>
+              )
+            })
+          )}
         </div>
       </div>
       <Button 
         className="w-full" 
-        disabled={!selectedSize}
+        disabled={!selectedSize && !product.sizes.includes('One Size')}
         onClick={handleAddToCart}
       >
         Add to Cart
