@@ -1,6 +1,9 @@
 import { X, Plus, Minus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+// import { useRouter } from 'next/navigation'
+// import { loadStripe } from '@stripe/stripe-js'
 
 interface CartItem {
   product: {
@@ -19,18 +22,21 @@ interface SidebarProps {
   onClose: () => void
   onRemoveItem: (index: number) => void
   onUpdateQuantity: (index: number, newQuantity: number) => void
-  onCheckout: () => void
+  onCheckout: () => Promise<void>
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ cartItems, onClose, onRemoveItem, onUpdateQuantity, onCheckout }) => {
-  const totalPrice = cartItems.reduce((total, item) => {
-    const itemPrice = item.product.salePrice || item.product.price
-    return total + itemPrice * item.quantity
-  }, 0)
+  const [isLoading, setIsLoading] = useState(false)
+  // const router = useRouter()
+
+  const handleCheckout = () => {
+    setIsLoading(true)
+    onCheckout().finally(() => setIsLoading(false))
+  }
 
   return (
-    <div className="fixed top-0 right-0 h-full w-96 bg-white shadow-lg z-50 overflow-y-auto flex flex-col">
-      <div className="p-4 flex-grow">
+    <div className="fixed top-0 right-0 h-full w-96 bg-white shadow-lg z-50 overflow-y-auto">
+      <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Cart</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -80,16 +86,17 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, onClose, onRemoveItem, onU
             ))}
           </div>
         )}
-      </div>
-      <div className="p-4 border-t">
-        <p className="text-xl font-bold mb-4">Total: ${totalPrice.toFixed(2)}</p>
-        <Button 
-          className="w-full" 
-          onClick={onCheckout}
-          disabled={cartItems.length === 0}
-        >
-          Proceed to Checkout
-        </Button>
+        {cartItems.length > 0 && (
+          <div className="mt-4">
+            <Button
+              onClick={handleCheckout}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? 'Processing...' : 'Checkout'}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

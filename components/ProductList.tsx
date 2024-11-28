@@ -7,8 +7,6 @@ import CartModal from "@/components/CartModal"
 import Sidebar from "@/components/Sidebar"
 import { loadStripe } from '@stripe/stripe-js'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-
 interface Product {
   _id: string
   name: string
@@ -109,27 +107,27 @@ export default function ProductList() {
   }
 
   const handleCheckout = async () => {
-    const stripe = await stripePromise;
-    if (!stripe) return;
+    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ cartItems }),
-    });
+      body: JSON.stringify(cartItems),
+    })
 
-    const { sessionId } = await response.json();
+    if (response.ok) {
+      const { sessionId } = await response.json()
+      const result = await stripe?.redirectToCheckout({ sessionId })
 
-    const result = await stripe.redirectToCheckout({
-      sessionId,
-    });
-
-    if (result.error) {
-      console.error(result.error.message);
+      if (result?.error) {
+        console.error(result.error)
+      }
+    } else {
+      console.error('Failed to create checkout session')
     }
-  };
+  }
 
   return (
     <div className="container mx-auto p-4">

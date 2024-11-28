@@ -1,22 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-11-20.acacia',
+  apiVersion: '2024-11-20.acacia',
 })
 
-// Helper function to get the correct base URL for images
-function getImageBaseUrl() {
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000'
-  }
-  // For production on rewealed.com
-  return 'https://rewealed.com'
-}
-
-export async function POST(request: Request) {
-  const { cartItems } = await request.json()
-  const baseUrl = getImageBaseUrl()
+export async function POST(request: NextRequest) {
+  const cartItems = await request.json()
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -26,9 +16,7 @@ export async function POST(request: Request) {
           currency: 'usd',
           product_data: {
             name: item.product.name,
-            // Use absolute URLs that are publicly accessible
-            images: [`${baseUrl}/uploads/${item.product.mainImage}`],
-            description: `Size: ${item.size}`,
+            images: [`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${item.product.mainImage}`],
           },
           unit_amount: item.product.salePrice 
             ? Math.round(item.product.salePrice * 100)
@@ -37,16 +25,13 @@ export async function POST(request: Request) {
         quantity: item.quantity,
       })),
       mode: 'payment',
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA'],
-      },
-      success_url: `${baseUrl}/success`,
-      cancel_url: `${baseUrl}/cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
     })
 
     return NextResponse.json({ sessionId: session.id })
   } catch (err: any) {
-    console.error('Stripe session creation error:', err)
+    console.error(err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
