@@ -8,6 +8,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
+interface CartItem {
+  product: {
+    _id: string
+    name: string
+    price: number
+    salePrice?: number
+    mainImage: string
+  }
+  size: string
+  quantity: number
+}
+
+interface ParsedMetadata {
+  cartItems: CartItem[]
+}
+
 export async function POST(req: NextRequest) {
   if (req.method === 'POST') {
     const body = await req.text()
@@ -43,10 +59,11 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
   const client = await clientPromise
   const db = client.db("webstore")
 
-  const cartItems = JSON.parse(session.metadata?.cartItems || '[]')
+  const metadata = session.metadata as unknown as ParsedMetadata
+  const cartItems = metadata.cartItems || []
   const shippingDetails = session.shipping_details
 
-  const orderItems = cartItems.map((item: any) => ({
+  const orderItems = cartItems.map((item: CartItem) => ({
     productId: item.product._id,
     name: item.product.name,
     price: item.product.salePrice || item.product.price,
