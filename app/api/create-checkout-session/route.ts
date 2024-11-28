@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
           currency: 'usd',
           product_data: {
             name: item.product.name,
-            images: [`${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${item.product.mainImage}`],
+            images: [`${process.env.NEXT_PUBLIC_BASE_URL}/api/product-image?filename=${encodeURIComponent(item.product.mainImage)}`],
           },
           unit_amount: item.product.salePrice 
             ? Math.round(item.product.salePrice * 100)

@@ -6,7 +6,7 @@ const nextConfig = {
     async headers() {
       return [
         {
-          source: '/uploads/:path*',
+          source: '/api/product-image',
           headers: [
             { key: 'Access-Control-Allow-Origin', value: '*' },
           ],
