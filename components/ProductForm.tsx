@@ -3,15 +3,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { X } from 'lucide-react'
-
-const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-interface ProductFormProps {
-  initialProduct?: Product
-  onSubmit: (product: Omit<Product, '_id'>) => void
-  onCancel?: () => void
-}
 
 interface Product {
   _id?: string
@@ -24,6 +15,14 @@ interface Product {
   sizes: string[]
   galleryImages: string[]
 }
+
+interface ProductFormProps {
+  initialProduct?: Product
+  onSubmit: (product: Omit<Product, '_id'>) => void
+  onCancel?: () => void
+}
+
+const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormProps) {
   const [product, setProduct] = useState<Omit<Product, '_id'>>({
@@ -40,7 +39,10 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setProduct(prev => ({ ...prev, [name]: value }))
+    setProduct(prev => ({
+      ...prev,
+      [name]: name === 'price' || name === 'salePrice' ? Number(value) || 0 : value,
+    }))
   }
 
   const handleSizeToggle = (size: string) => {
@@ -52,21 +54,15 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
     }))
   }
 
-  const handleAddGalleryImage = () => {
-    if (newGalleryImage) {
-      setProduct(prev => ({
-        ...prev,
-        galleryImages: [...prev.galleryImages, newGalleryImage]
-      }))
+  const handleGalleryImageAdd = () => {
+    if (newGalleryImage && !product.galleryImages.includes(newGalleryImage)) {
+      setProduct(prev => ({ ...prev, galleryImages: [...prev.galleryImages, newGalleryImage] }))
       setNewGalleryImage('')
     }
   }
 
-  const handleRemoveGalleryImage = (index: number) => {
-    setProduct(prev => ({
-      ...prev,
-      galleryImages: prev.galleryImages.filter((_, i) => i !== index)
-    }))
+  const handleGalleryImageRemove = (image: string) => {
+    setProduct(prev => ({ ...prev, galleryImages: prev.galleryImages.filter(img => img !== image) }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -75,71 +71,74 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="name" className="text-lg font-semibold">Product Name</Label>
+        <Label htmlFor="name">Name</Label>
         <Input
           id="name"
           name="name"
           value={product.name}
           onChange={handleChange}
           required
-          className="mt-1"
         />
       </div>
       <div>
-        <Label htmlFor="description" className="text-lg font-semibold">Description</Label>
+        <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           name="description"
           value={product.description}
           onChange={handleChange}
           required
-          className="mt-1"
         />
       </div>
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <Label htmlFor="price" className="text-lg font-semibold">Price</Label>
-          <Input
-            type="number"
-            id="price"
-            name="price"
-            value={product.price}
-            onChange={handleChange}
-            required
-            step="0.01"
-            className="mt-1"
-          />
-        </div>
-        <div className="flex-1">
-          <Label htmlFor="salePrice" className="text-lg font-semibold">Sale Price (optional)</Label>
-          <Input
-            type="number"
-            id="salePrice"
-            name="salePrice"
-            value={product.salePrice || ''}
-            onChange={handleChange}
-            step="0.01"
-            className="mt-1"
-          />
-        </div>
+      <div>
+        <Label htmlFor="price">Price</Label>
+        <Input
+          type="number"
+          id="price"
+          name="price"
+          value={product.price}
+          onChange={handleChange}
+          required
+          step="0.01"
+        />
       </div>
       <div>
-        <Label htmlFor="category" className="text-lg font-semibold">Category</Label>
+        <Label htmlFor="salePrice">Sale Price (optional)</Label>
+        <Input
+          type="number"
+          id="salePrice"
+          name="salePrice"
+          value={product.salePrice || ''}
+          onChange={handleChange}
+          step="0.01"
+        />
+      </div>
+      <div>
+        <Label htmlFor="mainImage">Main Image</Label>
+        <Input
+          id="mainImage"
+          name="mainImage"
+          value={product.mainImage}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="category">Category</Label>
         <Input
           id="category"
           name="category"
           value={product.category}
           onChange={handleChange}
           required
-          className="mt-1"
         />
       </div>
       <div>
-        <Label className="text-lg font-semibold">Sizes</Label>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {sizes.map((size) => (
+        <Label>Sizes</Label>
+        <div className="flex flex-wrap gap-2">
+          {availableSizes.map((size) => (
             <Button
               key={size}
               type="button"
@@ -153,41 +152,26 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
         </div>
       </div>
       <div>
-        <Label htmlFor="mainImage" className="text-lg font-semibold">Main Image Filename</Label>
-        <Input
-          id="mainImage"
-          name="mainImage"
-          value={product.mainImage}
-          onChange={handleChange}
-          required
-          className="mt-1"
-        />
-      </div>
-      <div>
-        <Label htmlFor="galleryImage" className="text-lg font-semibold">Gallery Images</Label>
-        <div className="flex gap-2 mt-1">
+        <Label>Gallery Images</Label>
+        <div className="flex gap-2 mb-2">
           <Input
-            id="galleryImage"
             value={newGalleryImage}
             onChange={(e) => setNewGalleryImage(e.target.value)}
-            placeholder="Enter image filename"
+            placeholder="Add image URL"
           />
-          <Button type="button" onClick={handleAddGalleryImage}>
-            Add Image
-          </Button>
+          <Button type="button" onClick={handleGalleryImageAdd}>Add</Button>
         </div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {product.galleryImages.map((image, index) => (
-            <div key={index} className="flex items-center gap-2 bg-gray-100 p-2 rounded">
+        <div className="flex flex-wrap gap-2">
+          {product.galleryImages.map((image) => (
+            <div key={image} className="bg-gray-100 px-2 py-1 rounded flex items-center">
               <span>{image}</span>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleRemoveGalleryImage(index)}
+                onClick={() => handleGalleryImageRemove(image)}
+                className="ml-2 text-red-500"
               >
-                <X className="h-4 w-4" />
-              </Button>
+                &times;
+              </button>
             </div>
           ))}
         </div>

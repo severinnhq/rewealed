@@ -28,7 +28,11 @@ export default function AdminPage() {
     const response = await fetch('/api/products')
     if (response.ok) {
       const data = await response.json()
-      setProducts(data)
+      setProducts(data.map((product: any) => ({
+        ...product,
+        price: Number(product.price) || 0,
+        salePrice: product.salePrice ? Number(product.salePrice) || 0 : undefined
+      })))
     }
   }
 
