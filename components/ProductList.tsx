@@ -12,8 +12,8 @@ interface Product {
   salePrice?: number
   mainImage: string
   category: string
-  sizes?: string[]
-  galleryImages?: string[]
+  sizes: string[]
+  galleryImages: string[]
 }
 
 export default function ProductList() {
