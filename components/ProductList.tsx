@@ -33,6 +33,12 @@ export default function ProductList() {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
+  // Add this function after the other state declarations
+  const clearCart = () => {
+    setCartItems([])
+    localStorage.removeItem('cartItems')
+  }
+
   useEffect(() => {
     async function fetchProducts() {
       const response = await fetch('/api/products')
@@ -106,6 +112,7 @@ export default function ProductList() {
     });
   }
 
+  // Update the handleCheckout function
   const handleCheckout = async () => {
     const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -126,6 +133,9 @@ export default function ProductList() {
 
         if (result?.error) {
           console.error('Stripe redirect error:', result.error)
+        } else {
+          // Clear the cart after successful checkout
+          clearCart()
         }
       } else {
         const errorData = await response.json()
