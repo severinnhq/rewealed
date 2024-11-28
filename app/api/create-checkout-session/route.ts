@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
         allowed_countries: ['US', 'CA', 'GB'], // Add more countries as needed
       },
       metadata: {
-        cartItemsCount: cartItems.length.toString(),
         cartItemsSummary: JSON.stringify(compactCartItems)
       },
     })
