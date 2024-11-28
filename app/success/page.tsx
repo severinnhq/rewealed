@@ -26,7 +26,7 @@ export default function SuccessPage() {
         </CardHeader>
         <CardContent>
           <p className="text-center mb-4">
-            Your order has been successfully placed. We'll send you an email with the order details and tracking information once your package has shipped.
+            Your order has been successfully placed. We&apos;ll send you an email with the order details and tracking information once your package has shipped.
           </p>
         </CardContent>
         <CardFooter className="flex justify-center">

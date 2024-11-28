@@ -20,7 +20,7 @@ export default function CancelPage() {
         </CardHeader>
         <CardContent>
           <p className="text-center mb-4">
-            We're sorry to see you go. If you experienced any issues during checkout or have any questions, please don't hesitate to contact our customer support.
+            We&apos;re sorry to see you go. If you experienced any issues during checkout or have any questions, please don&apos;t hesitate to contact our customer support.
           </p>
         </CardContent>
         <CardFooter className="flex justify-center gap-4">
