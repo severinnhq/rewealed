@@ -109,23 +109,34 @@ export default function ProductList() {
   const handleCheckout = async () => {
     const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-    const response = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(cartItems),
-    })
+    try {
+      console.log('Sending cart items to checkout:', JSON.stringify(cartItems, null, 2))
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cartItems),
+      })
 
-    if (response.ok) {
-      const { sessionId } = await response.json()
-      const result = await stripe?.redirectToCheckout({ sessionId })
+      if (response.ok) {
+        const { sessionId } = await response.json()
+        console.log('Received session ID:', sessionId)
+        const result = await stripe?.redirectToCheckout({ sessionId })
 
-      if (result?.error) {
-        console.error(result.error)
+        if (result?.error) {
+          console.error('Stripe redirect error:', result.error)
+        }
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to create checkout session:', errorData)
+        // Display error to the user
+        alert(`Checkout failed: ${errorData.error || 'Unknown error'}`)
       }
-    } else {
-      console.error('Failed to create checkout session')
+    } catch (error) {
+      console.error('Checkout error:', error)
+      // Display error to the user
+      alert(`Checkout error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

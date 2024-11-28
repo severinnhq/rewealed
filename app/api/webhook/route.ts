@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import clientPromise from '@/lib/mongodb'
+import { ObjectId } from 'mongodb'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -8,20 +9,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
-interface CartItem {
-  product: {
-    _id: string
-    name: string
-    price: number
-    salePrice?: number
-    mainImage: string
-  }
+interface CompactCartItem {
+  id: string
   size: string
   quantity: number
-}
-
-interface ParsedMetadata {
-  cartItems: CartItem[]
 }
 
 export async function POST(req: NextRequest) {
@@ -59,17 +50,23 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
   const client = await clientPromise
   const db = client.db("webstore")
 
-  const metadata = session.metadata as unknown as ParsedMetadata
-  const cartItems = metadata.cartItems || []
+  const cartItemsSummary = JSON.parse(session.metadata?.cartItemsSummary || '[]') as CompactCartItem[]
   const shippingDetails = session.shipping_details
 
-  const orderItems = cartItems.map((item: CartItem) => ({
-    productId: item.product._id,
-    name: item.product.name,
-    price: item.product.salePrice || item.product.price,
-    quantity: item.quantity,
-    size: item.size,
-  }))
+  // Fetch full product details from the database
+  const productIds = cartItemsSummary.map(item => item.id)
+  const products = await db.collection("products").find({ _id: { $in: productIds.map(id => new ObjectId(id)) } }).toArray()
+
+  const orderItems = cartItemsSummary.map(item => {
+    const product = products.find(p => p._id.toString() === item.id)
+    return {
+      productId: item.id,
+      name: product?.name,
+      price: product?.salePrice || product?.price,
+      quantity: item.quantity,
+      size: item.size,
+    }
+  })
 
   const order = {
     stripeSessionId: session.id,

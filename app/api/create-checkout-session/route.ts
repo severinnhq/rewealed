@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2024-11-20.acacia' as const,
 })
 
 interface CartItem {
@@ -18,43 +18,68 @@ interface CartItem {
 }
 
 export async function POST(request: NextRequest) {
-  const cartItems: CartItem[] = await request.json()
-
   try {
+    const cartItems: CartItem[] = await request.json()
+    console.log('Received cart items:', JSON.stringify(cartItems, null, 2))
+
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      console.error('Invalid cart items:', cartItems)
+      return NextResponse.json({ error: 'Invalid cart items' }, { status: 400 })
+    }
+
+    const lineItems = cartItems.map((item) => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: `${item.product.name} (${item.size})`,
+          images: [`${process.env.NEXT_PUBLIC_BASE_URL}/api/product-image?filename=${encodeURIComponent(item.product.mainImage)}`],
+          metadata: {
+            productId: item.product._id,
+            size: item.size,
+          },
+        },
+        unit_amount: item.product.salePrice 
+          ? Math.round(item.product.salePrice * 100)
+          : Math.round(item.product.price * 100),
+      },
+      quantity: item.quantity,
+    }))
+
+    console.log('Line items:', JSON.stringify(lineItems, null, 2))
+
+    // Create a compact version of cart items for metadata
+    const compactCartItems = cartItems.map(item => ({
+      id: item.product._id,
+      size: item.size,
+      quantity: item.quantity
+    }))
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: cartItems.map((item) => ({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: item.product.name,
-            images: [`${process.env.NEXT_PUBLIC_BASE_URL}/api/product-image?filename=${encodeURIComponent(item.product.mainImage)}`],
-            metadata: {
-              productId: item.product._id,
-              size: item.size,
-            },
-          },
-          unit_amount: item.product.salePrice 
-            ? Math.round(item.product.salePrice * 100)
-            : Math.round(item.product.price * 100),
-        },
-        quantity: item.quantity,
-      })),
+      line_items: lineItems,
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
       shipping_address_collection: {
-        allowed_countries: ['AC', 'AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AT', 'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS', 'BT', 'BV', 'BW', 'BY', 'BZ', 'CA', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN', 'CO', 'CR', 'CV', 'CW', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC', 'EE', 'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FO', 'FR', 'GA', 'GB', 'GD', 'GE', 'GF', 'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ', 'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IS', 'IT', 'JE', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD', 'ME', 'MF', 'MG', 'MK', 'ML', 'MM', 'MN', 'MO', 'MQ', 'MR', 'MS', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA', 'NC', 'NE', 'NG', 'NI', 'NL', 'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG', 'PH', 'PK', 'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU', 'RW', 'SA', 'SB', 'SC', 'SE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'SS', 'ST', 'SV', 'SX', 'SZ', 'TA', 'TC', 'TD', 'TF', 'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO', 'TR', 'TT', 'TV', 'TW', 'TZ', 'UA', 'UG', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VN', 'VU', 'WF', 'WS', 'XK', 'YE', 'YT', 'ZA', 'ZM', 'ZW', 'ZZ'],
+        allowed_countries: ['US', 'CA', 'GB'], // Add more countries as needed
       },
       metadata: {
-        cartItems: JSON.stringify(cartItems),
+        cartItemsCount: cartItems.length.toString(),
+        cartItemsSummary: JSON.stringify(compactCartItems)
       },
     })
 
+    console.log('Stripe session created:', session.id)
     return NextResponse.json({ sessionId: session.id })
   } catch (err: unknown) {
-    console.error(err)
-    return NextResponse.json({ error: err instanceof Error ? err.message : 'An unknown error occurred' }, { status: 500 })
+    console.error('Stripe session creation error:', err)
+    if (err instanceof Stripe.errors.StripeError) {
+      console.error('Stripe error details:', err.message, err.type, err.raw)
+    }
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'An unknown error occurred' },
+      { status: 500 }
+    )
   }
 }
 
