@@ -11,6 +11,12 @@ const nextConfig = {
             { key: 'Access-Control-Allow-Origin', value: '*' },
           ],
         },
+        {
+          source: '/api/webhook',
+          headers: [
+            { key: 'Access-Control-Allow-Origin', value: '*' },
+          ],
+        },
       ]
     },
   }
