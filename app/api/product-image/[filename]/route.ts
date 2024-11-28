@@ -4,9 +4,9 @@ import path from 'path'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  context: { params: { filename: string } }
 ) {
-  const filename = params.filename
+  const filename = context.params.filename
   const imagePath = path.join(process.cwd(), 'public', 'uploads', filename)
 
   try {
