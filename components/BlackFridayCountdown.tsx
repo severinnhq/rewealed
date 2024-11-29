@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Image from 'next/image'
+import { Toaster } from "@/components/ui/toaster"
 
 interface TimeLeft {
   hours: number;
@@ -57,7 +58,8 @@ export default function BlackFridayCountdown() {
       if (response.ok) {
         toast({
           title: "Success!",
-          description: "You've been added to our notification list.",
+          description: "You'll be notified when the Black Friday sale starts!",
+          duration: 5000,
         })
         setEmail('')
       } else {
@@ -80,42 +82,31 @@ export default function BlackFridayCountdown() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <span className="text-5xl md:text-7xl font-bold mb-2 text-gray-800">
+      <span className="text-5xl md:text-7xl font-bold mb-2 text-white">
         {value.toString().padStart(2, '0')}
       </span>
-      <span className="text-lg md:text-xl text-gray-600 capitalize">{interval}</span>
+      <span className="text-lg md:text-xl text-gray-300 capitalize">{interval}</span>
     </motion.div>
   ))
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-800 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-12"
+        className="mb-12 bg-black"
       >
         <Image
-          src="/logo.png"
+          src="/whiterewealed.png"
           alt="Store Logo"
-          width={200}
-          height={67}
+          width={400}
+          height={100}
           className="object-contain"
         />
       </motion.div>
       
-      <motion.h1 
-        className="text-4xl md:text-6xl font-extrabold mb-8 text-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <span className="text-sky-400">
-          Black Friday Drop
-        </span>
-        <span className="ml-2 animate-bounce inline-block">🛍️</span>
-      </motion.h1>
-      
+
       <motion.div 
         className="flex justify-center items-center mb-12"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -127,14 +118,7 @@ export default function BlackFridayCountdown() {
         </div>
       </motion.div>
       
-      <motion.p 
-        className="text-2xl md:text-3xl text-center text-gray-600 mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-      >
-        The sale starts today at 10:00 PM
-      </motion.p>
+      
       
       <motion.form
         className="flex flex-col items-center gap-4 w-full max-w-md"
@@ -149,15 +133,16 @@ export default function BlackFridayCountdown() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full h-12 border-2 border-gray-300 focus:border-black transition-colors duration-200"
+          className="w-full h-12 border-2 border-gray-600 focus:border-white transition-colors duration-200"
         />
         <Button 
           type="submit" 
-          className="w-full px-8 py-3 bg-black text-white hover:bg-gray-800 transition-colors duration-200"
+          className="w-full px-8 py-3 bg-white text-black hover:bg-gray-200 transition-colors duration-200"
         >
           Notify Me
         </Button>
       </motion.form>
+      <Toaster />
     </div>
   )
 }
