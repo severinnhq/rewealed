@@ -24,7 +24,7 @@ interface SidebarProps {
   onCheckout: () => Promise<void>;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, cartItems, onClose, onRemoveItem, onUpdateQuantity, onCheckout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, cartItems, onRemoveItem, onUpdateQuantity, onCheckout }) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleCheckout = () => {
