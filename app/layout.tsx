@@ -1,4 +1,5 @@
-import { CartProvider } from '@/lib/CartContext'
+import { CountdownProvider } from '@/lib/CountdownContext'
+import { LayoutWrapper } from '@/components/LayoutWrapper'
 import './globals.css'
 
 export default function RootLayout({
@@ -9,9 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <CountdownProvider>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </CountdownProvider>
       </body>
     </html>
   )

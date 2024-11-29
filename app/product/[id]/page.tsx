@@ -1,13 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-import { Header } from '@/components/Header'
+import { Input } from "@/components/ui/input"
 import { useCart } from '@/lib/CartContext'
-import { Minus, Plus } from 'lucide-react'
-import Sidebar from "@/components/Sidebar"
+import { Header } from '@/components/Header'
+import Sidebar from '@/components/Sidebar'
+import { Plus, Minus } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { ChevronDown } from 'lucide-react'
+import { ShippingFeatures } from '@/components/ShippingFeatures'
+import { FloatingProductBox } from '@/components/FloatingProductBox'
 import { loadStripe } from '@stripe/stripe-js'
 
 interface Product {
@@ -22,13 +32,18 @@ interface Product {
   galleryImages: string[]
 }
 
-export default function ProductQuickview() {
+export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string>('')
   const { id } = useParams()
   const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
+  const [isPaymentShippingOpen, setIsPaymentShippingOpen] = useState(false)
+  const [showFloatingBox, setShowFloatingBox] = useState(false)
+  const productRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function fetchProduct() {
@@ -36,13 +51,30 @@ export default function ProductQuickview() {
       if (response.ok) {
         const data = await response.json()
         setProduct(data)
-        if (data.sizes.length > 0) {
+        setSelectedImage(data.mainImage)
+        if (data.sizes.includes('One Size')) {
+          setSelectedSize('One Size')
+        } else if (data.sizes.length > 0) {
           setSelectedSize(data.sizes[0])
         }
       }
     }
-    fetchProduct()
+    if (id) {
+      fetchProduct()
+    }
   }, [id])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (productRef.current) {
+        const rect = productRef.current.getBoundingClientRect()
+        setShowFloatingBox(rect.top < -400)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleAddToCart = () => {
     if (product && selectedSize) {
@@ -51,21 +83,19 @@ export default function ProductQuickview() {
     }
   }
 
-  const handleRemoveCartItem = (index: number) => {
-    removeFromCart(index)
-    if (cartItems.length === 1) {
-      setIsSidebarOpen(false)
-    }
+  const handleQuantityChange = (value: number) => {
+    setQuantity(Math.max(1, Math.min(99, value)))
   }
 
-  const handleUpdateQuantity = (index: number, newQuantity: number) => {
-    updateQuantity(index, newQuantity)
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size)
   }
 
   const handleCheckout = async () => {
     const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
     try {
+      console.log('Sending cart items to checkout:', JSON.stringify(cartItems, null, 2))
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -76,6 +106,7 @@ export default function ProductQuickview() {
 
       if (response.ok) {
         const { sessionId } = await response.json()
+        console.log('Received session ID:', sessionId)
         const result = await stripe?.redirectToCheckout({ sessionId })
 
         if (result?.error) {
@@ -98,106 +129,251 @@ export default function ProductQuickview() {
     return <div>Loading...</div>
   }
 
+  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
   return (
     <>
-      <Header cartItems={cartItems} onCartClick={() => setIsSidebarOpen(true)} />
-      <div className="container mx-auto p-4 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <div className="aspect-square relative overflow-hidden rounded-lg">
+      <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
+      <div className="container mx-auto px-4 py-8" ref={productRef}>
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-3/5">
+            <div className="mb-6">
+              <Image
+                src={`/uploads/${selectedImage}`}
+                alt={product.name}
+                width={800}
+                height={800}
+                quality={90}
+                className="w-full h-auto object-cover rounded-lg max-w-2xl mx-auto"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto">
               <Image
                 src={`/uploads/${product.mainImage}`}
                 alt={product.name}
-                layout="fill"
-                objectFit="cover"
+                width={160}
+                height={160}
+                quality={80}
+                className={`w-20 h-20 object-cover rounded-md cursor-pointer ${
+                  selectedImage === product.mainImage ? 'border-2 border-blue-500' : ''
+                }`}
+                onClick={() => setSelectedImage(product.mainImage)}
               />
-            </div>
-            <div className="grid grid-cols-4 gap-2">
               {product.galleryImages.map((image, index) => (
-                <div key={index} className="aspect-square relative overflow-hidden rounded-lg">
-                  <Image
-                    src={`/uploads/${image}`}
-                    alt={`${product.name} gallery image ${index + 1}`}
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </div>
+                <Image
+                  key={index}
+                  src={`/uploads/${image}`}
+                  alt={`${product.name} - Gallery ${index + 1}`}
+                  width={160}
+                  height={160}
+                  quality={80}
+                  className={`w-20 h-20 object-cover rounded-md cursor-pointer ${
+                    selectedImage === image ? 'border-2 border-blue-500' : ''
+                  }`}
+                  onClick={() => setSelectedImage(image)}
+                />
               ))}
             </div>
           </div>
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <div>
+          <div className="lg:w-2/5">
+            <h1 className="text-5xl font-bold mb-2">{product.name}</h1>
+            <div className="mb-4">
               {product.salePrice ? (
-                <>
-                  <span className="text-2xl font-bold text-red-600">${product.salePrice.toFixed(2)}</span>
-                  <span className="text-xl text-gray-500 line-through ml-2">${product.price.toFixed(2)}</span>
-                </>
+                <div>
+                  <span className="text-2xl font-bold text-red-600 mr-2">${product.salePrice.toFixed(2)}</span>
+                  <span className="text-lg text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                </div>
               ) : (
                 <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
               )}
             </div>
-            <p className="text-gray-600">{product.description}</p>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Size
-              </label>
+            <hr className="border-t border-gray-300 my-4 w-1/2" />
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-2">Select Size:</h2>
               <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size) => (
+                {product.sizes.includes('One Size') ? (
                   <Button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    className={`${size === 'One Size' ? "w-24 h-12" : "w-12 h-12"} rounded-full`}
+                    variant="outline"
+                    className="border-2 border-black text-black"
                   >
-                    {size}
+                    One Size
                   </Button>
-                ))}
+                ) : (
+                  availableSizes.map((size) => (
+                    <Button
+                      key={size}
+                      variant={selectedSize === size ? 'outline' : 'ghost'}
+                      onClick={() => handleSizeSelect(size)}
+                      className={`border ${
+                        selectedSize === size
+                          ? 'border-black border-2 text-black'
+                          : 'border-gray-300 text-gray-700'
+                      } ${
+                        !product.sizes.includes(size) && 'opacity-50 cursor-not-allowed'
+                      }`}
+                      disabled={!product.sizes.includes(size)}
+                    >
+                      {size}
+                    </Button>
+                  ))
+                )}
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity
-              </label>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold mb-2">Quantity:</h2>
               <div className="flex items-center">
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={quantity <= 1}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <input
+                <Input
                   type="number"
-                  id="quantity"
                   min="1"
+                  max="99"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value)))}
-                  className="mx-2 w-16 text-center border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10))}
+                  className="w-16 mx-2 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  disabled={quantity >= 99}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <Button onClick={handleAddToCart} className="w-full">
-              Add to Cart
-            </Button>
+            <div className="mb-4">
+              <Button
+                onClick={handleAddToCart}
+                className="w-full py-6 text-xl font-bold bg-black text-white hover:bg-gray-800"
+              >
+                Add to Cart
+              </Button>
+            </div>
+            <div className="mt-6 space-y-4">
+              <Collapsible
+                open={isDescriptionOpen}
+                onOpenChange={setIsDescriptionOpen}
+                className="border-t border-b"
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex w-full justify-between py-6 transition-all duration-300 ease-in-out"
+                  >
+                    <span>Description</span>
+                    <motion.div
+                      initial={false}
+                      animate={{ rotate: isDescriptionOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </motion.div>
+                  </Button>
+                </CollapsibleTrigger>
+                <AnimatePresence initial={false}>
+                  {isDescriptionOpen && (
+                    <CollapsibleContent forceMount asChild>
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      >
+                        <div className="py-4 overflow-hidden">
+                          <motion.p
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -10, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="text-gray-600"
+                          >
+                            {product.description}
+                          </motion.p>
+                        </div>
+                      </motion.div>
+                    </CollapsibleContent>
+                  )}
+                </AnimatePresence>
+              </Collapsible>
+              
+              <Collapsible
+                open={isPaymentShippingOpen}
+                onOpenChange={setIsPaymentShippingOpen}
+                className="border-t border-b"
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex w-full justify-between py-6 transition-all duration-300 ease-in-out"
+                  >
+                    <span>Payment & Shipping</span>
+                    <motion.div
+                      initial={false}
+                      animate={{ rotate: isPaymentShippingOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </motion.div>
+                  </Button>
+                </CollapsibleTrigger>
+                <AnimatePresence initial={false}>
+                  {isPaymentShippingOpen && (
+                    <CollapsibleContent forceMount asChild>
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      >
+                        <div className="py-4 overflow-hidden">
+                          <motion.div
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -10, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="text-gray-600 space-y-4"
+                          >
+                            <h3 className="font-semibold">Payment Options:</h3>
+                            <p>We accept all major credit cards (Visa, MasterCard, American Express, Discover) through our secure payment processor, Stripe. Apple Pay and Google Pay are also available on supported devices for a seamless checkout experience.</p>
+                            
+                            <h3 className="font-semibold mt-4">Shipping Information:</h3>
+                            <p>We take great care in packing your items to ensure they arrive safely. Our standard shipping typically takes 5-7 business days to reach you.</p>
+                          </motion.div>
+                        </div>
+                      </motion.div>
+                    </CollapsibleContent>
+                  )}
+                </AnimatePresence>
+              </Collapsible>
+            </div>
           </div>
         </div>
       </div>
-      <Sidebar 
+      <AnimatePresence>
+        {showFloatingBox && product && (
+          <FloatingProductBox
+            product={product}
+            selectedSize={selectedSize}
+            onAddToCart={handleAddToCart}
+          />
+        )}
+      </AnimatePresence>
+      <Sidebar
         isOpen={isSidebarOpen}
-        cartItems={cartItems} 
-        onClose={() => setIsSidebarOpen(false)} 
-        onRemoveItem={handleRemoveCartItem}
-        onUpdateQuantity={handleUpdateQuantity}
+        cartItems={cartItems}
+        onClose={() => setIsSidebarOpen(false)}
+        onRemoveItem={removeFromCart}
+        onUpdateQuantity={updateQuantity}
         onCheckout={handleCheckout}
       />
+      <ShippingFeatures />
     </>
   )
 }
