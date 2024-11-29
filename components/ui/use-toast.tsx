@@ -1,6 +1,7 @@
 import * as React from "react"
 
-import type {
+import {
+  Toast,
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
@@ -15,38 +16,16 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const
-
-let count = 0
-
-function genId() {
-  count = (count + 1) % Number.MAX_VALUE
-  return count.toString()
-}
-
-type ActionType = typeof actionTypes
+type ActionType = "ADD_TOAST" | "UPDATE_TOAST" | "DISMISS_TOAST" | "REMOVE_TOAST"
 
 type Action =
   | {
-      type: ActionType["ADD_TOAST"]
+      type: "ADD_TOAST" | "UPDATE_TOAST"
       toast: ToasterToast
     }
   | {
-      type: ActionType["UPDATE_TOAST"]
-      toast: Partial<ToasterToast>
-    }
-  | {
-      type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
-    }
-  | {
-      type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
+      type: "DISMISS_TOAST" | "REMOVE_TOAST"
+      toastId?: string
     }
 
 interface State {
@@ -90,8 +69,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -137,7 +114,14 @@ function dispatch(action: Action) {
   })
 }
 
-interface Toast extends Omit<ToasterToast, "id"> {}
+let count = 0
+
+function genId() {
+  count = (count + 1) % Number.MAX_VALUE
+  return count.toString()
+}
+
+type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
   const id = genId()
@@ -155,7 +139,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
-      onOpenChange: (open) => {
+      onOpenChange: (open: boolean) => {
         if (!open) dismiss()
       },
     },

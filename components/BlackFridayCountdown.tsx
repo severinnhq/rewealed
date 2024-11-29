@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
+import Image from 'next/image'
 
 interface TimeLeft {
   hours: number;
@@ -16,7 +16,7 @@ interface TimeLeft {
 const DROP_TIME = new Date()
 DROP_TIME.setHours(22, 0, 0, 0) // Set to 10:00 PM today
 
-export function BlackFridayCountdown() {
+export default function BlackFridayCountdown() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft())
   const [email, setEmail] = useState('')
   const { toast } = useToast()
@@ -43,7 +43,7 @@ export function BlackFridayCountdown() {
     return { hours: 0, minutes: 0, seconds: 0 }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const response = await fetch('/api/subscribe', {
