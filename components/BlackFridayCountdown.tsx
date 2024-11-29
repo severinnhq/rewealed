@@ -70,8 +70,8 @@ export function BlackFridayCountdown() {
         {timeComponents.length ? timeComponents : <span className="text-4xl">Time's up!</span>}
       </div>
       <p className="mt-8 text-xl text-center">
-        The sale starts on November 29, 2024 at 22:00 ET
-      </p>
+  The sale starts on November 29&#x27;, 2024 at 22:00 ET
+</p>
     </div>
   )
 }
