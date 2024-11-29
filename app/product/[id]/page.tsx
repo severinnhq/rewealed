@@ -91,31 +91,6 @@ export default function ProductPage() {
     setSelectedSize(size)
   }
 
-  const handleCheckout = async () => {
-    // Implement your checkout logic here
-    console.log('Checkout initiated');
-    // For example, you might want to call an API to create an order
-    try {
-      const response = await fetch('/api/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cartItems }),
-      });
-      if (response.ok) {
-        // Handle successful order creation
-        console.log('Order created successfully');
-        // You might want to redirect to a success page or clear the cart
-      } else {
-        throw new Error('Failed to create order');
-      }
-    } catch (error) {
-      console.error('Error during checkout:', error);
-      // Handle the error (e.g., show an error message to the user)
-    }
-  };
-
   if (!product) {
     return <div>Loading...</div>
   }

@@ -70,7 +70,7 @@ export default function NextDropCountdown() {
       } else {
         throw new Error('Failed to subscribe')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to subscribe. Please try again.",
@@ -115,8 +115,6 @@ export default function NextDropCountdown() {
         />
       </motion.div>
       
-
-      
       <motion.div 
         className="flex justify-center items-center mb-12"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -154,4 +152,3 @@ export default function NextDropCountdown() {
     </div>
   )
 }
-

@@ -6,7 +6,7 @@ import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
 import React from 'react';
 
-const SHOW_COUNTDOWN = true // Set this to false to show the normal page
+const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
 export default function Home() {
   const { setIsCountdownActive } = useCountdown()

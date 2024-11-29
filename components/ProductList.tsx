@@ -8,7 +8,6 @@ import Sidebar from "@/components/Sidebar"
 import { Header } from './Header'
 import { useCart } from '@/lib/CartContext'
 import { useRouter } from 'next/navigation'
-import { useCheckout } from '@/lib/useCheckout'
 
 interface Product {
   _id: string
@@ -30,8 +29,7 @@ export default function ProductList() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
   const router = useRouter()
-  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
-  const { handleCheckout } = useCheckout()
+  const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
 
   const handleAddToCart = (product: Product) => {
     setCartProduct(product)
@@ -188,4 +186,3 @@ export default function ProductList() {
     </>
   )
 }
-
