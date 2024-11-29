@@ -1,13 +1,10 @@
-'use client'
-
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { X, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useCheckout } from '@/lib/useCheckout'
-import { usePathname } from 'next/navigation'
 
 interface CartItem {
   product: {
@@ -32,13 +29,6 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveItem, onUpdateQuantity }) => {
   const [isLoading, setIsLoading] = useState(false)
   const { handleCheckout } = useCheckout();
-  const pathname = usePathname()
-
-  useEffect(() => {
-    if (isOpen) {
-      onClose()
-    }
-  }, [pathname])
 
   const processCheckout = async () => {
     setIsLoading(true);
@@ -184,4 +174,3 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
 }
 
 export default Sidebar
-
