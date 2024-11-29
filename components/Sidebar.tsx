@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,30 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveItem, onUpdateQuantity }) => {
   const [isLoading, setIsLoading] = useState(false)
   const { handleCheckout } = useCheckout();
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
   const processCheckout = async () => {
     setIsLoading(true);
@@ -37,17 +61,24 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
   };
 
   return (
-    <div className={`fixed inset-0 z-50 overflow-hidden ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+    <div 
+      className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      aria-hidden={!isOpen}
+    >
       <div className="absolute inset-0 overflow-hidden">
-        <div className={`absolute inset-0 bg-black bg-opacity-50 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} />
+        <div 
+          className={`absolute inset-0 bg-black bg-opacity-50 transition-opacity ${isOpen ? 'opacity-100 cursor-close' : 'opacity-0'}`} 
+          onClick={onClose}
+          aria-label="Close sidebar"
+        />
         <motion.div
           initial={{ x: '100%' }}
           animate={{ x: isOpen ? 0 : '100%' }}
           transition={{ type: 'tween', ease: 'easeOut', duration: 0.3 }}
-          className="fixed inset-y-0 right-0 w-screen max-w-md bg-white shadow-xl"
+          className={`fixed inset-y-0 right-0 w-screen bg-white shadow-xl flex flex-col ${isMobile ? 'max-w-full' : 'max-w-md'}`}
         >
           <div className="h-full flex flex-col">
-            <div className="flex-1 py-6 overflow-y-auto px-4 sm:px-6">
+            <div className="flex-shrink-0 px-4 py-6 sm:px-6">
               <div className="flex items-start justify-between">
                 <h2 className="text-lg font-medium text-gray-900">Shopping cart</h2>
                 <div className="ml-3 h-7 flex items-center">
@@ -55,17 +86,19 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                     type="button"
                     className="-m-2 p-2 text-gray-400 hover:text-gray-500"
                     onClick={onClose}
+                    aria-label="Close panel"
                   >
-                    <span className="sr-only">Close panel</span>
                     <X size={24} aria-hidden="true" />
                   </button>
                 </div>
               </div>
+            </div>
 
+            <div className="flex-1 px-4 sm:px-6 overflow-y-auto">
               <div className="mt-8">
                 {cartItems.length === 0 ? (
                   <div className="text-center py-12">
-                    <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
+                    <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">Your cart is empty</h3>
                     <p className="mt-1 text-sm text-gray-500">Start adding some items to your cart!</p>
                     <div className="mt-6">
@@ -126,12 +159,14 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                                   onChange={(e) => onUpdateQuantity(index, Math.max(1, parseInt(e.target.value) || 1))}
                                   onClick={(e) => e.currentTarget.select()}
                                   className="w-16 p-1 text-center border rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  aria-label={`Quantity for ${item.product.name}`}
                                 />
                               </div>
                               <div className="flex">
                                 <button
                                   onClick={() => onRemoveItem(index)}
                                   className="text-sm font-medium text-black hover:text-gray-700 relative group"
+                                  aria-label={`Remove ${item.product.name} from cart`}
                                 >
                                   Remove
                                   <span className="absolute bottom-0 left-0 w-full h-[1px] bg-black transform origin-left transition-transform duration-300 ease-out group-hover:scale-x-0"></span>
@@ -148,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
             </div>
 
             {cartItems.length > 0 && (
-              <div className="border-t border-gray-200 py-6 px-4 sm:px-6">
+              <div className="flex-shrink-0 border-t border-gray-200 px-4 py-6 sm:px-6">
                 <div className="flex justify-between text-base font-medium text-gray-900">
                   <p>Subtotal</p>
                   <p>
@@ -174,3 +209,4 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
 }
 
 export default Sidebar
+

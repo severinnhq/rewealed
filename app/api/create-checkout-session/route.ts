@@ -50,11 +50,17 @@ export async function POST(request: NextRequest) {
     // Create a compact version of cart items for metadata
     const compactCartItems = cartItems.map(item => ({
       id: item.product._id,
-      name: item.product.name,
-      size: item.size,
-      quantity: item.quantity,
-      price: item.product.salePrice || item.product.price
+      n: item.product.name,
+      s: item.size,
+      q: item.quantity,
+      p: item.product.salePrice || item.product.price
     }))
+
+    // Convert to JSON and truncate if necessary
+    let cartItemsSummary = JSON.stringify(compactCartItems)
+    if (cartItemsSummary.length > 500) {
+      cartItemsSummary = cartItemsSummary.substring(0, 497) + '...'
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -66,7 +72,7 @@ export async function POST(request: NextRequest) {
         allowed_countries: ['US', 'CA', 'GB'], // Add more countries as needed
       },
       metadata: {
-        cartItemsSummary: JSON.stringify(compactCartItems)
+        cartItemsSummary: cartItemsSummary
       },
     })
 
