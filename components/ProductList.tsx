@@ -7,6 +7,8 @@ import CartModal from "@/components/CartModal"
 import Sidebar from "@/components/Sidebar"
 import { loadStripe } from '@stripe/stripe-js'
 import { Header } from './Header'
+import { useCart } from '@/lib/CartContext'
+import { useRouter } from 'next/navigation'
 
 interface Product {
   _id: string
@@ -26,65 +28,16 @@ interface CartItem {
   quantity: number
 }
 
-function useCart() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-
-  useEffect(() => {
-    const savedCartItems = localStorage.getItem('cartItems')
-    if (savedCartItems) {
-      setCartItems(JSON.parse(savedCartItems))
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems))
-  }, [cartItems])
-
-  const addToCart = useCallback((product: Product, size: string) => {
-    setCartItems(prev => {
-      const existingItemIndex = prev.findIndex(
-        item => item.product._id === product._id && item.size === size
-      );
-      if (existingItemIndex > -1) {
-        return prev.map((item, index) => 
-          index === existingItemIndex 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        return [...prev, { product, size, quantity: 1 }];
-      }
-    });
-  }, []);
-
-  const removeFromCart = useCallback((index: number) => {
-    setCartItems(prev => prev.filter((_, i) => i !== index));
-  }, []);
-
-  const updateQuantity = useCallback((index: number, newQuantity: number) => {
-    setCartItems(prev => {
-      const newItems = [...prev];
-      newItems[index].quantity = newQuantity;
-      return newItems;
-    });
-  }, []);
-
-  const clearCart = useCallback(() => {
-    setCartItems([]);
-    localStorage.removeItem('cartItems');
-  }, []);
-
-  return { cartItems, addToCart, removeFromCart, updateQuantity, clearCart };
-}
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
-  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const router = useRouter()
+  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
 
   const handleAddToCart = (product: Product) => {
     setIsSidebarOpen(false)
@@ -97,7 +50,7 @@ export default function ProductList() {
 
   const handleConfirmAddToCart = (size: string) => {
     if (cartProduct) {
-      addToCart(cartProduct, size);
+      addToCart(cartProduct, size, 1);
       setCartProduct(null);
       setIsSidebarOpen(true);
     }
@@ -148,6 +101,10 @@ export default function ProductList() {
     }
   }
 
+  const handleProductClick = (productId: string) => {
+    router.push(`/product/${productId}`)
+  }
+
   useEffect(() => {
     async function fetchProducts() {
       const response = await fetch('/api/products')
@@ -188,7 +145,7 @@ export default function ProductList() {
 
   return (
     <>
-      <Header cartItems={cartItems} onCartClick={() => setIsSidebarOpen(true)} />
+      <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className="container mx-auto p-4 mt-16">
         <h1 className="text-2xl font-bold mb-4">Our Products</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -197,9 +154,10 @@ export default function ProductList() {
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden shadow-sm bg-white relative group transition-opacity duration-500 ease-in-out ${
+              className={`rounded-lg overflow-hidden shadow-sm bg-white relative group transition-opacity duration-500 ease-in-out cursor-pointer ${
                 visibleProducts.has(product._id) ? 'opacity-100' : 'opacity-0'
               }`}
+              onClick={() => handleProductClick(product._id)}
             >
               <div 
                 className="relative aspect-square overflow-hidden bg-gray-100"
@@ -230,7 +188,10 @@ export default function ProductList() {
                 )}
                 <div className="absolute bottom-4 right-4 transform translate-y-1/4 transition-all duration-300 ease-out group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
                   <Button 
-                    onClick={() => handleAddToCart(product)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleAddToCart(product)
+                    }}
                     className="bg-black text-white hover:bg-gray-800 text-sm py-1 px-3"
                   >
                     <span className="font-bold">+ Add to Cart</span>

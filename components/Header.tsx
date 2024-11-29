@@ -4,25 +4,14 @@ import { useEffect } from 'react'
 import Image from 'next/image'
 import { Menu, ShoppingCart } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-
-interface CartItem {
-  product: {
-    _id: string;
-    name: string;
-    mainImage: string;
-    price: number;
-    salePrice?: number;
-  };
-  size: string;
-  quantity: number;
-}
+import { CartItem } from '@/types/cart'
 
 interface HeaderProps {
-  cartItems: CartItem[];
   onCartClick: () => void;
+  cartItems: CartItem[];
 }
 
-export function Header({ cartItems, onCartClick }: HeaderProps) {
+export function Header({ onCartClick, cartItems }: HeaderProps) { 
   useEffect(() => {
     document.body.style.paddingTop = '64px'; 
     return () => {
