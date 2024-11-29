@@ -362,7 +362,6 @@ export default function ProductPage() {
         onClose={() => setIsSidebarOpen(false)}
         onRemoveItem={removeFromCart}
         onUpdateQuantity={updateQuantity}
-        onCheckout={handleCheckout}
       />
       <ShippingFeatures />
     </>

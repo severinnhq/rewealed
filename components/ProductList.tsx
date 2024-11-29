@@ -5,10 +5,11 @@ import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import CartModal from "@/components/CartModal"
 import Sidebar from "@/components/Sidebar"
+import { loadStripe } from '@stripe/stripe-js'
 import { Header } from './Header'
 import { useCart } from '@/lib/CartContext'
 import { useRouter } from 'next/navigation'
-import { useCheckout } from '@/lib/useCheckout'
+import { CartItem } from '@/types/cart';
 
 interface Product {
   _id: string
@@ -31,7 +32,6 @@ export default function ProductList() {
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
   const router = useRouter()
   const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
-  const { handleCheckout } = useCheckout()
 
   const handleAddToCart = (product: Product) => {
     setCartProduct(product)
@@ -43,7 +43,17 @@ export default function ProductList() {
 
   const handleConfirmAddToCart = (size: string) => {
     if (cartProduct) {
-      addToCart(cartProduct, size, 1);
+      addToCart({
+        product: {
+          _id: cartProduct._id,
+          name: cartProduct.name,
+          mainImage: cartProduct.mainImage,
+          price: cartProduct.price,
+          salePrice: cartProduct.salePrice,
+        },
+        size,
+        quantity: 1
+      });
       setCartProduct(null);
       setIsSidebarOpen(true);
     }
@@ -55,6 +65,40 @@ export default function ProductList() {
 
   const handleUpdateQuantity = (index: number, newQuantity: number) => {
     updateQuantity(index, newQuantity);
+  }
+
+  const handleCheckout = async () => {
+    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+
+    try {
+      console.log('Sending cart items to checkout:', JSON.stringify(cartItems, null, 2))
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cartItems),
+      })
+
+      if (response.ok) {
+        const { sessionId } = await response.json()
+        console.log('Received session ID:', sessionId)
+        const result = await stripe?.redirectToCheckout({ sessionId })
+
+        if (result?.error) {
+          console.error('Stripe redirect error:', result.error)
+        } else {
+          clearCart()
+        }
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to create checkout session:', errorData)
+        alert(`Checkout failed: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert(`Checkout error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 
   const handleProductClick = (productId: string) => {
@@ -183,6 +227,7 @@ export default function ProductList() {
           onClose={() => setIsSidebarOpen(false)}
           onRemoveItem={handleRemoveCartItem}
           onUpdateQuantity={handleUpdateQuantity}
+          onCheckout={handleCheckout}
         />
       </div>
     </>
