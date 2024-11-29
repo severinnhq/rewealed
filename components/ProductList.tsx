@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import CartModal from "@/components/CartModal"
@@ -20,12 +20,6 @@ interface Product {
   category: string
   sizes: string[]
   galleryImages: string[]
-}
-
-interface CartItem {
-  product: Product
-  size: string
-  quantity: number
 }
 
 
