@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ProductForm } from '@/components/ProductForm'
 import { Button } from "@/components/ui/button"
+import { AdminPasswordPrompt } from '@/components/AdminPasswordPrompt'
 
 interface Product {
   _id: string
@@ -19,10 +20,13 @@ interface Product {
 export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    if (isAuthenticated) {
+      fetchProducts()
+    }
+  }, [isAuthenticated])
 
   const fetchProducts = async () => {
     const response = await fetch('/api/products')
@@ -71,6 +75,10 @@ export default function AdminPage() {
 
   const handleCancelEdit = () => {
     setEditingProduct(null)
+  }
+
+  if (!isAuthenticated) {
+    return <AdminPasswordPrompt onCorrectPassword={() => setIsAuthenticated(true)} />
   }
 
   return (
