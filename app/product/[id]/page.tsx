@@ -17,8 +17,7 @@ import {
 } from "@/components/ui/collapsible"
 import { ChevronDown } from 'lucide-react'
 import { ShippingFeatures } from '@/components/ShippingFeatures'
-import { FloatingProductBox } from '@/components/FloatingProductBox'
-import { loadStripe } from '@stripe/stripe-js'
+import { FloatingProductBox } from '@/components/FloatingProductBox';
 
 interface Product {
   _id: string
@@ -39,11 +38,11 @@ export default function ProductPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string>('')
   const { id } = useParams()
-  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart } = useCart()
+  const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
   const [isPaymentShippingOpen, setIsPaymentShippingOpen] = useState(false)
-  const [showFloatingBox, setShowFloatingBox] = useState(false)
-  const productRef = useRef<HTMLDivElement>(null)
+  const [showFloatingBox, setShowFloatingBox] = useState(false);
+  const productRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -52,6 +51,7 @@ export default function ProductPage() {
         const data = await response.json()
         setProduct(data)
         setSelectedImage(data.mainImage)
+        // Set the default selected size
         if (data.sizes.includes('One Size')) {
           setSelectedSize('One Size')
         } else if (data.sizes.length > 0) {
@@ -67,14 +67,14 @@ export default function ProductPage() {
   useEffect(() => {
     const handleScroll = () => {
       if (productRef.current) {
-        const rect = productRef.current.getBoundingClientRect()
-        setShowFloatingBox(rect.top < -400)
+        const rect = productRef.current.getBoundingClientRect();
+        setShowFloatingBox(rect.top < -200);
       }
-    }
+    };
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleAddToCart = () => {
     if (product && selectedSize) {
@@ -92,38 +92,29 @@ export default function ProductPage() {
   }
 
   const handleCheckout = async () => {
-    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-
+    // Implement your checkout logic here
+    console.log('Checkout initiated');
+    // For example, you might want to call an API to create an order
     try {
-      console.log('Sending cart items to checkout:', JSON.stringify(cartItems, null, 2))
-      const response = await fetch('/api/create-checkout-session', {
+      const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(cartItems),
-      })
-
+        body: JSON.stringify({ cartItems }),
+      });
       if (response.ok) {
-        const { sessionId } = await response.json()
-        console.log('Received session ID:', sessionId)
-        const result = await stripe?.redirectToCheckout({ sessionId })
-
-        if (result?.error) {
-          console.error('Stripe redirect error:', result.error)
-        } else {
-          clearCart()
-        }
+        // Handle successful order creation
+        console.log('Order created successfully');
+        // You might want to redirect to a success page or clear the cart
       } else {
-        const errorData = await response.json()
-        console.error('Failed to create checkout session:', errorData)
-        alert(`Checkout failed: ${errorData.error || 'Unknown error'}`)
+        throw new Error('Failed to create order');
       }
     } catch (error) {
-      console.error('Checkout error:', error)
-      alert(`Checkout error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error during checkout:', error);
+      // Handle the error (e.g., show an error message to the user)
     }
-  }
+  };
 
   if (!product) {
     return <div>Loading...</div>
@@ -357,13 +348,13 @@ export default function ProductPage() {
         </div>
       </div>
       <AnimatePresence>
-        {showFloatingBox && product && (
-          <FloatingProductBox
-            product={product}
-            selectedSize={selectedSize}
-            onAddToCart={handleAddToCart}
-          />
-        )}
+      {showFloatingBox && product && (
+        <FloatingProductBox
+          product={product}
+          selectedSize={selectedSize}
+          onAddToCart={handleAddToCart}
+        />
+      )}
       </AnimatePresence>
       <Sidebar
         isOpen={isSidebarOpen}
