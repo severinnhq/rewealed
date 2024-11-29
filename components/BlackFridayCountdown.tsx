@@ -100,8 +100,8 @@ export default function BlackFridayCountdown() {
         <Image
           src="/whiterewealed.png"
           alt="Store Logo"
-          width={400}
-          height={100}
+          width={300}
+          height={90}
           className="object-contain"
         />
       </motion.div>
