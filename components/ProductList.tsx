@@ -25,7 +25,6 @@ interface Product {
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -116,8 +115,6 @@ export default function ProductList() {
             >
               <div 
                 className="relative aspect-square overflow-hidden"
-                onMouseEnter={() => setHoveredProduct(product._id)} 
-                onMouseLeave={() => setHoveredProduct(null)}
               >
                 <div className={`absolute inset-0 transition-opacity duration-300 ease-out md:group-hover:opacity-0`}>
                   <Image
