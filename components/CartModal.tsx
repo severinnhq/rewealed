@@ -34,6 +34,13 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(true)
 
+  useEffect(() => {
+    const firstAvailableSize = product.sizes[0];
+    if (firstAvailableSize) {
+      setSelectedSize(firstAvailableSize);
+    }
+  }, [product.sizes]);
+
   const handleAddToCart = () => {
     if (product.sizes.includes('One Size')) {
       onAddToCart('One Size')
@@ -56,7 +63,7 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
           animate={{ height: shouldExpand ? 'auto' : '4rem' }}
           exit={{ height: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg w-80 z-50 overflow-hidden"
+          className="fixed bg-white rounded-t-lg md:rounded-lg shadow-lg w-full md:w-80 z-50 overflow-hidden bottom-0 md:bottom-4 left-0 md:left-auto right-0 md:right-4 max-w-full"
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -94,8 +101,8 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
               <div className="flex flex-wrap gap-2">
                 {product.sizes.includes('One Size') ? (
                   <Button
-                    variant="default"
-                    className="w-24 h-12 bg-white text-black border-gray-300"
+                    variant="outline"
+                    className={`w-24 h-12 ${selectedSize === 'One Size' ? 'border-2 border-black' : 'border border-gray-300'}`}
                     onClick={() => setSelectedSize('One Size')}
                   >
                     One Size
@@ -106,8 +113,11 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
                     return (
                       <Button
                         key={size}
-                        variant={selectedSize === size ? "default" : "outline"}
-                        className={`${size === 'One Size' ? "w-24 h-12" : "w-10 h-10"} p-0 ${!isAvailable && "line-through opacity-50"} bg-white text-black border-gray-300`}
+                        variant="outline"
+                        className={`${size === 'One Size' ? "w-24 h-12" : "w-10 h-10"} p-0 
+                          ${!isAvailable && "line-through opacity-50"} 
+                          ${selectedSize === size ? 'border-2 border-black' : 'border border-gray-300'}
+                        `}
                         onClick={() => isAvailable && setSelectedSize(size)}
                         disabled={!isAvailable}
                       >
@@ -119,7 +129,7 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
               </div>
             </div>
             <Button 
-              className="w-full" 
+              className="w-full bg-black text-white hover:bg-gray-800" 
               disabled={!selectedSize && !product.sizes.includes('One Size')}
               onClick={handleAddToCart}
             >

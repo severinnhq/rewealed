@@ -8,6 +8,7 @@ import Sidebar from "@/components/Sidebar"
 import { Header } from './Header'
 import { useCart } from '@/lib/CartContext'
 import { useRouter } from 'next/navigation'
+import { ShoppingCart } from 'lucide-react'
 
 interface Product {
   _id: string
@@ -108,39 +109,35 @@ export default function ProductList() {
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden shadow-sm bg-white relative group transition-opacity duration-500 ease-in-out cursor-pointer ${
+              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-opacity duration-500 ease-in-out cursor-pointer ${
                 visibleProducts.has(product._id) ? 'opacity-100' : 'opacity-0'
               }`}
               onClick={() => handleProductClick(product._id)}
             >
               <div 
-                className="relative aspect-square overflow-hidden bg-gray-100"
+                className="relative aspect-square overflow-hidden"
                 onMouseEnter={() => setHoveredProduct(product._id)} 
                 onMouseLeave={() => setHoveredProduct(null)}
               >
-                <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-                  hoveredProduct === product._id ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                }`}>
+                <div className={`absolute inset-0 transition-opacity duration-300 ease-out md:group-hover:opacity-0`}>
                   <Image
                     src={`/uploads/${product.mainImage}`}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-cover bg-transparent"
                   />
                 </div>
                 {product.galleryImages.length > 0 && (
-                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-                    hoveredProduct === product._id ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                  }`}>
+                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out opacity-0 md:group-hover:opacity-100`}>
                     <Image
                       src={`/uploads/${product.galleryImages[0]}`}
                       alt={`${product.name} - Gallery`}
                       fill
-                      className="object-cover"
+                      className="object-cover bg-transparent"
                     />
                   </div>
                 )}
-                <div className="absolute bottom-4 right-4 transform translate-y-1/4 transition-all duration-300 ease-out group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
+                <div className="absolute bottom-4 right-4 transform translate-y-1/4 transition-all duration-300 ease-out md:group-hover:translate-y-0 opacity-0 md:group-hover:opacity-100 hidden md:block">
                   <Button 
                     onClick={(e) => {
                       e.stopPropagation()
@@ -149,6 +146,17 @@ export default function ProductList() {
                     className="bg-black text-white hover:bg-gray-800 text-sm py-1 px-3"
                   >
                     <span className="font-bold">+ Add to Cart</span>
+                  </Button>
+                </div>
+                <div className="absolute bottom-4 right-4 md:hidden">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleAddToCart(product)
+                    }}
+                    className="bg-white text-black hover:bg-gray-100 p-2 rounded-full"
+                  >
+                    <ShoppingCart size={20} />
                   </Button>
                 </div>
               </div>
@@ -186,3 +194,4 @@ export default function ProductList() {
     </>
   )
 }
+
