@@ -14,7 +14,13 @@ interface CartItem {
   size: string
   quantity: number
   price: number
-  image: string // Added image field
+  image: string
+}
+
+interface ExtendedCheckoutSession extends Stripe.Checkout.Session {
+  shipping_rate?: {
+    display_name?: string;
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -32,7 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session
+      const session = event.data.object as ExtendedCheckoutSession
 
       try {
         await saveOrderToDatabase(session)
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
+async function saveOrderToDatabase(session: ExtendedCheckoutSession) {
   const client = await clientPromise
   const db = client.db("webstore")
 
@@ -58,7 +64,7 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
   const shippingDetails = session.shipping_details
   const billingDetails = session.customer_details
 
-  const shippingRateName = (session as any).shipping_rate?.display_name?.toLowerCase() || '';
+  const shippingRateName = session.shipping_rate?.display_name?.toLowerCase() || '';
   const shippingType = shippingRateName.includes('express') ? 'Express' : 'Standard';
 
   const order = {
