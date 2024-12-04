@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Menu, ShoppingCart } from 'lucide-react'
+import Link from 'next/link'
+import { MenuIcon, ShoppingCart } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { CartItem } from '@/types/cart'
+import Menu from './Menu'
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -12,6 +14,8 @@ interface HeaderProps {
 }
 
 export function Header({ onCartClick, cartItems }: HeaderProps) { 
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   useEffect(() => {
     document.body.style.paddingTop = '64px'; 
     return () => {
@@ -24,12 +28,17 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
       <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-          <Menu size={24} />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-gray-600 hover:text-gray-900"
+          onClick={() => setIsMenuOpen(true)}
+        >
+          <MenuIcon size={24} />
           <span className="sr-only">Menu</span>
         </Button>
 
-        <div className="flex-grow flex justify-center">
+        <Link href="/" className="flex-grow flex justify-center">
           <Image
             src="/logo.png"
             alt="Store Logo"
@@ -37,7 +46,7 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
             height={40}
             className="object-contain"
           />
-        </div>
+        </Link>
 
         <Button 
           variant="ghost" 
@@ -54,6 +63,7 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
           )}
         </Button>
       </div>
+      <Menu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </header>
   )
 }

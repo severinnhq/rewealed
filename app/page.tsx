@@ -4,6 +4,8 @@ import { HeroSection } from '../components/heroSection'
 import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
+import { ShippingFeatures } from '@/components/ShippingFeatures'
+import ContactSection from '../components/ContactSection'
 import React from 'react';
 
 const SHOW_COUNTDOWN = false // Set this to false to show the normal page
@@ -21,8 +23,19 @@ export default function Home() {
 
   return (
     <main>
-      <HeroSection />
-      <ProductList />
+      <section id="hero">
+        <HeroSection />
+      </section>
+      <section id="products">
+        <ProductList />
+      </section>
+      <section id="contact">
+        <ContactSection />
+      </section>
+      <section id="shipping">
+        <ShippingFeatures />
+      </section>
+    
     </main>
   )
 }

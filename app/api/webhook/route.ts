@@ -14,6 +14,7 @@ interface CartItem {
   size: string
   quantity: number
   price: number
+  image: string // Added image field
 }
 
 export async function POST(req: NextRequest) {
@@ -57,6 +58,9 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
   const shippingDetails = session.shipping_details
   const billingDetails = session.customer_details
 
+  const shippingRateName = (session as any).shipping_rate?.display_name?.toLowerCase() || '';
+  const shippingType = shippingRateName.includes('express') ? 'Express' : 'Standard';
+
   const order = {
     stripeSessionId: session.id,
     customerName: billingDetails?.name || '',
@@ -89,6 +93,7 @@ async function saveOrderToDatabase(session: Stripe.Checkout.Session) {
     paymentMethod: session.payment_method_types?.[0] || 'Unknown',
     orderDate: new Date(),
     fulfilled: false,
+    shippingType: shippingType,
   }
 
   const result = await db.collection("orders").insertOne(order)

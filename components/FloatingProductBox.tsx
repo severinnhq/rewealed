@@ -52,4 +52,3 @@ export function FloatingProductBox({ product, selectedSize, onAddToCart }: Float
     </motion.div>
   )
 }
-

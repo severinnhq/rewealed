@@ -41,6 +41,18 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
     }
   }, [product.sizes]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const handleAddToCart = () => {
     if (product.sizes.includes('One Size')) {
       onAddToCart('One Size')
@@ -58,12 +70,18 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
   return (
     <AnimatePresence onExitComplete={onClose}>
       {isOpen && (
+        <>
+        <div 
+          className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'}`} 
+          onClick={() => setIsOpen(false)}
+        />
         <motion.div
           initial={{ height: 0 }}
           animate={{ height: shouldExpand ? 'auto' : '4rem' }}
           exit={{ height: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed bg-white rounded-t-lg md:rounded-lg shadow-lg w-full md:w-80 z-50 overflow-hidden bottom-0 md:bottom-4 left-0 md:left-auto right-0 md:right-4 max-w-full"
+          className="fixed bg-white rounded-t-lg md:rounded-lg shadow-lg w-full md:w-80 z-[60] overflow-hidden bottom-0 md:bottom-4 left-0 md:left-auto right-0 md:right-4 max-w-full"
+          
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -137,6 +155,7 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
             </Button>
           </motion.div>
         </motion.div>
+        </>
       )}
     </AnimatePresence>
   )

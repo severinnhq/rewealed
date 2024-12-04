@@ -3,7 +3,7 @@
 import React from 'react'
 import { useCountdown } from '@/lib/CountdownContext'
 import { CartProvider } from '@/lib/CartContext'
-import { Footer } from '@/components/Footer'
+import Footer from '@/components/Footer'
 
 interface LayoutWrapperProps {
   children: React.ReactNode

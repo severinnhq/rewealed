@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export function ShippingFeatures() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4  py-24">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <Card className="w-full md:w-1/3 shadow-none">
           <CardContent className="flex flex-col items-center text-center p-6">

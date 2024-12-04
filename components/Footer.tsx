@@ -1,68 +1,105 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import { Facebook, Instagram, Twitter } from 'lucide-react'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Instagram, Twitter } from 'lucide-react'
+import { useEffect } from 'react'
 
-export function Footer() {
+const TikTokIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+  </svg>
+)
+
+const Footer = () => {
+  useEffect(() => {
+    const smoothScroll = (e: MouseEvent) => {
+      e.preventDefault();
+      const target = e.target as HTMLAnchorElement;
+      const id = target.getAttribute('href')?.slice(1);
+      if (id) {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      }
+    };
+
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+      link.addEventListener('click', smoothScroll as EventListener);
+    });
+
+    return () => {
+      links.forEach(link => {
+        link.removeEventListener('click', smoothScroll as EventListener);
+      });
+    };
+  }, []);
+
   return (
-    <footer className="bg-black text-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Shop</h3>
-            <ul className="space-y-2">
-              <li><Link href="/products/new-arrivals" className="hover:text-gray-300">New Arrivals</Link></li>
-              <li><Link href="/products/best-sellers" className="hover:text-gray-300">Best Sellers</Link></li>
-              <li><Link href="/products/sale" className="hover:text-gray-300">Sale</Link></li>
-              <li><Link href="/products/collections" className="hover:text-gray-300">Collections</Link></li>
-            </ul>
+    <footer className="bg-gray-900 text-gray-300 py-12 px-4">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="space-y-4">
+          <div className="mb-4">
+            <Image
+              src="/whiterewealed.png"
+              alt="Rewealed"
+              width={150}
+              height={50}
+              className="w-auto h-auto"
+            />
           </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">About</h3>
-            <ul className="space-y-2">
-              <li><Link href="/about" className="hover:text-gray-300">Our Story</Link></li>
-              <li><Link href="/careers" className="hover:text-gray-300">Careers</Link></li>
-              <li><Link href="/sustainability" className="hover:text-gray-300">Sustainability</Link></li>
-              <li><Link href="/press" className="hover:text-gray-300">Press</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Customer Service</h3>
-            <ul className="space-y-2">
-              <li><Link href="/contact" className="hover:text-gray-300">Contact Us</Link></li>
-              <li><Link href="/shipping" className="hover:text-gray-300">Shipping</Link></li>
-              <li><Link href="/returns" className="hover:text-gray-300">Returns</Link></li>
-              <li><Link href="/faq" className="hover:text-gray-300">FAQ</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Newsletter</h3>
-            <p className="mb-4">Stay up to date with our latest offers and news</p>
-            <form className="flex space-x-2">
-              <Input type="email" placeholder="Your email" className="bg-gray-800 text-white border-gray-700" />
-              <Button type="submit" variant="outline" className="bg-white text-black hover:bg-gray-200">Subscribe</Button>
-            </form>
-            <div className="mt-6 flex space-x-4">
-              <a href="#" className="text-white hover:text-gray-300">
-                <Facebook size={24} />
-                <span className="sr-only">Facebook</span>
-              </a>
-              <a href="#" className="text-white hover:text-gray-300">
-                <Instagram size={24} />
-                <span className="sr-only">Instagram</span>
-              </a>
-              <a href="#" className="text-white hover:text-gray-300">
-                <Twitter size={24} />
-                <span className="sr-only">Twitter</span>
-              </a>
-            </div>
+          <p className="text-xl font-semibold">Not for everyone!</p>
+          <div className="flex space-x-4">
+            <Link href="#hero" className="hover:text-white transition-colors">
+              <TikTokIcon />
+            </Link>
+            <Link href="#products" className="hover:text-white transition-colors">
+              <Instagram size={20} />
+            </Link>
+            <Link href="#shipping" className="hover:text-white transition-colors">
+              <Twitter size={20} />
+            </Link>
           </div>
         </div>
-        <div className="mt-12 pt-8 border-t border-gray-800 text-center text-sm">
-          <p>&copy; 2024 Your Company Name. All rights reserved.</p>
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-white">Quick Links</h4>
+          <ul className="space-y-2">
+            <li>
+              <Link href="#hero" className="hover:text-white transition-colors">Home</Link>
+            </li>
+            <li>
+              <Link href="#products" className="hover:text-white transition-colors">Products</Link>
+            </li>
+            <li>
+              <Link href="#contact" className="hover:text-white transition-colors">Contact</Link>
+            </li>
+          </ul>
         </div>
+        <div className="space-y-4">
+          <h4 className="text-lg font-semibold text-white">Policies</h4>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            </li>
+            <li>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+            </li>
+            <li>
+              <Link href="/refund" className="hover:text-white transition-colors">Refund Policy</Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
+        <p>&copy; {new Date().getFullYear()} Rewealed. All rights reserved.</p>
+        <p className="mt-2">Stay cool, stay you! 😎</p>
       </div>
     </footer>
   )
 }
+
+export default Footer
 
