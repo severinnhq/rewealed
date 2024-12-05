@@ -51,7 +51,7 @@ export default function ContactSection() {
           <div className="w-full md:w-1/2">
             <div className="relative w-full max-w-[400px] mx-auto aspect-square overflow-hidden">
               <Image
-                src="/uploads/test.png"
+                src="/uploads/contact.png"
                 alt="Contact Image"
                 layout="fill"
                 objectFit="cover"
