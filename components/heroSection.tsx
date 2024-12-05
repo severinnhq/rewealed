@@ -1,30 +1,43 @@
-'use client'
-
 import Image from 'next/image'
-import { Button } from "@/components/ui/button"
 
-export function HeroSection() {
-
+export default function HeroSection() {
   return (
-    <div 
-      className="relative w-full h-screen mt-[-64px] bg-gray-900 text-white overflow-hidden"
-    >
-      <Image
-        src="/hero-background.jpg"
-        alt="Hero background"
-        layout="fill"
-        objectFit="cover"
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
-      />
-      <div className="absolute inset-0 bg-black bg-opacity-50" />
-      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-        <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to Our Store</h1>
-        <p className="text-xl md:text-2xl mb-8 max-w-2xl">Discover our latest collection of premium products designed to elevate your lifestyle.</p>
-        <Button size="lg" className="text-lg px-8 py-3">
-          Shop Now
-        </Button>
+    <section className="relative h-screen w-full overflow-hidden">
+      <picture>
+        {/* Mobile image */}
+        <source
+          media="(max-width: 640px)"
+          srcSet="/uploads/resp1.png?height=1080&width=640 640w"
+          sizes="100vw"
+        />
+        {/* Tablet image */}
+        <source
+          media="(max-width: 1024px)"
+          srcSet="/uploads/resp1.png?height=1080&width=1024 1024w"
+          sizes="100vw"
+        />
+        {/* Desktop image */}
+        <source
+          media="(min-width: 1025px)"
+          srcSet="/uploads/tryhero.png?height=1080&width=1920 1920w"
+          sizes="100vw"
+        />
+        <Image
+          src="/placeholder.svg?height=1080&width=1920"
+          alt="Hero Image"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+      </picture>
+      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to Our Site</h1>
+          <p className="text-xl md:text-2xl">Discover amazing content and experiences</p>
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
 

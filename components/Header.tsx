@@ -14,24 +14,36 @@ interface HeaderProps {
 
 export function Header({ onCartClick, cartItems }: HeaderProps) { 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
-    document.body.style.paddingTop = '64px'; 
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
     return () => {
-      document.body.style.paddingTop = '0px';
-    };
-  }, []);
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0)
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+        isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
+      }`}>
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-gray-600 hover:text-gray-900"
+            className={`${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-gray-200'}`}
             onClick={() => setIsMenuOpen(true)}
           >
             <MenuIcon size={24} />
@@ -40,10 +52,10 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
 
           <div className="flex-grow flex justify-center">
             <Image
-              src="/logo.png"
-              alt="Store Logo"
-              width={120}
-              height={40}
+              src={isScrolled ? "/blacklogo.png" : "/whitelogo.png"}
+              alt="Logo"
+              width={160}
+              height={60}
               className="object-contain"
             />
           </div>
@@ -51,7 +63,7 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-gray-600 hover:text-gray-900 relative"
+            className={`${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-gray-200'} relative`}
             onClick={onCartClick}
           >
             <ShoppingBag size={24} />

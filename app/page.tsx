@@ -1,6 +1,6 @@
 'use client'
 
-import { HeroSection } from '../components/heroSection'
+import  HeroSection  from '../components/heroSection'
 import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
