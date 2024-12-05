@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { MenuIcon, ShoppingCart } from 'lucide-react'
+import { MenuIcon, ShoppingBag } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { CartItem } from '@/types/cart'
 import Menu from '@/components/Menu'
@@ -54,8 +54,8 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
             className="text-gray-600 hover:text-gray-900 relative"
             onClick={onCartClick}
           >
-            <ShoppingCart size={24} />
-            <span className="sr-only">Cart</span>
+            <ShoppingBag size={24} />
+            <span className="sr-only">Shopping cart</span>
             {cartItemsCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {cartItemsCount}

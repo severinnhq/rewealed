@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Home, ShoppingBag, Mail, Instagram, Twitter } from 'lucide-react'
+import { X, Home, ShoppingBag, Mail, Instagram, Twitter } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
@@ -38,8 +38,8 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
 
   const menuItems = [
     { name: 'Home', icon: Home, href: '/' },
-    { name: 'Products', icon: ShoppingBag, href: '#products' },
-    { name: 'Contact', icon: Mail, href: '#contact' },
+    { name: 'Products', icon: ShoppingBag, href: '/products' },
+    { name: 'Contact', icon: Mail, href: '/contact' },
   ]
 
   return (
@@ -60,6 +60,18 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
           className={`fixed inset-y-0 left-0 w-screen bg-white shadow-xl flex flex-col ${isMobile ? 'max-w-full' : 'max-w-md'}`}
         >
           <div className="h-full flex flex-col">
+            <div className="flex-shrink-0 px-4 py-6 sm:px-6">
+              <div className="flex items-start justify-between">
+                <button
+                  type="button"
+                  className="-m-2 p-2 text-gray-400 hover:text-gray-500"
+                  onClick={onClose}
+                  aria-label="Close menu"
+                >
+                  <X size={24} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
             <div className="flex-1 px-4 sm:px-6 overflow-y-auto">
               <nav className="space-y-4 py-6">
                 {menuItems.map((item) => (
