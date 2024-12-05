@@ -11,19 +11,6 @@ interface MenuProps {
 }
 
 const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -38,8 +25,8 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
 
   const menuItems = [
     { name: 'Home', icon: Home, href: '/' },
-    { name: 'Products', icon: ShoppingBag, href: '/products' },
-    { name: 'Contact', icon: Mail, href: '/contact' },
+    { name: 'Products', icon: ShoppingBag, href: '#products' },
+    { name: 'Contact', icon: Mail, href: '#contact' },
   ]
 
   return (
@@ -49,9 +36,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
     >
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className={`absolute inset-0 bg-black bg-opacity-50 transition-opacity ${
-            isOpen ? 'opacity-100 cursor-close' : 'opacity-0'
-          }`} 
+          className={`absolute inset-0 bg-black bg-opacity-50 transition-opacity ${isOpen ? 'opacity-100 cursor-close' : 'opacity-0'}`} 
           onClick={onClose}
           aria-label="Close menu"
         />

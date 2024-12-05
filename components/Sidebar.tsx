@@ -28,21 +28,9 @@ interface SidebarProps {
   onUpdateQuantity: (index: number, newQuantity: number) => void;
 }
 
-const ShoppingCartSidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveItem, onUpdateQuantity }) => {
+const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveItem, onUpdateQuantity }) => {
   const [isLoading, setIsLoading] = useState(false)
   const { handleCheckout } = useCheckout();
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -211,5 +199,5 @@ const ShoppingCartSidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClos
   )
 }
 
-export default ShoppingCartSidebar
+export default Sidebar
 
