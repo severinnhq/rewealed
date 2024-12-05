@@ -80,4 +80,3 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
     </>
   )
 }
-

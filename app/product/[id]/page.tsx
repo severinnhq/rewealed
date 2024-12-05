@@ -101,7 +101,7 @@ export default function ProductPage() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className="container mx-auto px-4 py-12" ref={productRef}>
+      <div className="container mx-auto px-4 py-24" ref={productRef}>
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-3/5">
             <div className="mb-6">
