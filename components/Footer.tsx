@@ -44,7 +44,7 @@ const Footer = () => {
         <div className="space-y-4">
           <div className="mb-4">
             <Image
-              src="/whiterewealed.png"
+              src="/whitelogo.png"
               alt="Rewealed"
               width={150}
               height={50}

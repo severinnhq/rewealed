@@ -7,18 +7,18 @@ export default function HeroSection() {
         {/* Mobile image */}
         <source
           media="(max-width: 640px)"
-          srcSet="/uploads/resp1.png?height=1080&width=640 640w"
+          srcSet="/uploads/resp2.png?height=1080&width=640 640w"
           sizes="100vw"
         />
         {/* Tablet image */}
         <source
-          media="(max-width: 1024px)"
+          media="(max-width: 1128px)"
           srcSet="/uploads/resp1.png?height=1080&width=1024 1024w"
           sizes="100vw"
         />
         {/* Desktop image */}
         <source
-          media="(min-width: 1025px)"
+          media="(min-width: 1129px)"
           srcSet="/uploads/tryhero.png?height=1080&width=1920 1920w"
           sizes="100vw"
         />
