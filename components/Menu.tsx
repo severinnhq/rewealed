@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { X, Home, ShoppingBag, Mail, Instagram, Twitter } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
