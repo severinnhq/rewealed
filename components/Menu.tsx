@@ -44,9 +44,9 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
           initial={{ x: 'calc(-100% - 1rem)' }}
           animate={{ x: isOpen ? '0%' : 'calc(-100% - 1rem)' }}
           transition={{ type: 'tween', ease: 'easeOut', duration: 0.3 }}
-          className="fixed inset-y-4 left-4 w-full max-w-[26rem] flex"
+          className="fixed inset-y-0 md:inset-y-4 left-0 md:left-4 w-full md:w-auto md:max-w-lg flex p-4 md:p-0"
         >
-          <div className="relative w-full max-w-[26rem] flex">
+          <div className="relative w-full md:w-[400px] flex">
             <div className="absolute inset-0 bg-white shadow-xl rounded-lg" />
             <div className="relative flex-1 flex flex-col h-full p-4 bg-white rounded-lg overflow-hidden">
               <div className="flex-shrink-0 py-2">
