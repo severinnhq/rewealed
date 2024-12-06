@@ -53,13 +53,13 @@ const Footer = () => {
           </div>
           <p className="text-xl font-semibold">Not for everyone!</p>
           <div className="flex space-x-4">
-            <Link href="#hero" className="hover:text-white transition-colors">
+            <Link href="https://www.tiktok.com/@rewealedapparel" className="hover:text-white transition-colors">
               <TikTokIcon />
             </Link>
-            <Link href="#products" className="hover:text-white transition-colors">
+            <Link href="https://www.instagram.com/rewealed" className="hover:text-white transition-colors">
               <Instagram size={20} />
             </Link>
-            <Link href="#shipping" className="hover:text-white transition-colors">
+            <Link href="https://www.x.com/rewealed" className="hover:text-white transition-colors">
               <Twitter size={20} />
             </Link>
           </div>
