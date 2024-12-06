@@ -1,50 +1,31 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { MenuIcon, ShoppingBag } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { CartItem } from '@/types/cart'
 import Menu from '@/components/Menu'
-import Link from 'next/link'
 
-interface HeaderProps {
+interface WhiteHeaderProps {
   onCartClick: () => void;
   cartItems: CartItem[];
 }
 
-export function Header({ onCartClick, cartItems }: HeaderProps) { 
+export function WhiteHeader({ onCartClick, cartItems }: WhiteHeaderProps) { 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
 
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0)
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
-        isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
-      }`}>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-gray-200'}`}
+            className="text-gray-600 hover:text-gray-900"
             onClick={() => setIsMenuOpen(true)}
           >
             <MenuIcon size={24} />
@@ -52,21 +33,21 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
           </Button>
 
           <div className="flex-grow flex justify-center">
-          <Link href="/">
-            <Image
-              src={isScrolled ? "/blacklogo.png" : "/whitelogo.png"}
-              alt="Logo"
-              width={160}
-              height={60}
-              className="object-contain"
-            />
-        </Link>
+            <Link href="/">
+              <Image
+                src="/blacklogo.png"
+                alt="Logo"
+                width={160}
+                height={60}
+                className="object-contain cursor-pointer"
+              />
+            </Link>
           </div>
 
           <Button 
             variant="ghost" 
             size="icon" 
-            className={`${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-gray-200'} relative`}
+            className="text-gray-600 hover:text-gray-900 relative"
             onClick={onCartClick}
           >
             <ShoppingBag size={24} />
@@ -83,3 +64,4 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
     </>
   )
 }
+

@@ -1,3 +1,4 @@
+
 'use client'
 
 import React from 'react'
@@ -23,4 +24,3 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
     </CartProvider>
   )
 }
-

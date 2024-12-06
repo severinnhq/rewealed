@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCart } from '@/lib/CartContext'
-import { Header } from '@/components/Header'
+import { WhiteHeader } from '@/components/WhiteHeader';
 import Sidebar from '@/components/Sidebar'
 import { Plus, Minus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -100,7 +100,7 @@ export default function ProductPage() {
 
   return (
     <>
-      <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
+      <WhiteHeader onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className="container mx-auto px-4 py-24" ref={productRef}>
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-3/5">
