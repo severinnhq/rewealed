@@ -95,7 +95,7 @@ const Footer = () => {
       </div>
       <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
         <p>&copy; {new Date().getFullYear()} Rewealed. All rights reserved.</p>
-        <p className="mt-2">Stay cool, stay you! 😎</p>
+  
       </div>
     </footer>
   )

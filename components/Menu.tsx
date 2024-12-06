@@ -88,12 +88,12 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
                     <span className="sr-only">Instagram</span>
                     <Instagram className="h-6 w-6" />
                   </a>
-                  <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-500 transition-colors">
+                  <a href="https://www.x.com/rewealed" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-500 transition-colors">
                     <span className="sr-only">Twitter</span>
                     <Twitter className="h-6 w-6" />
                   </a>
                 </div>
-              </div>
+              </div>    
             </div>
           </div>
         </motion.div>
