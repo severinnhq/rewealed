@@ -11,10 +11,11 @@ interface FloatingProductBoxProps {
     salePrice?: number
   }
   selectedSize: string
+  quantity: number
   onAddToCart: () => void
 }
 
-export function FloatingProductBox({ product, selectedSize, onAddToCart }: FloatingProductBoxProps) {
+export function FloatingProductBox({ product, selectedSize, quantity, onAddToCart }: FloatingProductBoxProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -32,6 +33,7 @@ export function FloatingProductBox({ product, selectedSize, onAddToCart }: Float
       <div className="flex-grow">
         <h3 className="font-semibold text-sm">{product.name}</h3>
         <p className="text-sm text-gray-600">Size: {selectedSize}</p>
+        <p className="text-sm text-gray-600">Quantity: {quantity}</p>
         <p className="text-sm font-bold">
           {product.salePrice ? (
             <>

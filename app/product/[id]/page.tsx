@@ -35,7 +35,7 @@ interface Product {
 export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [selectedSize, setSelectedSize] = useState<string>('')
-  const [quantity] = useState(1)
+  const [quantity, setQuantity] = useState(1)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string>('')
   const { id } = useParams()
@@ -71,12 +71,17 @@ export default function ProductPage() {
     const handleScroll = () => {
       if (productRef.current) {
         const rect = productRef.current.getBoundingClientRect();
-        setShowFloatingBox(rect.top < -200);
+        const isMobile = window.innerWidth < 768;
+        setShowFloatingBox(isMobile ? rect.top < -600 : rect.top < -100);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
   const handleAddToCart = () => {
@@ -119,6 +124,7 @@ export default function ProductPage() {
   }
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+  const isProductAvailable = product.sizes.length > 0
 
   return (
     <>
@@ -177,95 +183,111 @@ export default function ProductPage() {
               )}
             </div>
             <hr className="border-t border-gray-300 my-4 w-1/2" />
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-2">Select Size:</h2>
-              {product.sizes.length === 0 ? (
-                <div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group"
-                    onClick={() => setActiveEmailInput(true)}
-                  >
-                    <BellIcon className="h-4 w-4 mr-1 animate-ring" />
-                    Notify Me
-                  </Button>
-                  {activeEmailInput && (
-                    <div className="mt-4">
-                      <form onSubmit={handleEmailSubmit} className="flex flex-col space-y-2">
-                        <Input
-                          type="email"
-                          name="email"
-                          placeholder="Enter your email"
-                          className="text-sm flex-grow"
-                          required
-                        />
-                        <Button type="submit" size="sm" className="whitespace-nowrap bg-black text-white hover:bg-gray-800">
-                          Notify
-                        </Button>
-                      </form>
-                      {notifyMessage && (
-                        <div 
-                          className={`mt-2 p-2 rounded-md text-sm font-medium ${
-                            notifyMessage.type === 'success' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+            {isProductAvailable ? (
+              <>
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold mb-2">Select Size:</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {product.sizes.includes('One Size') ? (
+                      <Button
+                        variant="outline"
+                        className="border-2 border-black text-black"
+                      >
+                        One Size
+                      </Button>
+                    ) : (
+                      availableSizes.map((size) => (
+                        <Button
+                          key={size}
+                          variant={selectedSize === size ? 'outline' : 'ghost'}
+                          onClick={() => handleSizeSelect(size)}
+                          className={`border ${
+                            selectedSize === size
+                              ? 'border-black border-2 text-black'
+                              : 'border-gray-300 text-gray-700'
+                          } ${
+                            !product.sizes.includes(size) && 'opacity-50 cursor-not-allowed'
                           }`}
+                          disabled={!product.sizes.includes(size)}
                         >
-                          {notifyMessage.content}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                          {size}
+                        </Button>
+                      ))
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.includes('One Size') ? (
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold mb-2">Quantity:</h2>
+                  <div className="flex items-center">
                     <Button
                       variant="outline"
-                      className="border-2 border-black text-black"
+                      size="icon"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="h-8 w-8"
                     >
-                      One Size
+                      -
                     </Button>
-                  ) : (
-                    availableSizes.map((size) => (
-                      <Button
-                        key={size}
-                        variant={selectedSize === size ? 'outline' : 'ghost'}
-                        onClick={() => handleSizeSelect(size)}
-                        className={`border ${
-                          selectedSize === size
-                            ? 'border-black border-2 text-black'
-                            : 'border-gray-300 text-gray-700'
-                        } ${
-                          !product.sizes.includes(size) && 'opacity-50 cursor-not-allowed'
-                        }`}
-                        disabled={!product.sizes.includes(size)}
-                      >
-                        {size}
-                      </Button>
-                    ))
-                  )}
+                    <span className="mx-4 text-lg">{quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="h-8 w-8"
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </div>
-            <div className="mb-4">
-              {product.sizes.length > 0 ? (
+                <div className="mb-4">
+                  <Button
+                    onClick={handleAddToCart}
+                    className="w-full py-6 text-xl font-bold bg-black text-white hover:bg-gray-800"
+                  >
+                    Add to Cart
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="mb-4">
                 <Button
-                  onClick={handleAddToCart}
-                  className="w-full py-6 text-xl font-bold bg-black text-white hover:bg-gray-800"
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group"
+                  onClick={() => setActiveEmailInput(true)}
                 >
-                  Add to Cart
+                  <BellIcon className="h-4 w-4 mr-1 animate-ring" />
+                  Notify Me
                 </Button>
-              ) : (
-                <Button
-                  disabled
-                  className="w-full py-6 text-xl font-bold bg-gray-400 text-white cursor-not-allowed"
-                >
-                  Sold Out
-                </Button>
-              )}
-            </div>
+                {activeEmailInput && (
+                  <div className="mt-4">
+                    <form onSubmit={handleEmailSubmit} className="flex flex-col space-y-2">
+                      <Input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        className="text-sm flex-grow"
+                        required
+                      />
+                      <Button type="submit" size="sm" className="whitespace-nowrap bg-black text-white hover:bg-gray-800">
+                        Notify
+                      </Button>
+                    </form>
+                    {notifyMessage && (
+                      <div 
+                        className={`mt-2 p-2 rounded-md text-sm font-medium ${
+                          notifyMessage.type === 'success' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {notifyMessage.content}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <p className="text-red-500 font-semibold mt-4">This product is currently sold out.</p>
+              </div>
+            )}
             <div className="mt-6 space-y-4">
               <Collapsible
                 open={isDescriptionOpen}
@@ -367,13 +389,14 @@ export default function ProductPage() {
         </div>
       </div>
       <AnimatePresence>
-      {showFloatingBox && product && product.sizes.length > 0 && (
-        <FloatingProductBox
-          product={product}
-          selectedSize={selectedSize}
-          onAddToCart={handleAddToCart}
-        />
-      )}
+        {showFloatingBox && product && isProductAvailable && (
+          <FloatingProductBox
+            product={product}
+            selectedSize={selectedSize}
+            quantity={quantity}
+            onAddToCart={handleAddToCart}
+          />
+        )}
       </AnimatePresence>
       <Sidebar
         isOpen={isSidebarOpen}
