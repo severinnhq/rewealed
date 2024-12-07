@@ -28,7 +28,6 @@ export default function ProductList() {
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
   const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
   const [notifyClicked, setNotifyClicked] = useState<string | null>(null);
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -149,8 +148,6 @@ export default function ProductList() {
                 visibleProducts.has(product._id) ? 'opacity-100' : 'opacity-0'
               }`}
               onClick={() => handleProductClick(product._id)}
-              onMouseEnter={() => setHoveredProduct(product._id)}
-              onMouseLeave={() => setHoveredProduct(null)}
             >
               <div 
                 className="relative aspect-square overflow-hidden"
@@ -192,7 +189,6 @@ export default function ProductList() {
                         className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setHoveredProduct(product._id);
                           setNotifyClicked(product._id);
                         }}
                       >
