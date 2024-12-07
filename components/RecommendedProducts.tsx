@@ -175,12 +175,20 @@ export default function RecommendedProducts() {
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-opacity duration-500 ease-in-out cursor-pointer ${
-                visibleProducts.has(product._id) ? 'opacity-100' : 'opacity-0'
+              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-10 ${
+                visibleProducts.has(product._id) ? 'animate-chainReaction' : ''
               }`}
+              style={{
+                animationDelay: `${index * 100}ms`,
+              }}
               onClick={() => handleProductClick(product._id)}
             >
               <div className="relative aspect-square overflow-hidden">
+                {product.salePrice && (
+                  <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-20">
+                    SALE
+                  </div>
+                )}
                 <div className={`absolute inset-0 transition-opacity duration-300 ease-out md:group-hover:opacity-0 ${product.sizes.length === 0 ? 'opacity-50' : ''}`}>
                   <Image
                     src={`/uploads/${product.mainImage}`}
@@ -348,6 +356,21 @@ export default function RecommendedProducts() {
 
         .animate-ring {
           animation: ring 2s ease-in-out infinite;
+        }
+
+        @keyframes chainReaction {
+          0% {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-chainReaction {
+          animation: chainReaction 0.5s ease-out forwards;
         }
       `}</style>
     </>

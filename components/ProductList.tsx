@@ -154,22 +154,30 @@ export default function ProductList() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className="container mx-auto p-4 py-12">
-        <h1 className="text-2xl font-bold mb-4">Our Products</h1>
+      <div className="container mx-auto p-4 py-24">
+        <h1 className="text-4xl font-bold mb-12">LAST SALE OF THE YEAR</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product, index) => (
             <div 
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-opacity duration-500 ease-in-out cursor-pointer ${
-                visibleProducts.has(product._id) ? 'opacity-100' : 'opacity-0'
+              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-10 ${
+                visibleProducts.has(product._id) ? 'animate-chainReaction' : ''
               }`}
+              style={{
+                animationDelay: `${(index % 3) * 100}ms`,
+              }}
               onClick={() => handleProductClick(product._id)}
             >
               <div 
                 className="relative aspect-square overflow-hidden"
               >
+                {product.salePrice && (
+                  <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-20">
+                    SALE
+                  </div>
+                )}
                 <div 
                   className={`absolute inset-0 transition-opacity duration-300 ease-out ${
                     product.sizes.length === 0 ? 'opacity-40 md:group-hover:opacity-0' : 'md:group-hover:opacity-0'
@@ -350,6 +358,21 @@ export default function ProductList() {
 
         .animate-ring {
           animation: ring 2s ease-in-out infinite;
+        }
+
+        @keyframes chainReaction {
+          0% {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-chainReaction {
+          animation: chainReaction 0.5s ease-out forwards;
         }
       `}</style>
     </>
