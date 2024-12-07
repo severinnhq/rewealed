@@ -135,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                                     </Link>
                                   </h3>
                                   <p className="ml-4">
-                                    ${((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
+                                    €{((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
                                   </p>
                                 </div>
                                 <p className="mt-1 text-sm text-gray-500">Size: {item.size}</p>
@@ -177,7 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <p>Subtotal</p>
                     <p>
-                      ${cartItems.reduce((total, item) => total + (item.product.salePrice || item.product.price) * item.quantity, 0).toFixed(2)}
+                      €{cartItems.reduce((total, item) => total + (item.product.salePrice || item.product.price) * item.quantity, 0).toFixed(2)}
                     </p>
                   </div>
                   <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>

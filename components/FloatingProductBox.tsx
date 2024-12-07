@@ -35,11 +35,11 @@ export function FloatingProductBox({ product, selectedSize, onAddToCart }: Float
         <p className="text-sm font-bold">
           {product.salePrice ? (
             <>
-              <span className="text-red-600">${product.salePrice.toFixed(2)}</span>
-              <span className="text-gray-500 line-through ml-2">${product.price.toFixed(2)}</span>
+              <span className="text-red-600">€{product.salePrice.toFixed(2)}</span>
+              <span className="text-gray-500 line-through ml-2">€{product.price.toFixed(2)}</span>
             </>
           ) : (
-            <span>${product.price.toFixed(2)}</span>
+            <span>€{product.price.toFixed(2)}</span>
           )}
         </p>
       </div>
@@ -52,3 +52,4 @@ export function FloatingProductBox({ product, selectedSize, onAddToCart }: Float
     </motion.div>
   )
 }
+

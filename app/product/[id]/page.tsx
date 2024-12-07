@@ -147,11 +147,11 @@ export default function ProductPage() {
             <div className="mb-4">
               {product.salePrice ? (
                 <div>
-                  <span className="text-2xl font-bold text-red-600 mr-2">${product.salePrice.toFixed(2)}</span>
-                  <span className="text-lg text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-red-600 mr-2">€{product.salePrice.toFixed(2)}</span>
+                  <span className="text-lg text-gray-500 line-through">€{product.price.toFixed(2)}</span>
                 </div>
               ) : (
-                <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
+                <span className="text-2xl font-bold">€{product.price.toFixed(2)}</span>
               )}
             </div>
             <hr className="border-t border-gray-300 my-4 w-1/2" />
@@ -344,3 +344,4 @@ export default function ProductPage() {
     </>
   )
 }
+

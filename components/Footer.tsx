@@ -51,7 +51,7 @@ const Footer = () => {
               className="w-auto h-auto"
             />
           </div>
-          <p className="text-xl font-semibold">Not for everyone!</p>
+          <p className="text-xl font-semibold">Not for everyone.</p>
           <div className="flex space-x-4">
             <Link href="https://www.tiktok.com/@rewealedapparel" className="hover:text-white transition-colors">
               <TikTokIcon />

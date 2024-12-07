@@ -34,8 +34,8 @@ export default function HeroSection() {
       </picture>
       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div className="text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to Our Site</h1>
-          <p className="text-xl md:text-2xl">Discover amazing content and experiences</p>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4"></h1>
+          <p className="text-xl md:text-2xl"></p>
         </div>
       </div>
     </section>

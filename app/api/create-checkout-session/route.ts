@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     const lineItems = cartItems.map((item) => ({
       price_data: {
-        currency: 'usd',
+        currency: 'eur',
         product_data: {
           name: `${item.product.name} (${item.size})`,
           images: [`${process.env.NEXT_PUBLIC_BASE_URL}/api/product-image?filename=${encodeURIComponent(item.product.mainImage)}`],
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
+      currency: 'eur',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
       shipping_address_collection: {
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
             type: 'fixed_amount',
             fixed_amount: {
               amount: 500,
-              currency: 'usd',
+              currency: 'eur',
             },
             display_name: 'Standard Shipping',
             delivery_estimate: {
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
             type: 'fixed_amount',
             fixed_amount: {
               amount: 1500,
-              currency: 'usd',
+              currency: 'eur',
             },
             display_name: 'Express Shipping',
             delivery_estimate: {

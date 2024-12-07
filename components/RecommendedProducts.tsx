@@ -165,11 +165,11 @@ export default function RecommendedProducts() {
               <div className="mt-2">
                 {product.salePrice ? (
                   <>
-                    <span className="text-lg font-bold text-red-600">${product.salePrice.toFixed(2)}</span>
-                    <span className="text-sm text-gray-500 line-through ml-2">${product.price.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-red-600">€{product.salePrice.toFixed(2)}</span>
+                    <span className="text-sm text-gray-500 line-through ml-2">€{product.price.toFixed(2)}</span>
                   </>
                 ) : (
-                  <span className="text-lg font-bold text-black">${product.price.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-black">€{product.price.toFixed(2)}</span>
                 )}
               </div>
             </div>
