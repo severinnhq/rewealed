@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   try {
     const client = await clientPromise
     const db = client.db("webstore")
-    const { name, description, price, salePrice, mainImage, category, sizes, galleryImages } = await request.json()
+    const { name, description, price, salePrice, mainImage, categories, sizes, galleryImages } = await request.json()
 
     const product = {
       name,
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       price,
       salePrice,
       mainImage,
-      category,
+      categories: Array.isArray(categories) ? categories : [categories].filter(Boolean),
       sizes,
       galleryImages,
       createdAt: new Date(),

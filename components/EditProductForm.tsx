@@ -16,7 +16,7 @@ interface Product {
   price: number
   salePrice?: number
   mainImage: string
-  category: string
+  categories: string[]
   sizes: string[]
   galleryImages: string[]
 }
@@ -32,7 +32,8 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
   const [price, setPrice] = useState(product.price.toString())
   const [salePrice, setSalePrice] = useState(product.salePrice?.toString() || '')
   const [mainImage, setMainImage] = useState(product.mainImage)
-  const [category, setCategory] = useState(product.category)
+  const [categories, setCategories] = useState<string[]>(product.categories || [])
+  const [newCategory, setNewCategory] = useState('')
   const [selectedSizes, setSelectedSizes] = useState<string[]>(product.sizes)
   const [galleryImages, setGalleryImages] = useState<string[]>(product.galleryImages)
   const [newGalleryImage, setNewGalleryImage] = useState('')
@@ -55,6 +56,17 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
     setGalleryImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  const handleAddCategory = () => {
+    if (newCategory && !categories.includes(newCategory)) {
+      setCategories(prev => [...prev, newCategory])
+      setNewCategory('')
+    }
+  }
+
+  const handleRemoveCategory = (index: number) => {
+    setCategories(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const response = await fetch(`/api/products/${product._id}`, {
@@ -68,7 +80,7 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
         price: parseFloat(price), 
         salePrice: salePrice ? parseFloat(salePrice) : null,
         mainImage,
-        category,
+        categories,
         sizes: selectedSizes,
         galleryImages
       }),
@@ -121,13 +133,29 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
         />
       </div>
       <div>
-        <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-        />
+        <Label>Categories</Label>
+        <div className="flex gap-2 mb-2">
+          <Input
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            placeholder="Add category"
+          />
+          <Button type="button" onClick={handleAddCategory}>Add</Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category, index) => (
+            <div key={index} className="bg-gray-100 px-2 py-1 rounded flex items-center">
+              <span>{category}</span>
+              <button
+                type="button"
+                onClick={() => handleRemoveCategory(index)}
+                className="ml-2 text-red-500"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
       <div>
         <Label>Sizes</Label>

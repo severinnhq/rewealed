@@ -11,7 +11,7 @@ interface Product {
   price: number
   salePrice?: number
   mainImage: string
-  category: string
+  categories: string[]
   sizes: string[]
   galleryImages: string[]
 }
@@ -31,11 +31,12 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
     price: initialProduct?.price || 0,
     salePrice: initialProduct?.salePrice,
     mainImage: initialProduct?.mainImage || '',
-    category: initialProduct?.category || '',
+    categories: initialProduct?.categories || [],
     sizes: initialProduct?.sizes || [],
     galleryImages: initialProduct?.galleryImages || [],
   })
   const [newGalleryImage, setNewGalleryImage] = useState('')
+  const [newCategory, setNewCategory] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -63,6 +64,17 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
 
   const handleGalleryImageRemove = (image: string) => {
     setProduct(prev => ({ ...prev, galleryImages: prev.galleryImages.filter(img => img !== image) }))
+  }
+
+  const handleCategoryAdd = () => {
+    if (newCategory && !product.categories.includes(newCategory)) {
+      setProduct(prev => ({ ...prev, categories: [...prev.categories, newCategory] }))
+      setNewCategory('')
+    }
+  }
+
+  const handleCategoryRemove = (category: string) => {
+    setProduct(prev => ({ ...prev, categories: prev.categories.filter(cat => cat !== category) }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -126,14 +138,29 @@ export function ProductForm({ initialProduct, onSubmit, onCancel }: ProductFormP
         />
       </div>
       <div>
-        <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          name="category"
-          value={product.category}
-          onChange={handleChange}
-          required
-        />
+        <Label>Categories</Label>
+        <div className="flex gap-2 mb-2">
+          <Input
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            placeholder="Add category"
+          />
+          <Button type="button" onClick={handleCategoryAdd}>Add</Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {product.categories.map((category) => (
+            <div key={category} className="bg-gray-100 px-2 py-1 rounded flex items-center">
+              <span>{category}</span>
+              <button
+                type="button"
+                onClick={() => handleCategoryRemove(category)}
+                className="ml-2 text-red-500"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
       <div>
         <Label>Sizes</Label>

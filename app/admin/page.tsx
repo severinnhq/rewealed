@@ -12,7 +12,7 @@ interface Product {
   price: number
   salePrice?: number
   mainImage: string
-  category: string
+  categories: string[]
   sizes: string[]
   galleryImages: string[]
 }
@@ -35,7 +35,8 @@ export default function AdminPage() {
       setProducts(data.map((product) => ({
         ...product,
         price: Number(product.price) || 0,
-        salePrice: product.salePrice ? Number(product.salePrice) || 0 : undefined
+        salePrice: product.salePrice ? Number(product.salePrice) || 0 : undefined,
+        categories: Array.isArray(product.categories) ? product.categories : [product.categories].filter(Boolean)
       })))
     }
   }
@@ -109,7 +110,7 @@ export default function AdminPage() {
                   {product.salePrice && (
                     <p className="text-red-600">Sale Price: ${product.salePrice.toFixed(2)}</p>
                   )}
-                  <p>Category: {product.category}</p>
+                  <p>Categories: {product.categories.join(', ')}</p>
                   <p>Sizes: {product.sizes.join(', ')}</p>
                   <Button onClick={() => handleEditClick(product)} className="mt-2">
                     Edit Product

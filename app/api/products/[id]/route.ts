@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest) {
     const db = client.db("webstore")
     const body = await request.json()
 
-    const { name, description, price, salePrice, mainImage, category, sizes, galleryImages } = body
+    const { name, description, price, salePrice, mainImage, categories, sizes, galleryImages } = body
 
     const result = await db.collection("products").updateOne(
       { _id: new ObjectId(id) },
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest) {
           price,
           salePrice,
           mainImage,
-          category,
+          categories: Array.isArray(categories) ? categories : [categories].filter(Boolean),
           sizes,
           galleryImages,
           updatedAt: new Date(),
