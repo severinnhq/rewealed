@@ -223,16 +223,16 @@ export default function ProductPage() {
                       variant="outline"
                       size="icon"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="h-8 w-8"
+                      className="h-10 w-10 text-lg"
                     >
                       -
                     </Button>
-                    <span className="mx-4 text-lg">{quantity}</span>
+                    <span className="mx-4 text-xl font-semibold">{quantity}</span>
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => setQuantity(quantity + 1)}
-                      className="h-8 w-8"
+                      className="h-10 w-10 text-lg"
                     >
                       +
                     </Button>
