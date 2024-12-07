@@ -29,7 +29,6 @@ export default function ProductList() {
   const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
-  const [activeEmailInput, setActiveEmailInput] = useState<string | null>(null);
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
   const [notifyClicked, setNotifyClicked] = useState<string | null>(null);
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -194,7 +193,6 @@ export default function ProductList() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setHoveredProduct(product._id);
-                          setActiveEmailInput(product._id);
                           setNotifyClicked(product._id);
                         }}
                       >
@@ -202,7 +200,7 @@ export default function ProductList() {
                         Notify Me
                       </Button>
                     </div>
-                    {((hoveredProduct === product._id && window.innerWidth >= 768) || notifyClicked === product._id) && (
+                    {(notifyClicked === product._id) && (
                       <div 
                         className="absolute top-12 right-2 z-20 bg-white rounded-lg p-3 shadow-[0_0_10px_rgba(0,0,0,0.3)] w-64"
                         onClick={(e) => e.stopPropagation()}
@@ -210,11 +208,9 @@ export default function ProductList() {
                         <form 
                           onSubmit={(e) => handleEmailSubmit(e, product._id, product.name)} 
                           className="flex flex-col space-y-2" 
-                          onFocus={() => setActiveEmailInput(product._id)} 
                           onBlur={(e) => {
                             if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                               if (!notifyMessages[product._id]) {
-                                setActiveEmailInput(null);
                                 setNotifyClicked(null);
                               }
                             }
