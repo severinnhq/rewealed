@@ -31,6 +31,7 @@ export default function ProductList() {
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [activeEmailInput, setActiveEmailInput] = useState<string | null>(null);
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
+  const [notifyClicked, setNotifyClicked] = useState<string | null>(null);
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
   const router = useRouter()
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
@@ -155,7 +156,11 @@ export default function ProductList() {
               <div 
                 className="relative aspect-square overflow-hidden"
               >
-                <div className={`absolute inset-0 transition-opacity duration-300 ease-out md:group-hover:opacity-0 ${product.sizes.length === 0 ? 'opacity-40' : ''}`}>
+                <div 
+                  className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+                    product.sizes.length === 0 ? 'opacity-40 md:group-hover:opacity-0' : 'md:group-hover:opacity-0'
+                  }`}
+                >
                   <Image
                     src={`/uploads/${product.mainImage}`}
                     alt={product.name}
@@ -164,7 +169,13 @@ export default function ProductList() {
                   />
                 </div>
                 {product.galleryImages.length > 0 && (
-                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out opacity-0 md:group-hover:opacity-100 ${product.sizes.length === 0 ? 'md:group-hover:opacity-40' : ''}`}>
+                  <div 
+                    className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+                      product.sizes.length === 0 
+                        ? 'opacity-0 md:group-hover:opacity-40' 
+                        : 'opacity-0 md:group-hover:opacity-100'
+                    }`}
+                  >
                     <Image
                       src={`/uploads/${product.galleryImages[0]}`}
                       alt={`${product.name} - Gallery`}
@@ -184,13 +195,14 @@ export default function ProductList() {
                           e.stopPropagation();
                           setHoveredProduct(product._id);
                           setActiveEmailInput(product._id);
+                          setNotifyClicked(product._id);
                         }}
                       >
                         <BellIcon className="h-4 w-4 mr-1 animate-ring" />
                         Notify Me
                       </Button>
                     </div>
-                    {(hoveredProduct === product._id || activeEmailInput === product._id) && (
+                    {((hoveredProduct === product._id && window.innerWidth >= 768) || notifyClicked === product._id) && (
                       <div 
                         className="absolute top-12 right-2 z-20 bg-white rounded-lg p-3 shadow-[0_0_10px_rgba(0,0,0,0.3)] w-64"
                         onClick={(e) => e.stopPropagation()}
@@ -202,7 +214,8 @@ export default function ProductList() {
                           onBlur={(e) => {
                             if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                               if (!notifyMessages[product._id]) {
-                                setActiveEmailInput(null)
+                                setActiveEmailInput(null);
+                                setNotifyClicked(null);
                               }
                             }
                           }}
