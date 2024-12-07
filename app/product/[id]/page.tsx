@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { useCart } from '@/lib/CartContext'
 import { WhiteHeader } from '@/components/WhiteHeader';
 import Sidebar from '@/components/Sidebar'
-import { Plus, Minus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Collapsible,
@@ -85,10 +84,6 @@ export default function ProductPage() {
       addToCart(product, selectedSize, quantity)
       setIsSidebarOpen(true)
     }
-  }
-
-  const handleQuantityChange = (value: number) => {
-    setQuantity(Math.max(1, Math.min(99, value)))
   }
 
   const handleSizeSelect = (size: string) => {

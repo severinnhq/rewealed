@@ -32,7 +32,6 @@ export default function RecommendedProducts() {
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
   const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [activeEmailInput, setActiveEmailInput] = useState<string | null>(null)
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: NotifyMessage }>({})
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -85,7 +84,6 @@ export default function RecommendedProducts() {
         },
         body: JSON.stringify({ email, productId, productName }),
       })
-      const data = await response.json()
       if (response.ok) {
         setNotifyMessages(prev => ({
           ...prev,
