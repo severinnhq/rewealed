@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import CartModal from "@/components/CartModal"
 import Sidebar from "@/components/Sidebar"
 import { Header } from './Header'
 import { useCart } from '@/lib/CartContext'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, BellIcon } from 'lucide-react'
+import { Input } from "@/components/ui/input"
 
 interface Product {
   _id: string
@@ -23,19 +23,14 @@ interface Product {
   galleryImages: string[]
 }
 
-interface NotifyMessage {
-  type: 'success' | 'error'
-  content: string
-}
-
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
   const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
-  const [activeEmailInput, setActiveEmailInput] = useState<string | null>(null)
-  const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: NotifyMessage }>({})
+  const [activeEmailInput, setActiveEmailInput] = useState<string | null>(null);
+  const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
   const router = useRouter()
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
@@ -50,18 +45,18 @@ export default function ProductList() {
 
   const handleConfirmAddToCart = (size: string) => {
     if (cartProduct) {
-      addToCart(cartProduct, size, 1)
-      setCartProduct(null)
-      setIsSidebarOpen(true)
+      addToCart(cartProduct, size, 1);
+      setCartProduct(null);
+      setIsSidebarOpen(true);
     }
-  }
+  };
 
   const handleRemoveCartItem = (index: number) => {
-    removeFromCart(index)
+    removeFromCart(index);
   }
 
   const handleUpdateQuantity = (index: number, newQuantity: number) => {
-    updateQuantity(index, newQuantity)
+    updateQuantity(index, newQuantity);
   }
 
   const handleProductClick = (productId: string) => {
@@ -69,9 +64,9 @@ export default function ProductList() {
   }
 
   const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>, productId: string, productName: string) => {
-    e.preventDefault()
+    e.preventDefault();
     const emailInput = e.currentTarget.elements.namedItem('email') as HTMLInputElement
-    const email = emailInput.value
+    const email = emailInput.value;
     try {
       const response = await fetch('/api/notify', {
         method: 'POST',
@@ -79,8 +74,7 @@ export default function ProductList() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, productId, productName }),
-      })
-      const data = await response.json()
+      });
       if (response.ok) {
         setNotifyMessages(prev => ({
           ...prev,
@@ -90,17 +84,17 @@ export default function ProductList() {
       } else {
         setNotifyMessages(prev => ({
           ...prev,
-          [productId]: { type: 'error', content: 'Already subscribed.' }
+          [productId]: { type: 'error', content: 'Already subscribed or error occurred.' }
         }))
       }
     } catch (error) {
-      console.error('Error saving email:', error)
+      console.error('Error saving email:', error);
       setNotifyMessages(prev => ({
         ...prev,
         [productId]: { type: 'error', content: 'An error occurred. Please try again.' }
       }))
     }
-  }
+  };
 
   useEffect(() => {
     async function fetchProducts() {
@@ -158,8 +152,10 @@ export default function ProductList() {
               onMouseEnter={() => setHoveredProduct(product._id)}
               onMouseLeave={() => setHoveredProduct(null)}
             >
-              <div className="relative aspect-square overflow-hidden">
-                <div className={`absolute inset-0 transition-opacity duration-300 ease-out md:group-hover:opacity-0 ${product.sizes.length === 0 ? 'opacity-50' : ''}`}>
+              <div 
+                className="relative aspect-square overflow-hidden"
+              >
+                <div className={`absolute inset-0 transition-opacity duration-300 ease-out md:group-hover:opacity-0 ${product.sizes.length === 0 ? 'opacity-40' : ''}`}>
                   <Image
                     src={`/uploads/${product.mainImage}`}
                     alt={product.name}
@@ -168,7 +164,7 @@ export default function ProductList() {
                   />
                 </div>
                 {product.galleryImages.length > 0 && (
-                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out opacity-0 md:group-hover:opacity-100 ${product.sizes.length === 0 ? 'md:group-hover:opacity-50' : ''}`}>
+                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out opacity-0 md:group-hover:opacity-100 ${product.sizes.length === 0 ? 'md:group-hover:opacity-40' : ''}`}>
                     <Image
                       src={`/uploads/${product.galleryImages[0]}`}
                       alt={`${product.name} - Gallery`}
@@ -185,9 +181,9 @@ export default function ProductList() {
                         size="sm"
                         className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          setHoveredProduct(product._id)
-                          setActiveEmailInput(product._id)
+                          e.stopPropagation();
+                          setHoveredProduct(product._id);
+                          setActiveEmailInput(product._id);
                         }}
                       >
                         <BellIcon className="h-4 w-4 mr-1 animate-ring" />
