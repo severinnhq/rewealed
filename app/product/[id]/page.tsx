@@ -35,7 +35,7 @@ interface Product {
 export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [selectedSize, setSelectedSize] = useState<string>('')
-  const [quantity, setQuantity] = useState(1)
+  const [quantity] = useState(1)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string>('')
   const { id } = useParams()
