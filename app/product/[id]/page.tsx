@@ -19,6 +19,7 @@ import { ChevronDown } from 'lucide-react'
 import { ShippingFeatures } from '@/components/ShippingFeatures'
 import { FloatingProductBox } from '@/components/FloatingProductBox'
 import RecommendedProducts from '@/components/RecommendedProducts';
+import { BellIcon } from 'lucide-react'
 
 interface Product {
   _id: string
@@ -44,6 +45,8 @@ export default function ProductPage() {
   const [isPaymentShippingOpen, setIsPaymentShippingOpen] = useState(false)
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const productRef = useRef<HTMLDivElement>(null);
+  const [activeEmailInput, setActiveEmailInput] = useState<boolean>(false)
+  const [notifyMessage, setNotifyMessage] = useState<{ type: 'success' | 'error', content: string } | null>(null)
 
   useEffect(() => {
     async function fetchProduct() {
@@ -90,6 +93,30 @@ export default function ProductPage() {
 
   const handleSizeSelect = (size: string) => {
     setSelectedSize(size)
+  }
+
+  const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const emailInput = e.currentTarget.elements.namedItem('email') as HTMLInputElement
+    const email = emailInput.value
+    try {
+      const response = await fetch('/api/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, productId: product?._id ?? '', productName: product?.name ?? 'Unknown Product' }),
+      })
+      if (response.ok) {
+        setNotifyMessage({ type: 'success', content: 'You\'ll be notified when in stock.' })
+        emailInput.value = '' // Clear the input
+      } else {
+        setNotifyMessage({ type: 'error', content: 'Already subscribed or error occurred.' })
+      }
+    } catch (error) {
+      console.error('Error saving email:', error)
+      setNotifyMessage({ type: 'error', content: 'An error occurred. Please try again.' })
+    }
   }
 
   if (!product) {
@@ -157,71 +184,92 @@ export default function ProductPage() {
             <hr className="border-t border-gray-300 my-4 w-1/2" />
             <div className="mb-4">
               <h2 className="text-lg font-semibold mb-2">Select Size:</h2>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes.includes('One Size') ? (
+              {product.sizes.length === 0 ? (
+                <div>
                   <Button
-                    variant="outline"
-                    className="border-2 border-black text-black"
+                    variant="secondary"
+                    size="sm"
+                    className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group"
+                    onClick={() => setActiveEmailInput(true)}
                   >
-                    One Size
+                    <BellIcon className="h-4 w-4 mr-1 animate-ring" />
+                    Notify Me
                   </Button>
-                ) : (
-                  availableSizes.map((size) => (
+                  {activeEmailInput && (
+                    <div className="mt-4">
+                      <form onSubmit={handleEmailSubmit} className="flex flex-col space-y-2">
+                        <Input
+                          type="email"
+                          name="email"
+                          placeholder="Enter your email"
+                          className="text-sm flex-grow"
+                          required
+                        />
+                        <Button type="submit" size="sm" className="whitespace-nowrap bg-black text-white hover:bg-gray-800">
+                          Notify
+                        </Button>
+                      </form>
+                      {notifyMessage && (
+                        <div 
+                          className={`mt-2 p-2 rounded-md text-sm font-medium ${
+                            notifyMessage.type === 'success' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {notifyMessage.content}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.includes('One Size') ? (
                     <Button
-                      key={size}
-                      variant={selectedSize === size ? 'outline' : 'ghost'}
-                      onClick={() => handleSizeSelect(size)}
-                      className={`border ${
-                        selectedSize === size
-                          ? 'border-black border-2 text-black'
-                          : 'border-gray-300 text-gray-700'
-                      } ${
-                        !product.sizes.includes(size) && 'opacity-50 cursor-not-allowed'
-                      }`}
-                      disabled={!product.sizes.includes(size)}
+                      variant="outline"
+                      className="border-2 border-black text-black"
                     >
-                      {size}
+                      One Size
                     </Button>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    availableSizes.map((size) => (
+                      <Button
+                        key={size}
+                        variant={selectedSize === size ? 'outline' : 'ghost'}
+                        onClick={() => handleSizeSelect(size)}
+                        className={`border ${
+                          selectedSize === size
+                            ? 'border-black border-2 text-black'
+                            : 'border-gray-300 text-gray-700'
+                        } ${
+                          !product.sizes.includes(size) && 'opacity-50 cursor-not-allowed'
+                        }`}
+                        disabled={!product.sizes.includes(size)}
+                      >
+                        {size}
+                      </Button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
             <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-2">Quantity:</h2>
-              <div className="flex items-center">
+              {product.sizes.length > 0 ? (
                 <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange(quantity - 1)}
-                  disabled={quantity <= 1}
+                  onClick={handleAddToCart}
+                  className="w-full py-6 text-xl font-bold bg-black text-white hover:bg-gray-800"
                 >
-                  <Minus className="h-4 w-4" />
+                  Add to Cart
                 </Button>
-                <Input
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={quantity}
-                  onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10))}
-                  className="w-16 mx-2 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
+              ) : (
                 <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleQuantityChange(quantity + 1)}
-                  disabled={quantity >= 99}
+                  disabled
+                  className="w-full py-6 text-xl font-bold bg-gray-400 text-white cursor-not-allowed"
                 >
-                  <Plus className="h-4 w-4" />
+                  Sold Out
                 </Button>
-              </div>
-            </div>
-            <div className="mb-4">
-              <Button
-                onClick={handleAddToCart}
-                className="w-full py-6 text-xl font-bold bg-black text-white hover:bg-gray-800"
-              >
-                Add to Cart
-              </Button>
+              )}
             </div>
             <div className="mt-6 space-y-4">
               <Collapsible
@@ -324,7 +372,7 @@ export default function ProductPage() {
         </div>
       </div>
       <AnimatePresence>
-      {showFloatingBox && product && (
+      {showFloatingBox && product && product.sizes.length > 0 && (
         <FloatingProductBox
           product={product}
           selectedSize={selectedSize}

@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
             delivery_estimate: {
               minimum: {
                 unit: 'business_day',
-                value: 3,
+                value: 1,
               },
               maximum: {
                 unit: 'business_day',

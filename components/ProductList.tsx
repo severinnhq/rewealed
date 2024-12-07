@@ -133,6 +133,24 @@ export default function ProductList() {
     }
   }, [products])
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifyClicked) {
+        const clickedInsideProduct = productRefs.current.some(ref => 
+          ref && ref.contains(event.target as Node)
+        );
+        if (!clickedInsideProduct) {
+          setNotifyClicked(null);
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [notifyClicked]);
+
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
@@ -203,14 +221,7 @@ export default function ProductList() {
                       >
                         <form 
                           onSubmit={(e) => handleEmailSubmit(e, product._id, product.name)} 
-                          className="flex flex-col space-y-2" 
-                          onBlur={(e) => {
-                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                              if (!notifyMessages[product._id]) {
-                                setNotifyClicked(null);
-                              }
-                            }
-                          }}
+                          className="flex flex-col space-y-2"
                         >
                           <p className="text-sm font-semibold">{product.name}</p>
                           <div className="flex items-center space-x-2">
