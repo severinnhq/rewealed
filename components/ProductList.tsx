@@ -26,11 +26,12 @@ interface Product {
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
-  const [visibleProducts, setVisibleProducts] = useState<Set<string>>(new Set())
+  const [animatingProducts, setAnimatingProducts] = useState<string[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
   const [notifyClicked, setNotifyClicked] = useState<string | null>(null);
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
 
@@ -109,29 +110,57 @@ export default function ProductList() {
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
+        const productId = entry.target.id;
         if (entry.isIntersecting) {
-          const productId = entry.target.id
-          setVisibleProducts((prev) => new Set(prev).add(productId))
+          const index = productRefs.current.findIndex(ref => ref && ref.id === productId);
+          startChainReaction(index);
+        } else {
+          // Remove the product from animatingProducts when it's out of view
+          setAnimatingProducts(prev => prev.filter(id => id !== productId));
         }
-      })
+      });
     }, {
       root: null,
       rootMargin: '0px',
       threshold: 0.1
-    })
+    });
 
-    const currentProductRefs = productRefs.current
+    const currentProductRefs = productRefs.current;
 
     currentProductRefs.forEach((ref) => {
-      if (ref) observer.observe(ref)
-    })
+      if (ref) observer.observe(ref);
+    });
 
     return () => {
       currentProductRefs.forEach((ref) => {
-        if (ref) observer.unobserve(ref)
-      })
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, [products]);
+
+  const getProductsPerRow = () => {
+    if (!containerRef.current) return 3; // Default to 3 if container not available
+    const containerWidth = containerRef.current.offsetWidth;
+    if (containerWidth >= 1024) return 3; // lg breakpoint
+    if (containerWidth >= 768) return 2; // md breakpoint
+    return 1; // sm breakpoint
+  };
+
+  const startChainReaction = (startIndex: number) => {
+    const productsPerRow = getProductsPerRow();
+    const animationDelay = 100; // ms between each product animation
+    const rowStartIndex = Math.floor(startIndex / productsPerRow) * productsPerRow;
+
+    for (let i = 0; i < productsPerRow; i++) {
+      const index = rowStartIndex + i;
+      if (index < products.length) {
+        const productId = products[index]._id;
+        setTimeout(() => {
+          setAnimatingProducts(prev => [...prev, productId]);
+        }, i * animationDelay);
+      }
     }
-  }, [products])
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -154,19 +183,21 @@ export default function ProductList() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className="container mx-auto p-4 py-24">
+      <div className="container mx-auto p-4 py-24" ref={containerRef}>
         <h1 className="text-4xl font-bold mb-12">LAST SALE OF THE YEAR</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product, index) => (
             <div 
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-10 ${
-                visibleProducts.has(product._id) ? 'animate-chainReaction' : ''
+              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer ${
+                animatingProducts.includes(product._id) ? 'animate-chainReaction' : ''
               }`}
               style={{
-                animationDelay: `${(index % 3) * 100}ms`,
+                opacity: animatingProducts.includes(product._id) ? 1 : 0,
+                transform: animatingProducts.includes(product._id) ? 'translateY(0)' : 'translateY(32px)',
+                transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
               }}
               onClick={() => handleProductClick(product._id)}
             >
@@ -363,7 +394,7 @@ export default function ProductList() {
         @keyframes chainReaction {
           0% {
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(32px);
           }
           100% {
             opacity: 1;

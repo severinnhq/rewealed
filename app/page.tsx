@@ -4,7 +4,6 @@ import  HeroSection  from '../components/heroSection'
 import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
-import { ShippingFeatures } from '@/components/ShippingFeatures'
 import ContactSection from '../components/ContactSection'
 import React from 'react';
 
@@ -32,9 +31,7 @@ export default function Home() {
       <section id="contact">
         <ContactSection />
       </section>
-      <section id="shipping">
-        <ShippingFeatures />
-      </section>
+  
     
     </main>
   )
