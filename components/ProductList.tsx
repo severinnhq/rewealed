@@ -107,13 +107,13 @@ export default function ProductList() {
     fetchProducts()
   }, [])
 
-  const getProductsPerRow = () => {
+  const getProductsPerRow = useCallback(() => {
     if (!containerRef.current) return 3; // Default to 3 if container not available
     const containerWidth = containerRef.current.offsetWidth;
     if (containerWidth >= 1024) return 3; // lg breakpoint
     if (containerWidth >= 768) return 2; // md breakpoint
     return 1; // sm breakpoint
-  };
+  }, []);
 
   const startChainReaction = useCallback((startIndex: number) => {
     const productsPerRow = getProductsPerRow();
