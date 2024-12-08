@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -122,6 +122,30 @@ export default function RecommendedProducts() {
     fetchProducts()
   }, [currentProductId])
 
+  const getProductsPerRow = () => {
+    if (!containerRef.current) return 3; // Default to 3 if container not available
+    const containerWidth = containerRef.current.offsetWidth;
+    if (containerWidth >= 1024) return 3; // lg breakpoint
+    if (containerWidth >= 768) return 2; // md breakpoint
+    return 1; // sm breakpoint
+  };
+
+  const startChainReaction = useCallback((startIndex: number) => {
+    const productsPerRow = getProductsPerRow();
+    const animationDelay = 100; // ms between each product animation
+    const rowStartIndex = Math.floor(startIndex / productsPerRow) * productsPerRow;
+
+    for (let i = 0; i < productsPerRow; i++) {
+      const index = rowStartIndex + i;
+      if (index < products.length) {
+        const productId = products[index]._id;
+        setTimeout(() => {
+          setAnimatingProducts(prev => [...prev, productId]);
+        }, i * animationDelay);
+      }
+    }
+  }, [products, getProductsPerRow]);
+
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -150,31 +174,7 @@ export default function RecommendedProducts() {
         if (ref) observer.unobserve(ref);
       });
     };
-  }, [products]);
-
-  const getProductsPerRow = () => {
-    if (!containerRef.current) return 3; // Default to 3 if container not available
-    const containerWidth = containerRef.current.offsetWidth;
-    if (containerWidth >= 1024) return 3; // lg breakpoint
-    if (containerWidth >= 768) return 2; // md breakpoint
-    return 1; // sm breakpoint
-  };
-
-  const startChainReaction = (startIndex: number) => {
-    const productsPerRow = getProductsPerRow();
-    const animationDelay = 100; // ms between each product animation
-    const rowStartIndex = Math.floor(startIndex / productsPerRow) * productsPerRow;
-
-    for (let i = 0; i < productsPerRow; i++) {
-      const index = rowStartIndex + i;
-      if (index < products.length) {
-        const productId = products[index]._id;
-        setTimeout(() => {
-          setAnimatingProducts(prev => [...prev, productId]);
-        }, i * animationDelay);
-      }
-    }
-  };
+  }, [products, startChainReaction]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
