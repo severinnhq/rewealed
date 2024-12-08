@@ -167,7 +167,7 @@ export default function RecommendedProducts() {
 
   return (
     <>
-      <div className="container mx-auto py-24">
+      <div className="container mx-auto p-4 py-24">
         <h2 className="text-4xl font-bold mb-12">WE ALSO RECOMMEND</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {products.map((product, index) => (
