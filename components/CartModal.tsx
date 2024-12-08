@@ -162,4 +162,3 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
 }
 
 export default CartModal
-
