@@ -64,7 +64,6 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({ currentAmount
 const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveItem, onUpdateQuantity }) => {
   const [isLoading, setIsLoading] = useState(false)
   const { handleCheckout } = useCheckout();
-  //const [timerVisible, setTimerVisible] = useState(true); //Removed timerVisible state
 
   useEffect(() => {
     if (cartItems.length > 0) {
@@ -72,10 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
       if (!storedStartTime) {
         localStorage.setItem('cartTimerStartTime', Date.now().toString());
       }
-      //setTimerVisible(true); //Removed setting timerVisible
     } else {
       localStorage.removeItem('cartTimerStartTime');
-      //setTimerVisible(false); //Removed setting timerVisible
     }
   }, [cartItems.length]);
 
@@ -123,11 +120,11 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
           initial={{ x: 'calc(100% + 1rem)' }}
           animate={{ x: isOpen ? '0%' : 'calc(100% + 1rem)' }}
           transition={{ type: 'tween', ease: 'easeOut', duration: 0.3 }}
-          className="fixed inset-y-4 right-4 w-full max-w-[26rem] flex"
+          className="fixed inset-y-0 md:inset-y-4 right-0 md:right-4 w-full md:w-auto md:max-w-[26rem] flex p-4 md:p-0"
         >
-          <div className="relative w-full max-w-[26rem] flex">
+          <div className="relative w-full md:w-[400px] flex">
             <div className="absolute inset-0 bg-white shadow-xl rounded-lg" />
-            <div className="relative flex-1 flex flex-col h-full p-4 bg-white rounded-lg overflow-hidden">
+            <div className="relative flex-1 flex flex-col h-full p-4 md:p-4 bg-white rounded-lg md:rounded-lg overflow-hidden">
               <div className="flex-shrink-0 py-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center">

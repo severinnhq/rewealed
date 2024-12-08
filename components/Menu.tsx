@@ -103,4 +103,3 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
 }
 
 export default Menu
-
