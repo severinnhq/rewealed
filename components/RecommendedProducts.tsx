@@ -144,7 +144,7 @@ export default function RecommendedProducts() {
         }, i * animationDelay);
       }
     }
-  }, [products]);
+  }, [products, getProductsPerRow]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
