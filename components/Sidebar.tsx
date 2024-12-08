@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useCheckout } from '@/lib/useCheckout'
-import ReservationTimer from '@/components/ReservationTimer'
 
 interface CartItem {
   product: {
@@ -66,17 +65,6 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
   const { handleCheckout } = useCheckout();
 
   useEffect(() => {
-    if (cartItems.length > 0) {
-      const storedStartTime = localStorage.getItem('cartTimerStartTime');
-      if (!storedStartTime) {
-        localStorage.setItem('cartTimerStartTime', Date.now().toString());
-      }
-    } else {
-      localStorage.removeItem('cartTimerStartTime');
-    }
-  }, [cartItems.length]);
-
-  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {
@@ -95,15 +83,6 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
   };
 
   const cartTotal = cartItems.reduce((total, item) => total + (item.product.salePrice || item.product.price) * item.quantity, 0);
-
-  const calculateRemainingTime = () => {
-    if (cartItems.length === 0) return 0;
-    const startTime = localStorage.getItem('cartTimerStartTime');
-    if (!startTime) return 0;
-    
-    const elapsedTime = Math.floor((Date.now() - parseInt(startTime, 10)) / 1000);
-    return Math.max(0, 180 - elapsedTime); // 3 minutes in seconds
-  };
 
   return (
     <div 
@@ -144,20 +123,10 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                 </div>
               </div>
               {cartItems.length > 0 && (
-                <>
-                  <ShippingProgressBar
-                    currentAmount={cartTotal}
-                    freeShippingThreshold={100}
-                  />
-                  {calculateRemainingTime() > 0 && (
-                    <div className="mb-6 p-3 bg-blue-50 rounded-md">
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-blue-800">We've reserved your items for:</p>
-                        <ReservationTimer initialTime={calculateRemainingTime()} />
-                      </div>
-                    </div>
-                  )}
-                </>
+                <ShippingProgressBar
+                  currentAmount={cartTotal}
+                  freeShippingThreshold={100}
+                />
               )}
 
               <div className="flex-1 overflow-y-auto">
