@@ -191,9 +191,7 @@ export default function ProductList() {
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer ${
-                animatingProducts.includes(product._id) ? 'animate-chainReaction' : ''
-              }`}
+              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer`}
               style={{
                 opacity: animatingProducts.includes(product._id) ? 1 : 0,
                 transform: animatingProducts.includes(product._id) ? 'translateY(0)' : 'translateY(32px)',
