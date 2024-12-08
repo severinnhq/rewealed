@@ -25,13 +25,13 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
 
   const menuItems = [
     { name: 'Home', icon: Home, href: '/' },
-    { name: 'Products', icon: ShoppingBag, href: '#products' },
-    { name: 'Contact', icon: Mail, href: '#contact' },
+    { name: 'Products', icon: ShoppingBag, href: '/#products' },
+    { name: 'Contact', icon: Mail, href: '/#contact' },
   ]
 
   return (
     <div 
-      className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      className={`fixed inset-0 z-[100] ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
       aria-hidden={!isOpen}
     >
       <div className="absolute inset-0 overflow-hidden">
@@ -103,3 +103,4 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
 }
 
 export default Menu
+

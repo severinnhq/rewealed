@@ -27,6 +27,7 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
     }
 
     window.addEventListener('scroll', handleScroll)
+    handleScroll() // Check initial scroll position
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
@@ -37,7 +38,7 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+      <header className={`fixed top-0 left-0 right-0 z-[90] transition-all duration-300 ${
         isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
       }`}>
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
@@ -52,15 +53,15 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
           </Button>
 
           <div className="flex-grow flex justify-center">
-          <Link href="/">
-            <Image
-              src={isScrolled ? "/blacklogo.png" : "/whitelogo.png"}
-              alt="Logo"
-              width={160}
-              height={60}
-              className="object-contain"
-            />
-        </Link>
+            <Link href="/">
+              <Image
+                src={isScrolled ? "/blacklogo.png" : "/whitelogo.png"}
+                alt="Logo"
+                width={160}
+                height={60}
+                className="object-contain"
+              />
+            </Link>
           </div>
 
           <Button 
@@ -83,3 +84,4 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
     </>
   )
 }
+
