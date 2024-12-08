@@ -107,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
 
   return (
     <div 
-      className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      className={`fixed inset-0 z-[110] ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
       aria-hidden={!isOpen}
     >
       <div className="absolute inset-0 overflow-hidden">
