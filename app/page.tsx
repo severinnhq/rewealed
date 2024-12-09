@@ -30,7 +30,7 @@ export default function Home() {
         <ProductList />
       </section>
       <section id="combined-grid" className="py-16 w-full">
-        <h2 className="text-3xl font-bold text-center mb-8">Featured Grid Layout</h2>
+   
         <CombinedGridLayout />
       </section>
       <section id="contact">
