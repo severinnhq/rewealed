@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import HeroSection from '../components/heroSection'
 import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
@@ -12,15 +12,10 @@ const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
 export default function Home() {
   const { setIsCountdownActive } = useCountdown()
-  const [isCartModalOpen, setIsCartModalOpen] = useState(false)
 
-  useEffect(() => {
+  React.useEffect(() => {
     setIsCountdownActive(SHOW_COUNTDOWN)
   }, [setIsCountdownActive])
-
-  const toggleCartModal = () => {
-    setIsCartModalOpen(prev => !prev)
-  }
 
   if (SHOW_COUNTDOWN) {
     return <BlackFridayCountdown />
@@ -35,7 +30,8 @@ export default function Home() {
         <ProductList />
       </section>
       <section id="combined-grid" className="py-16 w-full">
-        <CombinedGridLayout isCartModalOpen={isCartModalOpen} />
+   
+        <CombinedGridLayout />
       </section>
       <section id="contact">
         <ContactSection />
