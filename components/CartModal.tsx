@@ -1,157 +1,172 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { X } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
-interface Product {
-  _id: string
-  name: string
-  price: number
-  salePrice?: number
-  mainImage: string
-  sizes: string[]
-}
-
-interface CartModalProps {
-  product: Product
-  onClose: () => void
-  onAddToCart: (size: string) => void
-}
-
-const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) => {
-  const [selectedSize, setSelectedSize] = useState<string | null>(null)
-  const [isOpen, setIsOpen] = useState(true)
+const ReviewSection = () => {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const topRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const firstAvailableSize = product.sizes[0];
-    if (firstAvailableSize) {
-      setSelectedSize(firstAvailableSize);
+    if (!isExpanded && topRef.current) {
+      const yOffset = -80;
+      const y = topRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
-  }, [product.sizes]);
+  }, [isExpanded])
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  const handleAddToCart = () => {
-    if (product.sizes.includes('One Size')) {
-      onAddToCart('One Size')
-      setIsOpen(false)
-    } else if (selectedSize) {
-      onAddToCart(selectedSize)
-      setIsOpen(false)
-    }
+  const handleExpandClick = () => {
+    setIsExpanded(!isExpanded)
   }
 
-  const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
   return (
-    <AnimatePresence onExitComplete={onClose}>
-      {isOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
-            onClick={() => setIsOpen(false)}
-          />
-          <motion.div
-            initial={{ opacity: 0, y: "100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "100%" }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="fixed bg-white rounded-t-lg md:rounded-lg shadow-lg w-full md:w-96 z-[60] overflow-hidden bottom-0 left-0 right-0 md:right-4 md:left-auto max-w-full max-h-[90vh] md:max-h-[80vh] overflow-y-auto"
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.3 }}
-              className="p-4"
-            >
-              <button onClick={() => setIsOpen(false)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                <X size={20} />
-              </button>
-              <div className="flex items-center mb-4">
-                <Image
-                  src={`/uploads/${product.mainImage}`}
-                  alt={product.name}
-                  width={80}
-                  height={80}
-                  className="rounded object-cover mr-4"
-                />
-                <div>
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <p className="text-sm">
-                    {product.salePrice ? (
-                      <>
-                        <span className="text-red-600 font-bold">€{product.salePrice.toFixed(2)}</span>
-                        <span className="text-gray-500 line-through ml-2">€{product.price.toFixed(2)}</span>
-                      </>
-                    ) : (
-                      <span className="font-bold">€{product.price.toFixed(2)}</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="mb-4">
-                <p className="text-sm font-semibold mb-2">Select Size:</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.includes('One Size') ? (
-                    <Button
-                      variant="outline"
-                      className={`w-24 h-12 ${selectedSize === 'One Size' ? 'border-2 border-black' : 'border border-gray-300'}`}
-                      onClick={() => setSelectedSize('One Size')}
-                    >
-                      One Size
-                    </Button>
-                  ) : (
-                    allSizes.map((size) => {
-                      const isAvailable = product.sizes.includes(size)
-                      return (
-                        <Button
-                          key={size}
-                          variant="outline"
-                          className={`${size === 'One Size' ? "w-24 h-12" : "w-10 h-10"} p-0 
-                            ${!isAvailable && "line-through opacity-50"} 
-                            ${selectedSize === size ? 'border-2 border-black' : 'border border-gray-300'}
-                          `}
-                          onClick={() => isAvailable && setSelectedSize(size)}
-                          disabled={!isAvailable}
-                        >
-                          {size}
-                        </Button>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
-              <Button 
-                className="w-full bg-black text-white hover:bg-gray-800" 
-                disabled={!selectedSize && !product.sizes.includes('One Size')}
-                onClick={handleAddToCart}
-              >
-                Add to Cart
-              </Button>
-            </motion.div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    <div ref={topRef} id="review-section" className="relative w-full max-w-7xl mx-auto px-4 pt-20">
+      <div className="text-center mb-8">
+        <h2 className="text-4xl md:text-3xl lg:text-4xl flex flex-col md:flex-row items-center justify-center relative font-normal">
+          <div className="relative flex flex-col md:flex-row items-center">
+            <span className="md:absolute md:right-full md:pr-3 text-3xl md:text-2xl lg:text-3xl mb-2 md:mb-0 font-semibold">the</span>
+            <div className="relative w-48 h-12 md:w-40 md:h-10 lg:w-48 lg:h-12 my-2 md:my-0">
+              <Image 
+                src="/blacklogo.png" 
+                alt="Logo" 
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span className="md:absolute md:left-full md:pl-3 text-3xl md:text-2xl lg:text-3xl mt-2 md:mt-0 font-semibold">effect</span>
+          </div>
+        </h2>
+      </div>
+      <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden">
+        {/* Mobile layout */}
+        <div className="sm:hidden relative overflow-hidden">
+          <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[600px]'}`}>
+            <div className="col-span-10 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+            </div>
+            <div className={`col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+            </div>
+            <div className={`col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+            </div>
+            <div className="col-span-5 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+            </div>
+            <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+            </div>
+            <div className="col-span-10 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+            </div>
+          </div>
+          {!isExpanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
+          )}
+        </div>
+
+        {/* Tablet layout */}
+        <div className="hidden sm:block lg:hidden relative overflow-hidden">
+          <div className={`grid grid-cols-12 gap-3 auto-rows-[minmax(120px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[2200px]' : 'h-[800px]'}`}>
+            <div className="col-span-12 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+            </div>
+            <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+            </div>
+            <div className="col-span-7 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+            </div>
+            <div className="col-span-7 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review4.png" alt="Review 4" fill className="object-cover" />
+            </div>
+            <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
+            </div>
+            <div className={`col-span-12 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+            </div>
+            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
+            </div>
+            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review8.png" alt="Review 8" fill className="object-cover" />
+            </div>
+            <div className={`col-span-8 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+            </div>
+            <div className={`col-span-4 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+            </div>
+          </div>
+          {!isExpanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
+          )}
+        </div>
+
+        {/* Desktop layout */}
+        <div className="hidden lg:block relative overflow-hidden">
+          <div className={`grid grid-cols-12 gap-3 auto-rows-[minmax(100px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[2000px]' : 'h-[600px]'}`}>
+            <div className="col-span-8 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+            </div>
+            <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+            </div>
+            <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+            </div>
+            <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review4.png" alt="Review 4" fill className="object-cover" />
+            </div>
+            <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
+            </div>
+            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
+            </div>
+            <div className={`col-span-8 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+            </div>
+            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review8.png" alt="Review 8" fill className="object-cover" />
+            </div>
+            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+            </div>
+            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+            </div>
+            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+            </div>
+            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+            </div>
+            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
+              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+            </div>
+          </div>
+          {!isExpanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
+          )}
+        </div>
+
+        {/* Expand/Collapse button */}
+        <Button
+          onClick={handleExpandClick}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white text-gray-900 hover:bg-gray-100 px-6 py-2.5 rounded-full flex items-center space-x-2 z-20 shadow-xl shadow-top-md"
+        >
+          <span className="font-medium text-sm">{isExpanded ? 'Show Less' : 'Show More'}</span>
+          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </Button>
+      </div>
+    </div>
   )
 }
 
-export default CartModal
+export default ReviewSection
 

@@ -24,10 +24,10 @@ const ReviewSection = () => {
   return (
     <div ref={topRef} id="review-section" className="relative w-full max-w-7xl mx-auto px-4 pt-20">
       <div className="text-center mb-8">
-        <h2 className="text-4xl md:text-3xl lg:text-4xl flex flex-col md:flex-row items-center justify-center relative font-normal">
+        <h2 className="text-3xl md:text-2xl lg:text-3xl flex flex-col md:flex-row items-center justify-center relative font-normal">
           <div className="relative flex flex-col md:flex-row items-center">
-            <span className="md:absolute md:right-full md:pr-3 text-3xl md:text-2xl lg:text-3xl mb-2 md:mb-0">The</span>
-            <div className="relative w-48 h-12 md:w-40 md:h-10 lg:w-48 lg:h-12 my-2 md:my-0">
+            <span className="md:absolute md:right-full md:pr-3 text-2xl md:text-xl lg:text-2xl mb-0.5 md:mb-0 font-medium">The</span>
+            <div className="relative w-48 h-12 md:w-40 md:h-10 lg:w-48 lg:h-12 my-0.5 md:my-0">
               <Image 
                 src="/blacklogo.png" 
                 alt="Logo" 
@@ -36,7 +36,7 @@ const ReviewSection = () => {
                 priority
               />
             </div>
-            <span className="md:absolute md:left-full md:pl-3 text-3xl md:text-2xl lg:text-3xl mt-2 md:mt-0">effect</span>
+            <span className="md:absolute md:left-full md:pl-3 text-2xl md:text-xl lg:text-2xl mt-0.5 md:mt-0 font-medium">effect</span>
           </div>
         </h2>
       </div>
