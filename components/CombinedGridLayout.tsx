@@ -24,22 +24,26 @@ const ReviewSection = () => {
   return (
     <div ref={topRef} id="review-section" className="relative w-full max-w-7xl mx-auto px-4 pt-20">
       <div className="text-center mb-8">
-      <h2 className="text-xl md:text-4xl lg:text-3xl  flex items-center justify-center">
-      The
-      <Image 
-        src="/blacklogo.png" 
-        alt="Logo" 
-        width={300} 
-        height={200} 
-        className="mx-4"
-      />
-      effect
-    </h2>
+        <h2 className="text-4xl md:text-3xl lg:text-4xl flex flex-col md:flex-row items-center justify-center relative font-normal">
+          <div className="relative flex flex-col md:flex-row items-center">
+            <span className="md:absolute md:right-full md:pr-3 text-3xl md:text-2xl lg:text-3xl mb-2 md:mb-0">The</span>
+            <div className="relative w-48 h-12 md:w-40 md:h-10 lg:w-48 lg:h-12 my-2 md:my-0">
+              <Image 
+                src="/blacklogo.png" 
+                alt="Logo" 
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span className="md:absolute md:left-full md:pl-3 text-3xl md:text-2xl lg:text-3xl mt-2 md:mt-0">effect</span>
+          </div>
+        </h2>
       </div>
       <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden">
         {/* Mobile layout */}
         <div className="sm:hidden relative overflow-hidden">
-          <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(60px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1200px]' : 'h-[500px]'}`}>
+          <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[600px]'}`}>
             <div className="col-span-10 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
               <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
             </div>
@@ -60,7 +64,7 @@ const ReviewSection = () => {
             </div>
           </div>
           {!isExpanded && (
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
           )}
         </div>
 
@@ -154,7 +158,7 @@ const ReviewSection = () => {
         {/* Expand/Collapse button */}
         <Button
           onClick={handleExpandClick}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white text-gray-900 hover:bg-gray-100 px-6 py-2.5 rounded-full flex items-center space-x-2 z-20 shadow-lg"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white text-gray-900 hover:bg-gray-100 px-6 py-2.5 rounded-full flex items-center space-x-2 z-20 shadow-xl shadow-top-md"
         >
           <span className="font-medium text-sm">{isExpanded ? 'Show Less' : 'Show More'}</span>
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
