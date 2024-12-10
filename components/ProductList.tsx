@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import CartModal from "@/components/CartModal"
@@ -18,7 +18,7 @@ interface Product {
   price: number
   salePrice?: number
   mainImage: string
-  category: string
+  categories: string[]
   sizes: string[]
   galleryImages: string[]
 }
@@ -34,6 +34,32 @@ export default function ProductList() {
   const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
+
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('/api/products')
+      if (response.ok) {
+        const data: Product[] = await response.json()
+        const featuredProducts = data
+          .map((product) => ({
+            ...product,
+            price: Number(product.price) || 0,
+            salePrice: product.salePrice ? Number(product.salePrice) || 0 : undefined,
+            categories: Array.isArray(product.categories) ? product.categories : [product.categories].filter(Boolean)
+          }))
+          .filter(product => product.categories.includes('featured'))
+        setProducts(featuredProducts)
+      } else {
+        console.error('Failed to fetch products')
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    }
+  }
 
   const handleAddToCart = (product: Product) => {
     setCartProduct(product)
@@ -96,123 +122,29 @@ export default function ProductList() {
     }
   };
 
-  useEffect(() => {
-    async function fetchProducts() {
-      const response = await fetch('/api/products')
-      if (response.ok) {
-        const data = await response.json()
-        setProducts(data)
-      }
-    }
-    fetchProducts()
-  }, [])
-
-  const getProductsPerRow = useCallback(() => {
-    if (!containerRef.current) return 4; // Default to 4 if container not available
-    const containerWidth = containerRef.current.offsetWidth;
-    if (containerWidth >= 1280) return 4; // xl breakpoint
-    if (containerWidth >= 1024) return 3; // lg breakpoint
-    if (containerWidth >= 768) return 2; // md breakpoint
-    return 1; // sm breakpoint
-  }, []);
-
-  const startChainReaction = useCallback((startIndex: number) => {
-    const productsPerRow = getProductsPerRow();
-    const animationDelay = 100; // ms between each product animation
-    const rowStartIndex = Math.floor(startIndex / productsPerRow) * productsPerRow;
-
-    for (let i = 0; i < productsPerRow; i++) {
-      const index = rowStartIndex + i;
-      if (index < products.length) {
-        const productId = products[index]._id;
-        setTimeout(() => {
-          setAnimatingProducts(prev => [...prev, productId]);
-        }, i * animationDelay);
-      }
-    }
-  }, [products, getProductsPerRow]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const productId = entry.target.id;
-        if (entry.isIntersecting) {
-          const index = productRefs.current.findIndex(ref => ref && ref.id === productId);
-          startChainReaction(index);
-        } else {
-          // Remove the product from animatingProducts when it's out of view
-          setAnimatingProducts(prev => prev.filter(id => id !== productId));
-        }
-      });
-    }, {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    });
-
-    const currentProductRefs = productRefs.current;
-
-    currentProductRefs.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => {
-      currentProductRefs.forEach((ref) => {
-        if (ref) observer.unobserve(ref);
-      });
-    };
-  }, [products, startChainReaction]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (notifyClicked) {
-        const clickedInsideProduct = productRefs.current.some(ref => 
-          ref && ref.contains(event.target as Node)
-        );
-        if (!clickedInsideProduct) {
-          setNotifyClicked(null);
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [notifyClicked]);
-
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className="container mx-auto p-4 pt-40 pb-24" ref={containerRef}>
-        <h1 className="text-4xl font-bold mb-12">LAST SALE OF THE YEAR</h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10"> {/* Update 1 */}
+        <h1 className="text-5xl font-bold mb-20 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
           {products.map((product, index) => (
             <div 
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
               className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer`}
-              style={{
-                opacity: animatingProducts.includes(product._id) ? 1 : 0,
-                transform: animatingProducts.includes(product._id) ? 'translateY(0)' : 'translateY(32px)',
-                transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
-              }}
               onClick={() => handleProductClick(product._id)}
             >
-              <div 
-                className="relative aspect-square overflow-hidden"
-              >
+              <div className="relative aspect-square overflow-hidden">
                 {product.salePrice && (
-                  <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-20">
+                  <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-20">
                     SALE
                   </div>
                 )}
-                <div 
-                  className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-                    product.sizes.length === 0 ? 'opacity-40 md:group-hover:opacity-0' : 'md:group-hover:opacity-0'
-                  }`}
-                >
+                <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+                  product.sizes.length === 0 ? 'opacity-40 md:group-hover:opacity-0' : 'md:group-hover:opacity-0'
+                }`}>
                   <Image
                     src={`/uploads/${product.mainImage}`}
                     alt={product.name}
@@ -221,13 +153,11 @@ export default function ProductList() {
                   />
                 </div>
                 {product.galleryImages.length > 0 && (
-                  <div 
-                    className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-                      product.sizes.length === 0 
-                        ? 'opacity-0 md:group-hover:opacity-40' 
-                        : 'opacity-0 md:group-hover:opacity-100'
-                    }`}
-                  >
+                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+                    product.sizes.length === 0 
+                      ? 'opacity-0 md:group-hover:opacity-40' 
+                      : 'opacity-0 md:group-hover:opacity-100'
+                  }`}>
                     <Image
                       src={`/uploads/${product.galleryImages[0]}`}
                       alt={`${product.name} - Gallery`}
@@ -311,7 +241,7 @@ export default function ProductList() {
                           e.stopPropagation()
                           handleAddToCart(product)
                         }}
-                        className="bg-black text-white hover:bg-gray-800 text-sm sm:text-base lg:text-lg py-2 px-3 sm:py-2 sm:px-4 lg:py-3 lg:px-5" 
+                        className="bg-black text-white hover:bg-gray-800 text-sm sm:text-base lg:text-lg py-2 px-3 sm:py-2 sm:px-4 lg:py-3 lg:px-5"
                       >
                         <span className="font-bold">+ Add to Cart</span>
                       </Button>
@@ -322,7 +252,7 @@ export default function ProductList() {
                           e.stopPropagation()
                           handleAddToCart(product)
                         }}
-                        className="bg-white text-black hover:bg-gray-100 p-3 rounded-full" 
+                        className="bg-white text-black hover:bg-gray-100 p-3 rounded-full"
                       >
                         <ShoppingCart size={24} className="sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
                       </Button>
@@ -330,8 +260,8 @@ export default function ProductList() {
                   </>
                 )}
               </div>
-              <div className="p-4 sm:p-5 md:p-6 lg:p-7"> {/* Update 2 */}
-                <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black"> {/* Update 3 */} {product.name}</h2>
+              <div className="p-4 sm:p-5 md:p-6 lg:p-7">
+                <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black"> {product.name}</h2>
                 <div className="mt-2 flex items-center justify-between">
                   <div>
                     {product.sizes.length === 0 ? (
@@ -340,15 +270,15 @@ export default function ProductList() {
                       </span>
                     ) : product.salePrice ? (
                       <>
-                        <span className="text-base sm:text-lg lg:text-xl font-bold text-red-600"> {/* Update 3 */}
+                        <span className="text-base sm:text-lg lg:text-xl font-bold text-red-600">
                           €{product.salePrice.toFixed(2)}
                         </span>
-                        <span className="text-sm sm:text-base lg:text-lg text-gray-500 line-through ml-2"> {/* Update 3 */}
+                        <span className="text-sm sm:text-base lg:text-lg text-gray-500 line-through ml-2">
                           €{product.price.toFixed(2)}
                         </span>
                       </>
                     ) : (
-                      <span className="text-base sm:text-lg lg:text-xl font-bold text-black"> {/* Update 3 */}
+                      <span className="text-base sm:text-lg lg:text-xl font-bold text-black">
                         €{product.price.toFixed(2)}
                       </span>
                     )}

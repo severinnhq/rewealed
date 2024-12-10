@@ -217,4 +217,3 @@ export function EditProductForm({ product, onCancel }: EditProductFormProps) {
     </form>
   )
 }
-

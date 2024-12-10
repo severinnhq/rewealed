@@ -40,4 +40,3 @@ export async function GET() {
     return NextResponse.json({ message: 'Error fetching products' }, { status: 500 })
   }
 }
-
