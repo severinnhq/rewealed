@@ -7,6 +7,7 @@ import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
 import ContactSection from '../components/ContactSection'
 import CombinedGridLayout from '../components/CombinedGridLayout'
+import FAQSection from '../components/FAQSection'
 
 const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
@@ -30,8 +31,10 @@ export default function Home() {
         <ProductList />
       </section>
       <section id="combined-grid" className="py-16 w-full">
-   
         <CombinedGridLayout />
+      </section>
+      <section id="faq">
+        <FAQSection />
       </section>
       <section id="contact">
         <ContactSection />

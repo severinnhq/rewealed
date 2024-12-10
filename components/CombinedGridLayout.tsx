@@ -22,7 +22,7 @@ const ReviewSection = () => {
   }
 
   return (
-    <div ref={topRef} id="review-section" className="relative w-full max-w-7xl mx-auto px-4 pt-20">
+    <div ref={topRef} id="review-section" className="relative w-full max-w-7xl mx-auto px-4 pt-0">
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-2xl lg:text-3xl flex flex-col md:flex-row items-center justify-center relative font-normal">
           <div className="relative flex flex-col md:flex-row items-center">
@@ -40,7 +40,8 @@ const ReviewSection = () => {
           </div>
         </h2>
       </div>
-      <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden">
+      {/* Added padding-top here */}
+      <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden pt-20">
         {/* Mobile layout */}
         <div className="sm:hidden relative overflow-hidden">
           <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[400px]'}`}>

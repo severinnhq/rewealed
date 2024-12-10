@@ -108,8 +108,9 @@ export default function ProductList() {
   }, [])
 
   const getProductsPerRow = useCallback(() => {
-    if (!containerRef.current) return 3; // Default to 3 if container not available
+    if (!containerRef.current) return 4; // Default to 4 if container not available
     const containerWidth = containerRef.current.offsetWidth;
+    if (containerWidth >= 1280) return 4; // xl breakpoint
     if (containerWidth >= 1024) return 3; // lg breakpoint
     if (containerWidth >= 768) return 2; // md breakpoint
     return 1; // sm breakpoint
@@ -183,9 +184,9 @@ export default function ProductList() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className="container mx-auto p-4 py-24" ref={containerRef}>
+      <div className="container mx-auto p-4 pt-40 pb-24" ref={containerRef}>
         <h1 className="text-4xl font-bold mb-12">LAST SALE OF THE YEAR</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10"> {/* Update 1 */}
           {products.map((product, index) => (
             <div 
               key={product._id}
@@ -310,7 +311,7 @@ export default function ProductList() {
                           e.stopPropagation()
                           handleAddToCart(product)
                         }}
-                        className="bg-black text-white hover:bg-gray-800 text-sm py-1 px-3"
+                        className="bg-black text-white hover:bg-gray-800 text-sm sm:text-base lg:text-lg py-2 px-3 sm:py-2 sm:px-4 lg:py-3 lg:px-5" 
                       >
                         <span className="font-bold">+ Add to Cart</span>
                       </Button>
@@ -321,33 +322,33 @@ export default function ProductList() {
                           e.stopPropagation()
                           handleAddToCart(product)
                         }}
-                        className="bg-white text-black hover:bg-gray-100 p-2 rounded-full"
+                        className="bg-white text-black hover:bg-gray-100 p-3 rounded-full" 
                       >
-                        <ShoppingCart size={20} />
+                        <ShoppingCart size={24} className="sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
                       </Button>
                     </div>
                   </>
                 )}
               </div>
-              <div className="p-4">
-                <h2 className="text-xl font-semibold text-black">{product.name}</h2>
+              <div className="p-4 sm:p-5 md:p-6 lg:p-7"> {/* Update 2 */}
+                <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black"> {/* Update 3 */} {product.name}</h2>
                 <div className="mt-2 flex items-center justify-between">
                   <div>
                     {product.sizes.length === 0 ? (
-                      <span className="text-lg text-black">
+                      <span className="text-base text-black">
                         Sold Out
                       </span>
                     ) : product.salePrice ? (
                       <>
-                        <span className="text-lg font-bold text-red-600">
+                        <span className="text-base sm:text-lg lg:text-xl font-bold text-red-600"> {/* Update 3 */}
                           €{product.salePrice.toFixed(2)}
                         </span>
-                        <span className="text-sm text-gray-500 line-through ml-2">
+                        <span className="text-sm sm:text-base lg:text-lg text-gray-500 line-through ml-2"> {/* Update 3 */}
                           €{product.price.toFixed(2)}
                         </span>
                       </>
                     ) : (
-                      <span className="text-lg font-bold text-black">
+                      <span className="text-base sm:text-lg lg:text-xl font-bold text-black"> {/* Update 3 */}
                         €{product.price.toFixed(2)}
                       </span>
                     )}

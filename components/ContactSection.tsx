@@ -46,22 +46,20 @@ export default function ContactSection() {
 
   return (
     <div className="bg-white py-24">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="w-full md:w-1/2">
-            <div className="relative w-full max-w-[400px] mx-auto aspect-square overflow-hidden">
-              <Image
-                src="/uploads/contact.png"
-                alt="Contact Image"
-                layout="fill"
-                objectFit="cover"
-                className="rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%]"
-                draggable="false"
-              />
-            </div>
+      <div className="container mx-auto px-4 max-w-[1140px]">
+        <div className="flex flex-col items-center gap-12">
+          <div className="w-full max-w-[300px] aspect-square relative overflow-hidden">
+            <Image
+              src="/uploads/contact.png"
+              alt="Contact Image"
+              layout="fill"
+              objectFit="cover"
+              className="rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%]"
+              draggable="false"
+            />
           </div>
-          <div className="w-full md:w-1/2">
-            <h2 className="text-3xl font-bold mb-8 text-gray-900">Any questions?</h2>
+          <div className="w-full max-w-[800px]">
+            <h2 className="text-3xl font-bold mb-8 text-gray-900 text-center">Any questions?</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
