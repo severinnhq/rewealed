@@ -21,17 +21,6 @@ interface CartModalProps {
   onAddToCart: (size: string) => void
 }
 
-const useDelayedExpand = (delay: number = 300) => {
-  const [shouldExpand, setShouldExpand] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShouldExpand(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
-
-  return shouldExpand;
-};
-
 const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(true)
@@ -66,8 +55,6 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
   }
 
   const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-  const shouldExpand = useDelayedExpand();
 
   return (
     <AnimatePresence onExitComplete={onClose}>
