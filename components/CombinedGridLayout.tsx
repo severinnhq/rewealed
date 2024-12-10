@@ -46,30 +46,30 @@ const ReviewSection = () => {
         <div className="sm:hidden relative overflow-hidden">
           <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[400px]'}`}>
             <div className="col-span-10 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review1.png" alt="Review 10" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review1.png" alt="Review 10" fill className="object-cover" />
             </div>
             <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review10.png" alt="Review 1" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review10.png" alt="Review 1" fill className="object-cover" />
             </div>
             <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review2.png" alt="Review 2" fill className="object-cover" />
             </div>
             {isExpanded && (
               <>
                 <div className="col-span-6 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review3.png" alt="Review 3" fill className="object-cover" />
                 </div>
                 <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review11.png" alt="Review 4" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review11.png" alt="Review 4" fill className="object-cover" />
                 </div>
                 <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review5.png" alt="Review 5" fill className="object-cover" />
                 </div>
                 <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review6.png" alt="Review 6" fill className="object-cover" />
                 </div>
                 <div className="col-span-10 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review9.png" alt="Review 9" fill className="object-cover" />
                 </div>
               </>
             )}
@@ -83,36 +83,36 @@ const ReviewSection = () => {
         <div className="hidden sm:block lg:hidden relative overflow-hidden">
           <div className={`grid grid-cols-12 gap-3 auto-rows-[minmax(120px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[2200px]' : 'h-[800px]'}`}>
             <div className="col-span-12 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review1.png" alt="Review 1" fill className="object-cover" />
             </div>
             <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review2.png" alt="Review 2" fill className="object-cover" />
             </div>
             <div className="col-span-7 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review11.png" alt="Review 3" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review11.png" alt="Review 3" fill className="object-cover" />
             </div>
             <div className="col-span-7 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review4.png" alt="Review 4" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review4.png" alt="Review 4" fill className="object-cover" />
             </div>
             <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review5.png" alt="Review 5" fill className="object-cover" />
             </div>
             {isExpanded && (
               <>
                 <div className="col-span-12 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review9.png" alt="Review 6" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review9.png" alt="Review 6" fill className="object-cover" />
                 </div>
                 <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review7.png" alt="Review 7" fill className="object-cover" />
                 </div>
                 <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review14.png" alt="Review 8" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review14.png" alt="Review 8" fill className="object-cover" />
                 </div>
                 <div className="col-span-8 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review9.png" alt="Review 9" fill className="object-cover" />
                 </div>
                 <div className="col-span-4 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review1.png" alt="Review 10" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review1.png" alt="Review 10" fill className="object-cover" />
                 </div>
               </>
             )}
@@ -126,45 +126,45 @@ const ReviewSection = () => {
         <div className="hidden lg:block relative overflow-hidden">
           <div className={`grid grid-cols-12 gap-3 auto-rows-[minmax(100px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[2000px]' : 'h-[600px]'}`}>
             <div className="col-span-8 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review1.png" alt="Review 1" fill className="object-cover" />
             </div>
             <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review2.png" alt="Review 2" fill className="object-cover" />
             </div>
             <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review3.png" alt="Review 3" fill className="object-cover" />
             </div>
             <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review4.png" alt="Review 4" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review4.png" alt="Review 4" fill className="object-cover" />
             </div>
             <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
+              <Image src="/uploads/reviews/optimized-review5.png" alt="Review 5" fill className="object-cover" />
             </div>
             {isExpanded && (
               <>
                 <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review7.png" alt="Review 7" fill className="object-cover" />
                 </div>
                 <div className="col-span-8 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review6.png" alt="Review 6" fill className="object-cover" />
                 </div>
                 <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review14.png" alt="Review 8" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review14.png" alt="Review 8" fill className="object-cover" />
                 </div>
                 <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review9.png" alt="Review 9" fill className="object-cover" />
                 </div>
                 <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review10.png" alt="Review 10" fill className="object-cover" />
                 </div>
                 <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review12.png" alt="Review 1" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review12.png" alt="Review 1" fill className="object-cover" />
                 </div>
                 <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review13.png" alt="Review 2" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review13.png" alt="Review 2" fill className="object-cover" />
                 </div>
                 <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-                  <Image src="/uploads/reviews/review11.png" alt="Review 3" fill className="object-cover" />
+                  <Image src="/uploads/reviews/optimized-review11.png" alt="Review 3" fill className="object-cover" />
                 </div>
               </>
             )}

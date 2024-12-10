@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "optimize-sample": "node scripts/optimize-images.js",
+    "optimize-uploads": "node scripts/process-uploads.js",
+    "optimize-reviews": "node scripts/process-uploads.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -33,6 +36,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intersection-observer": "^9.13.1",
+    "sharp": "^0.33.5",
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.5.5",
     "three": "^0.171.0"
@@ -48,3 +52,4 @@
     "typescript": "^5"
   }
 }
+
