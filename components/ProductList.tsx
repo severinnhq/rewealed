@@ -26,7 +26,6 @@ interface Product {
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
-  const [animatingProducts, setAnimatingProducts] = useState<string[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
   const [notifyClicked, setNotifyClicked] = useState<string | null>(null);
@@ -126,7 +125,7 @@ export default function ProductList() {
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className="container mx-auto p-4 pt-40 pb-24" ref={containerRef}>
-        <h1 className="text-5xl font-bold mb-20 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
+        <h1 className="text-5xl font-bold mb-12 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
           {products.map((product, index) => (
             <div 
