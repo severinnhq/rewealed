@@ -43,31 +43,35 @@ const ReviewSection = () => {
       <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden">
         {/* Mobile layout */}
         <div className="sm:hidden relative overflow-hidden">
-          <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[600px]'}`}>
-           
-            <div className={`col-span-6 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
-            </div>
-            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+          <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[400px]'}`}>
+            <div className="col-span-10 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
             </div>
             <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
-            </div>
-            <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
-            </div>
-           
-            <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
               <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
             </div>
             <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
             </div>
-            <div className="col-span-10 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
-              <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
-            </div>
-          
+            {isExpanded && (
+              <>
+                <div className="col-span-6 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+                </div>
+                <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review4.png" alt="Review 4" fill className="object-cover" />
+                </div>
+                <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
+                </div>
+                <div className="col-span-5 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+                </div>
+                <div className="col-span-10 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+                </div>
+              </>
+            )}
           </div>
           {!isExpanded && (
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
@@ -92,21 +96,25 @@ const ReviewSection = () => {
             <div className="col-span-5 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
               <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
             </div>
-            <div className={`col-span-12 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
-            </div>
-            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
-            </div>
-            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review8.png" alt="Review 8" fill className="object-cover" />
-            </div>
-            <div className={`col-span-8 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
-            </div>
-            <div className={`col-span-4 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
-            </div>
+            {isExpanded && (
+              <>
+                <div className="col-span-12 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+                </div>
+                <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
+                </div>
+                <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review8.png" alt="Review 8" fill className="object-cover" />
+                </div>
+                <div className="col-span-8 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+                </div>
+                <div className="col-span-4 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+                </div>
+              </>
+            )}
           </div>
           {!isExpanded && (
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
@@ -131,30 +139,34 @@ const ReviewSection = () => {
             <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
               <Image src="/uploads/reviews/review5.png" alt="Review 5" fill className="object-cover" />
             </div>
-            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
-            </div>
-            <div className={`col-span-8 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
-            </div>
-            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review8.png" alt="Review 8" fill className="object-cover" />
-            </div>
-            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
-            </div>
-            <div className={`col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
-            </div>
-            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
-            </div>
-            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
-            </div>
-            <div className={`col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg ${isExpanded ? '' : 'hidden'}`}>
-              <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
-            </div>
+            {isExpanded && (
+              <>
+                <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review7.png" alt="Review 7" fill className="object-cover" />
+                </div>
+                <div className="col-span-8 row-span-4 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review6.png" alt="Review 6" fill className="object-cover" />
+                </div>
+                <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review8.png" alt="Review 8" fill className="object-cover" />
+                </div>
+                <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review9.png" alt="Review 9" fill className="object-cover" />
+                </div>
+                <div className="col-span-6 row-span-3 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review10.png" alt="Review 10" fill className="object-cover" />
+                </div>
+                <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review1.png" alt="Review 1" fill className="object-cover" />
+                </div>
+                <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review2.png" alt="Review 2" fill className="object-cover" />
+                </div>
+                <div className="col-span-4 row-span-2 relative overflow-hidden rounded-lg transition-transform hover:scale-[1.02] shadow-lg">
+                  <Image src="/uploads/reviews/review3.png" alt="Review 3" fill className="object-cover" />
+                </div>
+              </>
+            )}
           </div>
           {!isExpanded && (
             <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-white via-white to-transparent pointer-events-none" />
