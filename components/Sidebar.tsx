@@ -250,4 +250,3 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
 }
 
 export default Sidebar
-
