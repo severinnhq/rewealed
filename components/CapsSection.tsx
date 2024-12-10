@@ -111,14 +111,14 @@ export default function CapsSection() {
           src={`/uploads/${product.mainImage}`}
           alt={product.name}
           fill
-          className="object-contain transition-opacity duration-300 ease-out group-hover:opacity-0"
+          className="object-contain transition-opacity duration-300 ease-out md:group-hover:opacity-0"
         />
         {product.galleryImages.length > 0 && (
           <Image
             src={`/uploads/${product.galleryImages[0]}`}
             alt={`${product.name} - Gallery`}
             fill
-            className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
+            className="object-contain opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 ease-out"
           />
         )}
         {product.salePrice && (
@@ -131,10 +131,20 @@ export default function CapsSection() {
             e.stopPropagation()
             handleAddToCart(product)
           }}
-          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 translate-y-full group-hover:translate-y-0 transition-all duration-300 ease-out bg-black text-white hover:bg-gray-800 px-3 py-1 md:px-4 md:py-2 text-base md:text-lg font-bold"
+          className="absolute bottom-2 right-2 hidden md:block opacity-0 group-hover:opacity-100 translate-y-full group-hover:translate-y-0 transition-all duration-300 ease-out bg-black text-white hover:bg-gray-800 px-3 py-1 md:px-4 md:py-2 text-base md:text-lg font-bold"
         >
           + Add
         </Button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            handleAddToCart(product)
+          }}
+          className="md:hidden absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md"
+          aria-label="Add to cart"
+        >
+          <ShoppingCart className="w-6 h-6 text-black" />
+        </button>
       </div>
       <div className="p-2">
         <h3 className={`font-semibold text-black truncate ${isLarge ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>{product.name}</h3>
@@ -161,11 +171,13 @@ export default function CapsSection() {
   useEffect(() => {
     const style = document.createElement('style')
     style.textContent = `
-      .touch-device .group:active .opacity-0 {
-        opacity: 1;
-      }
-      .touch-device .group:active .translate-y-full {
-        transform: translateY(0);
+      @media (min-width: 768px) {
+        .touch-device .group:active .opacity-0 {
+          opacity: 1;
+        }
+        .touch-device .group:active .translate-y-full {
+          transform: translateY(0);
+        }
       }
     `
     document.head.appendChild(style)
