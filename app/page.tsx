@@ -6,7 +6,6 @@ import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
 import CombinedGridLayout from '../components/CombinedGridLayout'
-import CapsSection from '../components/CapsSection'
 import CombinedFAQAndContact from '../components/CombinedFAQAndContact'
 import { ShippingFeatures } from '@/components/ShippingFeatures'
 
