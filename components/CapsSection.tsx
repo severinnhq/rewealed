@@ -95,18 +95,10 @@ export default function CapsSection() {
 
   const ProductCard = ({ product, isLarge = false }: { product: Product, isLarge?: boolean }) => (
     <div 
-      className={`relative bg-white cursor-pointer group ${
-        isLarge 
-          ? 'w-full md:w-[450px] h-[450px] md:h-[570px]' 
-          : 'w-full md:w-[280px] h-[280px]'
-      }`}
+      className={`relative cursor-pointer group w-full h-full flex flex-col ${isLarge ? '' : 'md:h-full'}`}
       onClick={() => handleProductClick(product._id)}
     >
-      <div className={`relative overflow-hidden ${
-        isLarge 
-          ? 'h-[390px] md:h-[510px]' 
-          : 'h-[220px]'
-      }`}>
+      <div className="relative flex-grow overflow-hidden">
         <Image
           src={`/uploads/${product.mainImage}`}
           alt={product.name}
@@ -131,9 +123,9 @@ export default function CapsSection() {
             e.stopPropagation()
             handleAddToCart(product)
           }}
-          className="absolute bottom-2 right-2 hidden md:block opacity-0 group-hover:opacity-100 translate-y-full group-hover:translate-y-0 transition-all duration-300 ease-out bg-black text-white hover:bg-gray-800 px-3 py-1 md:px-4 md:py-2 text-base md:text-lg font-bold"
+          className="absolute bottom-2 right-2 hidden md:block opacity-0 group-hover:opacity-100 translate-y-full group-hover:translate-y-0 transition-all duration-300 ease-out bg-black text-white hover:bg-gray-800 px-2 py-1 text-xs md:text-sm font-bold"
         >
-          + Add
+          + Add to Cart
         </Button>
         <button
           onClick={(e) => {
@@ -146,20 +138,20 @@ export default function CapsSection() {
           <ShoppingCart className="w-6 h-6 text-black" />
         </button>
       </div>
-      <div className="p-2">
-        <h3 className={`font-semibold text-black truncate ${isLarge ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>{product.name}</h3>
-        <div className="mt-1 flex items-center">
+      <div className="p-3">
+        <h3 className={`font-bold text-black truncate ${isLarge ? 'text-base md:text-lg' : 'text-sm md:text-base'}`}>{product.name}</h3>
+        <div className="mt-2 flex items-center">
           {product.salePrice ? (
             <>
-              <span className={`font-bold text-red-600 ${isLarge ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
+              <span className={`font-bold text-red-600 ${isLarge ? 'text-base md:text-lg' : 'text-sm md:text-base'}`}>
                 €{product.salePrice.toFixed(2)}
               </span>
-              <span className={`text-gray-500 line-through ml-2 ${isLarge ? 'text-base md:text-lg' : 'text-sm md:text-base'}`}>
+              <span className={`text-gray-500 line-through ml-2 ${isLarge ? 'text-sm md:text-base' : 'text-xs md:text-sm'}`}>
                 €{product.price.toFixed(2)}
               </span>
             </>
           ) : (
-            <span className={`font-bold text-black ${isLarge ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
+            <span className={`font-bold text-black ${isLarge ? 'text-base md:text-lg' : 'text-sm md:text-base'}`}>
               €{product.price.toFixed(2)}
             </span>
           )}
@@ -187,52 +179,46 @@ export default function CapsSection() {
   }, [])
 
   return (
-    <div className="container mx-auto px-4 md:px-0 py-8 max-w-[1300px]">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center uppercase tracking-wider">Our Caps Collection</h2>
-      {isLoading ? (
-        <div className="text-center">Loading...</div>
-      ) : capsProducts.length === 0 ? (
-        <div className="text-center">No caps available at the moment.</div>
-      ) : (
-        <>
-          <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-6 md:gap-24">
-            <div className="w-full md:w-auto">
-              {capsProducts[0] && <ProductCard product={capsProducts[0]} isLarge={true} />}
-            </div>
-            <div className="flex flex-row md:flex-col justify-center gap-6 md:gap-6 w-full md:w-auto">
-              {capsProducts.slice(1, 3).map((product) => (
-                <div key={product._id} className="w-1/2 md:w-auto">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          </div>
-          {capsProducts.length > 3 && (
-            <div className="flex justify-center gap-6 md:gap-12 mt-6 flex-wrap">
-              {capsProducts.slice(3, 7).map((product) => (
-                <div key={product._id} className="mt-6 w-1/2 md:w-auto">
-                  <ProductCard product={product} />
-                </div>
-              ))}
+    <section className="relative w-full bg-white overflow-hidden">
+      <div className="absolute inset-0 bg-gray-50" style={{ clipPath: 'polygon(0 5%, 100% 0, 100% 95%, 0 100%)' }}></div>
+      <div className="relative w-full p-4 py-24 flex justify-center">
+        <div className="max-w-[1500px] w-full">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center uppercase tracking-wider">Our Caps Collection</h2>
+          {isLoading ? (
+            <div className="text-center">Loading...</div>
+          ) : capsProducts.length === 0 ? (
+            <div className="text-center">No caps available at the moment.</div>
+          ) : (
+            <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+              <div className="w-full md:w-[52%] h-[650px] mb-6 md:mb-0">
+                <ProductCard product={capsProducts[0]} isLarge={true} />
+              </div>
+              <div className="w-full md:w-[32%] h-auto md:h-[650px] flex flex-row md:flex-col justify-between">
+                {capsProducts.slice(1, 3).map((product, index) => (
+                  <div key={product._id} className={`w-[48%] md:w-full h-[315px] ${index === 0 ? 'mb-6 md:mb-6' : ''}`}>
+                    <ProductCard product={product} isLarge={false} />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-        </>
-      )}
-      {cartProduct && (
-        <CartModal 
-          product={cartProduct} 
-          onClose={handleCloseModal} 
-          onAddToCart={handleConfirmAddToCart} 
-        />
-      )}
-      <Sidebar 
-        cartItems={cartItems} 
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onRemoveItem={handleRemoveCartItem}
-        onUpdateQuantity={handleUpdateQuantity}
-      />
-    </div>
+          {cartProduct && (
+            <CartModal 
+              product={cartProduct} 
+              onClose={handleCloseModal} 
+              onAddToCart={handleConfirmAddToCart} 
+            />
+          )}
+          <Sidebar 
+            cartItems={cartItems} 
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            onRemoveItem={handleRemoveCartItem}
+            onUpdateQuantity={handleUpdateQuantity}
+          />
+        </div>
+      </div>
+    </section>
   )
 }
 
