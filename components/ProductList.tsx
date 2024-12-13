@@ -30,13 +30,81 @@ export default function ProductList() {
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
   const [notifyClicked, setNotifyClicked] = useState<string | null>(null);
   const productRefs = useRef<(HTMLDivElement | null)[]>([])
+  const notifyFormRefs = useRef<(HTMLFormElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = productRefs.current.findIndex(ref => ref === entry.target);
+            const delay = index * 45;
+            setTimeout(() => {
+              entry.target.classList.add('animate-chainReaction')
+            }, delay)
+          } else {
+            entry.target.classList.remove('animate-chainReaction')
+          }
+        })
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: '0px 0px 0% 0px'
+      }
+    )
+
+    productRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref)
+    })
+
+    return () => {
+      productRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref)
+      })
+    }
+  }, [products])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifyClicked) {
+        const clickedProduct = productRefs.current.find((ref, index) => 
+          ref && ref.contains(event.target as Node) && notifyFormRefs.current[index]?.contains(event.target as Node)
+        );
+        
+        if (!clickedProduct) {
+          setNotifyClicked(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [notifyClicked]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 500);
+    };
+
+    // Check initially
+    checkMobile();
+
+    // Add event listener
+    window.addEventListener('resize', checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -109,7 +177,7 @@ export default function ProductList() {
       } else {
         setNotifyMessages(prev => ({
           ...prev,
-          [productId]: { type: 'error', content: 'Already subscribed or error occurred.' }
+          [productId]: { type: 'error', content: 'Already subscribed.' }
         }))
       }
     } catch (error) {
@@ -132,7 +200,7 @@ export default function ProductList() {
               key={product._id}
               id={product._id}
               ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer`}
+              className="rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-8"
               onClick={() => handleProductClick(product._id)}
             >
               <div className="relative aspect-square overflow-hidden">
@@ -167,45 +235,48 @@ export default function ProductList() {
                 )}
                 {product.sizes.length === 0 && (
                   <>
-                    <div className="absolute top-2 right-2 z-10 flex items-center space-x-1">
+                    <div className="absolute top-2 right-2 z-20 flex items-center space-x-1"> {/* Updated className */}
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group"
+                        className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group text-xs sm:text-sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setNotifyClicked(product._id);
+                          setNotifyClicked(notifyClicked === product._id ? null : product._id);
                         }}
                       >
-                        <BellIcon className="h-4 w-4 mr-1 animate-ring" />
+                        <BellIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-ring" />
                         Notify Me
                       </Button>
                     </div>
                     {(notifyClicked === product._id) && (
                       <div 
-                        className="absolute top-12 right-2 z-20 bg-white rounded-lg p-3 shadow-[0_0_10px_rgba(0,0,0,0.3)] w-64"
+                        className="absolute top-12 right-2 z-30 bg-white rounded-lg p-2 sm:p-3 shadow-[0_0_10px_rgba(0,0,0,0.3)] w-56 sm:w-64 max-w-[calc(100%-1rem)] overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <form 
+                          ref={(el: HTMLFormElement | null) => {
+                            if (el) notifyFormRefs.current[index] = el;
+                          }}
                           onSubmit={(e) => handleEmailSubmit(e, product._id, product.name)} 
-                          className="flex flex-col space-y-2"
+                          className="flex flex-col space-y-2 notify-form"
                         >
-                          <p className="text-sm font-semibold">{product.name}</p>
+                          <p className="text-xs sm:text-sm font-semibold">{product.name}</p>
                           <div className="flex items-center space-x-2">
                             <Input
                               type="email"
                               name="email"
-                              placeholder="Enter your email"
-                              className="text-sm flex-grow"
+                              placeholder={isMobile ? "Email" : "Enter your email"}
+                              className="text-xs sm:text-sm flex-grow email-input"
                               required
                             />
-                            <Button type="submit" size="sm" className="whitespace-nowrap bg-black text-white hover:bg-gray-800">
+                            <Button type="submit" size="sm" className="whitespace-nowrap bg-black text-white hover:bg-gray-800 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3">
                               Notify
                             </Button>
                           </div>
                           {notifyMessages[product._id] && (
                             <div 
-                              className={`mt-2 p-2 rounded-md text-sm font-medium flex justify-between items-center ${
+                              className={`mt-2 p-1 sm:p-2 rounded-md text-xs sm:text-sm font-medium flex justify-between items-center ${
                                 notifyMessages[product._id].type === 'success' 
                                   ? 'bg-green-100 text-green-800' 
                                   : 'bg-red-100 text-red-800'
@@ -322,7 +393,7 @@ export default function ProductList() {
         @keyframes chainReaction {
           0% {
             opacity: 0;
-            transform: translateY(32px);
+            transform: translateY(15px);
           }
           100% {
             opacity: 1;
@@ -331,9 +402,38 @@ export default function ProductList() {
         }
 
         .animate-chainReaction {
-          animation: chainReaction 0.5s ease-out forwards;
+          animation: chainReaction 0.2s ease-out forwards;
+        }
+
+        @media (max-width: 500px) {
+          .email-input {
+            width: 100px;  /* Even smaller width */
+            min-width: 100px;  /* Ensure minimum width */
+            padding: 3px 6px;  /* Smaller padding */
+            font-size: 12px;  /* Smaller font */
+            height: 28px;  /* Smaller height */
+            
+            &::placeholder {
+              content: "Email";
+              font-size: 12px;
+            }
+          }
+
+          /* Make the notify button smaller too */
+          .email-input + button {
+            padding: 3px 8px !important;
+            height: 28px !important;
+            font-size: 12px !important;
+          }
+
+          /* Make the product name in notify form smaller */
+          .notify-form p {
+            font-size: 11px !important;
+          }
         }
       `}</style>
     </>
   )
 }
+
+

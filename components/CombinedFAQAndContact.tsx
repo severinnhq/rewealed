@@ -213,4 +213,3 @@ const CombinedFAQAndContact: React.FC = () => {
 }
 
 export default CombinedFAQAndContact
-
