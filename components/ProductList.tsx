@@ -61,12 +61,14 @@ export default function ProductList() {
       }
     )
 
-    productRefs.current.forEach((ref) => {
+    const currentRefs = productRefs.current;
+
+    currentRefs.forEach((ref) => {
       if (ref) observer.observe(ref)
     })
 
     return () => {
-      productRefs.current.forEach((ref) => {
+      currentRefs.forEach((ref) => {
         if (ref) observer.unobserve(ref)
       })
     }
@@ -235,7 +237,7 @@ export default function ProductList() {
                 )}
                 {product.sizes.length === 0 && (
                   <>
-                    <div className="absolute top-2 right-2 z-20 flex items-center space-x-1"> {/* Updated className */}
+                    <div className="absolute top-2 right-2 z-20 flex items-center space-x-1">
                       <Button
                         variant="secondary"
                         size="sm"
@@ -331,7 +333,7 @@ export default function ProductList() {
                 )}
               </div>
               <div className="p-4 sm:p-5 md:p-6 lg:p-7">
-                <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black"> {product.name}</h2>
+                <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black">{product.name}</h2>
                 <div className="mt-2 flex items-center justify-between">
                   <div>
                     {product.sizes.length === 0 ? (
@@ -407,11 +409,11 @@ export default function ProductList() {
 
         @media (max-width: 500px) {
           .email-input {
-            width: 100px;  /* Even smaller width */
-            min-width: 100px;  /* Ensure minimum width */
-            padding: 3px 6px;  /* Smaller padding */
-            font-size: 12px;  /* Smaller font */
-            height: 28px;  /* Smaller height */
+            width: 100px;
+            min-width: 100px;
+            padding: 3px 6px;
+            font-size: 12px;
+            height: 28px;
             
             &::placeholder {
               content: "Email";
@@ -419,14 +421,12 @@ export default function ProductList() {
             }
           }
 
-          /* Make the notify button smaller too */
           .email-input + button {
             padding: 3px 8px !important;
             height: 28px !important;
             font-size: 12px !important;
           }
 
-          /* Make the product name in notify form smaller */
           .notify-form p {
             font-size: 11px !important;
           }
