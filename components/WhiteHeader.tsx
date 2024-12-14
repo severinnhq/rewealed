@@ -18,6 +18,10 @@ export function WhiteHeader({ onCartClick, cartItems }: WhiteHeaderProps) {
 
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0)
 
+  const handleLogoClick = () => {
+    sessionStorage.removeItem('productListScrollPosition');
+  }
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
@@ -33,7 +37,7 @@ export function WhiteHeader({ onCartClick, cartItems }: WhiteHeaderProps) {
           </Button>
 
           <div className="flex-grow flex justify-center">
-            <Link href="/">
+            <Link href="/" onClick={handleLogoClick}>
               <Image
                 src="/blacklogo.png"
                 alt="Logo"

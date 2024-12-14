@@ -23,10 +23,15 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen])
 
+  const handleHomeClick = () => {
+    sessionStorage.removeItem('productListScrollPosition');
+    onClose();
+  }
+
   const menuItems = [
-    { name: 'Home', icon: Home, href: '/' },
-    { name: 'Products', icon: ShoppingBag, href: '/#products' },
-    { name: 'Contact', icon: Mail, href: '/#contact' },
+    { name: 'Home', icon: Home, href: '/', onClick: handleHomeClick },
+    { name: 'Products', icon: ShoppingBag, href: '/#products', onClick: onClose },
+    { name: 'Contact', icon: Mail, href: '/#contact', onClick: onClose },
   ]
 
   return (
@@ -68,7 +73,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
                       key={item.name}
                       href={item.href}
                       className="flex items-center p-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-100 group transition-colors"
-                      onClick={onClose}
+                      onClick={item.onClick}
                     >
                       <item.icon className="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900" />
                       <span className="ml-3">{item.name}</span>

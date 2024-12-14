@@ -10,6 +10,7 @@ import { useCart } from '@/lib/CartContext'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, BellIcon } from 'lucide-react'
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Product {
   _id: string
@@ -25,6 +26,7 @@ interface Product {
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [cartProduct, setCartProduct] = useState<Product | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [notifyMessages, setNotifyMessages] = useState<{ [key: string]: { type: 'success' | 'error', content: string } }>({})
@@ -108,6 +110,15 @@ export default function ProductList() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  useEffect(() => {
+    // Restore scroll position on component mount
+    const savedScrollPosition = sessionStorage.getItem('productListScrollPosition');
+    if (savedScrollPosition) {
+      window.scrollTo(0, parseInt(savedScrollPosition));
+      sessionStorage.removeItem('productListScrollPosition');
+    }
+  }, []);
+
   const fetchProducts = async () => {
     try {
       const response = await fetch('/api/products')
@@ -127,6 +138,8 @@ export default function ProductList() {
       }
     } catch (error) {
       console.error('Error fetching products:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -155,7 +168,9 @@ export default function ProductList() {
   }
 
   const handleProductClick = (productId: string) => {
-    router.push(`/product/${productId}`)
+    // Save current scroll position
+    sessionStorage.setItem('productListScrollPosition', window.scrollY.toString());
+    router.push(`/product/${productId}`);
   }
 
   const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>, productId: string, productName: string) => {
@@ -191,174 +206,190 @@ export default function ProductList() {
     }
   };
 
+  const renderProductCard = (product: Product, index: number) => (
+    <div 
+      key={product._id}
+      id={product._id}
+      ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
+      className="rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-8"
+      onClick={() => handleProductClick(product._id)}
+    >
+      <div className="relative aspect-square overflow-hidden">
+        {product.salePrice && (
+          <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-20">
+            SALE
+          </div>
+        )}
+        <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+          product.sizes.length === 0 ? 'opacity-40 md:group-hover:opacity-0' : 'md:group-hover:opacity-0'
+        }`}>
+          <Image
+            src={`/uploads/${product.mainImage}`}
+            alt={product.name}
+            fill
+            className="object-cover bg-transparent"
+          />
+        </div>
+        {product.galleryImages.length > 0 && (
+          <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+            product.sizes.length === 0 
+              ? 'opacity-0 md:group-hover:opacity-40' 
+              : 'opacity-0 md:group-hover:opacity-100'
+          }`}>
+            <Image
+              src={`/uploads/${product.galleryImages[0]}`}
+              alt={`${product.name} - Gallery`}
+              fill
+              className="object-cover bg-transparent"
+            />
+          </div>
+        )}
+        {product.sizes.length === 0 && (
+          <>
+            <div className="absolute top-2 right-2 z-20 flex items-center space-x-1">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group text-xs sm:text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNotifyClicked(notifyClicked === product._id ? null : product._id);
+                }}
+              >
+                <BellIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-ring" />
+                Notify Me
+              </Button>
+            </div>
+            {(notifyClicked === product._id) && (
+              <div 
+                className="absolute top-12 right-2 z-30 bg-white rounded-lg p-2 sm:p-3 shadow-[0_0_10px_rgba(0,0,0,0.3)] w-56 sm:w-64 max-w-[calc(100%-1rem)] overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <form 
+                  ref={(el: HTMLFormElement | null) => {
+                    if (el) notifyFormRefs.current[index] = el;
+                  }}
+                  onSubmit={(e) => handleEmailSubmit(e, product._id, product.name)} 
+                  className="flex flex-col space-y-2 notify-form"
+                >
+                  <p className="text-xs sm:text-sm font-semibold">{product.name}</p>
+                  <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
+                    <Input
+                      type="email"
+                      name="email"
+                      placeholder={isMobile ? "Email" : "Enter your email"}
+                      className="text-xs sm:text-sm flex-grow email-input"
+                      required
+                    />
+                    <Button type="submit" size="sm" className={`whitespace-nowrap bg-black text-white hover:bg-gray-800 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3 ${isMobile ? 'w-full' : ''}`}>
+                      Notify
+                    </Button>
+                  </div>
+                  {notifyMessages[product._id] && (
+                    <div 
+                      className={`mt-2 p-1 sm:p-2 rounded-md text-xs sm:text-sm font-medium flex justify-between items-center ${
+                        notifyMessages[product._id].type === 'success' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      <span>{notifyMessages[product._id].content}</span>
+                      <button
+                        onClick={() => {
+                          setNotifyMessages(prev => {
+                            const newMessages = {...prev}
+                            delete newMessages[product._id]
+                            return newMessages
+                          })
+                        }}
+                        className="ml-2 text-gray-500 hover:text-gray-700"
+                        aria-label="Close message"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+                </form>
+              </div>
+            )}
+          </>
+        )}
+        {product.sizes.length > 0 && (
+          <>
+            <div className="absolute bottom-4 right-4 transform translate-y-1/4 transition-all duration-300 ease-out md:group-hover:translate-y-0 opacity-0 md:group-hover:opacity-100 hidden md:block">
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddToCart(product)
+                }}
+                className="bg-black text-white hover:bg-gray-800 text-sm sm:text-base lg:text-lg py-2 px-3 sm:py-2 sm:px-4 lg:py-3 lg:px-5"
+              >
+                <span className="font-bold">+ Add to Cart</span>
+              </Button>
+            </div>
+            <div className="absolute bottom-4 right-4 md:hidden">
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddToCart(product)
+                }}
+                className="bg-white text-black hover:bg-gray-100 p-3 rounded-full"
+              >
+                <ShoppingCart size={24} className="sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+      <div className="p-4 sm:p-5 md:p-6 lg:p-7">
+        <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black">{product.name}</h2>
+        <div className="mt-2 flex items-center justify-between">
+          <div>
+            {product.sizes.length === 0 ? (
+              <span className="text-base text-black">
+                Sold Out
+              </span>
+            ) : product.salePrice ? (
+              <>
+                <span className="text-base sm:text-lg lg:text-xl font-bold text-red-600">
+                  €{product.salePrice.toFixed(2)}
+                </span>
+                <span className="text-sm sm:text-base lg:text-lg text-gray-500 line-through ml-2">
+                  €{product.price.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="text-base sm:text-lg lg:text-xl font-bold text-black">
+                €{product.price.toFixed(2)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderSkeletonCard = () => (
+    <div className="rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer">
+      <div className="relative aspect-square overflow-hidden">
+        <Skeleton className="absolute inset-0" />
+      </div>
+      <div className="p-4 sm:p-5 md:p-6 lg:p-7">
+        <Skeleton className="h-6 w-3/4 mb-2" />
+        <Skeleton className="h-4 w-1/4" />
+      </div>
+    </div>
+  )
+
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className="container mx-auto p-4 pt-40 pb-24" ref={containerRef}>
         <h1 className="text-5xl font-bold mb-12 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
-          {products.map((product, index) => (
-            <div 
-              key={product._id}
-              id={product._id}
-              ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-              className="rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-8"
-              onClick={() => handleProductClick(product._id)}
-            >
-              <div className="relative aspect-square overflow-hidden">
-                {product.salePrice && (
-                  <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-20">
-                    SALE
-                  </div>
-                )}
-                <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-                  product.sizes.length === 0 ? 'opacity-40 md:group-hover:opacity-0' : 'md:group-hover:opacity-0'
-                }`}>
-                  <Image
-                    src={`/uploads/${product.mainImage}`}
-                    alt={product.name}
-                    fill
-                    className="object-cover bg-transparent"
-                  />
-                </div>
-                {product.galleryImages.length > 0 && (
-                  <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-                    product.sizes.length === 0 
-                      ? 'opacity-0 md:group-hover:opacity-40' 
-                      : 'opacity-0 md:group-hover:opacity-100'
-                  }`}>
-                    <Image
-                      src={`/uploads/${product.galleryImages[0]}`}
-                      alt={`${product.name} - Gallery`}
-                      fill
-                      className="object-cover bg-transparent"
-                    />
-                  </div>
-                )}
-                {product.sizes.length === 0 && (
-                  <>
-                    <div className="absolute top-2 right-2 z-20 flex items-center space-x-1">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="bg-white text-black hover:bg-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.3)] group text-xs sm:text-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setNotifyClicked(notifyClicked === product._id ? null : product._id);
-                        }}
-                      >
-                        <BellIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-ring" />
-                        Notify Me
-                      </Button>
-                    </div>
-                    {(notifyClicked === product._id) && (
-                      <div 
-                        className="absolute top-12 right-2 z-30 bg-white rounded-lg p-2 sm:p-3 shadow-[0_0_10px_rgba(0,0,0,0.3)] w-56 sm:w-64 max-w-[calc(100%-1rem)] overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <form 
-                          ref={(el: HTMLFormElement | null) => {
-                            if (el) notifyFormRefs.current[index] = el;
-                          }}
-                          onSubmit={(e) => handleEmailSubmit(e, product._id, product.name)} 
-                          className="flex flex-col space-y-2 notify-form"
-                        >
-                          <p className="text-xs sm:text-sm font-semibold">{product.name}</p>
-                          <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
-                            <Input
-                              type="email"
-                              name="email"
-                              placeholder={isMobile ? "Email" : "Enter your email"}
-                              className="text-xs sm:text-sm flex-grow email-input"
-                              required
-                            />
-                            <Button type="submit" size="sm" className={`whitespace-nowrap bg-black text-white hover:bg-gray-800 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3 ${isMobile ? 'w-full' : ''}`}>
-                              Notify
-                            </Button>
-                          </div>
-                          {notifyMessages[product._id] && (
-                            <div 
-                              className={`mt-2 p-1 sm:p-2 rounded-md text-xs sm:text-sm font-medium flex justify-between items-center ${
-                                notifyMessages[product._id].type === 'success' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              <span>{notifyMessages[product._id].content}</span>
-                              <button
-                                onClick={() => {
-                                  setNotifyMessages(prev => {
-                                    const newMessages = {...prev}
-                                    delete newMessages[product._id]
-                                    return newMessages
-                                  })
-                                }}
-                                className="ml-2 text-gray-500 hover:text-gray-700"
-                                aria-label="Close message"
-                              >
-                                &times;
-                              </button>
-                            </div>
-                          )}
-                        </form>
-                      </div>
-                    )}
-                  </>
-                )}
-                {product.sizes.length > 0 && (
-                  <>
-                    <div className="absolute bottom-4 right-4 transform translate-y-1/4 transition-all duration-300 ease-out md:group-hover:translate-y-0 opacity-0 md:group-hover:opacity-100 hidden md:block">
-                      <Button 
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleAddToCart(product)
-                        }}
-                        className="bg-black text-white hover:bg-gray-800 text-sm sm:text-base lg:text-lg py-2 px-3 sm:py-2 sm:px-4 lg:py-3 lg:px-5"
-                      >
-                        <span className="font-bold">+ Add to Cart</span>
-                      </Button>
-                    </div>
-                    <div className="absolute bottom-4 right-4 md:hidden">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleAddToCart(product)
-                        }}
-                        className="bg-white text-black hover:bg-gray-100 p-3 rounded-full"
-                      >
-                        <ShoppingCart size={24} className="sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="p-4 sm:p-5 md:p-6 lg:p-7">
-                <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black">{product.name}</h2>
-                <div className="mt-2 flex items-center justify-between">
-                  <div>
-                    {product.sizes.length === 0 ? (
-                      <span className="text-base text-black">
-                        Sold Out
-                      </span>
-                    ) : product.salePrice ? (
-                      <>
-                        <span className="text-base sm:text-lg lg:text-xl font-bold text-red-600">
-                          €{product.salePrice.toFixed(2)}
-                        </span>
-                        <span className="text-sm sm:text-base lg:text-lg text-gray-500 line-through ml-2">
-                          €{product.price.toFixed(2)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-base sm:text-lg lg:text-xl font-bold text-black">
-                        €{product.price.toFixed(2)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+          {isLoading
+            ? Array(8).fill(null).map((_, index) => <div key={index}>{renderSkeletonCard()}</div>)
+            : products.map((product, index) => renderProductCard(product, index))}
         </div>
         {cartProduct && (
           <CartModal 

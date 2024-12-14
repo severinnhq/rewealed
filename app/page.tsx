@@ -8,8 +8,6 @@ import { useCountdown } from '@/lib/CountdownContext'
 import ReviewSection from '@/components/ReviewSection'
 import CombinedFAQAndContact from '../components/CombinedFAQAndContact'
 
-
-
 const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
 export default function Home() {
@@ -34,10 +32,10 @@ export default function Home() {
       <section id="review" className="py-16 w-full">
         <ReviewSection />
       </section>
-  
       <section id="faq-and-contact" className="py-16">
         <CombinedFAQAndContact />
       </section>
     </main>
   )
 }
+
