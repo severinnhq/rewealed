@@ -5,9 +5,10 @@ import HeroSection from '../components/heroSection'
 import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
-import CombinedGridLayout from '../components/CombinedGridLayout'
+import CombinedGridLayout from '../components/ReviewSection'
 import CombinedFAQAndContact from '../components/CombinedFAQAndContact'
 import { ShippingFeatures } from '@/components/ShippingFeatures'
+import ReviewSection from '../components/ReviewSection'
 
 const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
@@ -30,11 +31,10 @@ export default function Home() {
       <section id="products">
         <ProductList />
       </section>
-      <section id="combined-grid" className="py-16 w-full">
-        <CombinedGridLayout />
+      <section id="review" className="py-16 w-full">
+        <ReviewSection />
       </section>
-   
-       <ShippingFeatures />
+  
       <section id="faq-and-contact" className="py-16">
         <CombinedFAQAndContact />
       </section>

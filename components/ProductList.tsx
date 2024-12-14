@@ -264,7 +264,7 @@ export default function ProductList() {
                           className="flex flex-col space-y-2 notify-form"
                         >
                           <p className="text-xs sm:text-sm font-semibold">{product.name}</p>
-                          <div className="flex items-center space-x-2">
+                          <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
                             <Input
                               type="email"
                               name="email"
@@ -272,7 +272,7 @@ export default function ProductList() {
                               className="text-xs sm:text-sm flex-grow email-input"
                               required
                             />
-                            <Button type="submit" size="sm" className="whitespace-nowrap bg-black text-white hover:bg-gray-800 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3">
+                            <Button type="submit" size="sm" className={`whitespace-nowrap bg-black text-white hover:bg-gray-800 text-xs sm:text-sm py-1 px-2 sm:py-2 sm:px-3 ${isMobile ? 'w-full' : ''}`}>
                               Notify
                             </Button>
                           </div>
@@ -409,11 +409,10 @@ export default function ProductList() {
 
         @media (max-width: 500px) {
           .email-input {
-            width: 100px;
-            min-width: 100px;
+            width: 100%;
             padding: 3px 6px;
             font-size: 12px;
-            height: 28px;
+            height: 32px;
             
             &::placeholder {
               content: "Email";
@@ -422,8 +421,9 @@ export default function ProductList() {
           }
 
           .email-input + button {
+            width: 100%;
             padding: 3px 8px !important;
-            height: 28px !important;
+            height: 32px !important;
             font-size: 12px !important;
           }
 
