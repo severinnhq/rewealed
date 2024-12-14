@@ -5,10 +5,10 @@ import HeroSection from '../components/heroSection'
 import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
-import CombinedGridLayout from '../components/ReviewSection'
+import ReviewSection from '@/components/ReviewSection'
 import CombinedFAQAndContact from '../components/CombinedFAQAndContact'
-import { ShippingFeatures } from '@/components/ShippingFeatures'
-import ReviewSection from '../components/ReviewSection'
+
+
 
 const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
