@@ -4,6 +4,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 const ReviewSection = () => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -35,7 +38,7 @@ const ReviewSection = () => {
   return (
     <>
       <div ref={scrollTargetRef} className="h-16" /> {/* Adjust the height as needed */}
-      <div ref={topRef} id="review-section" className="relative w-full max-w-7xl mx-auto px-4 pt-0">
+      <div ref={topRef} id="review-section" className={`relative w-full max-w-7xl mx-auto px-4 pt-0 ${sora.className}`}>
         <div className="text-center mb-8">
           <h2 className="text-3xl md:text-2xl lg:text-3xl flex flex-col md:flex-row items-center justify-center relative font-normal">
             <div className="relative flex flex-col md:flex-row items-center">

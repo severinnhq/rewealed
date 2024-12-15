@@ -4,6 +4,9 @@ import React, { useEffect } from 'react'
 import { X, Home, ShoppingBag, Mail, Instagram, Twitter } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface MenuProps {
   isOpen: boolean;
@@ -36,7 +39,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      className={`fixed inset-0 z-[100] ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'} ${sora.className}`}
       aria-hidden={!isOpen}
     >
       <div className="absolute inset-0 overflow-hidden">

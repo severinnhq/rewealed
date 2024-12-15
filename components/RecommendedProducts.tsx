@@ -10,6 +10,9 @@ import { useCart } from '@/lib/CartContext'
 import { useRouter, useParams } from 'next/navigation'
 import { ShoppingCart, BellIcon } from 'lucide-react'
 import { Skeleton } from "@/components/ui/skeleton"
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface Product {
   _id: string
@@ -207,7 +210,7 @@ export default function RecommendedProducts() {
       key={product._id}
       id={product._id}
       ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-      className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer`}
+      className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer ${sora.className}`}
       style={{
         opacity: animatingProducts.includes(product._id) ? 1 : 0,
         transform: animatingProducts.includes(product._id) ? 'translateY(0)' : 'translateY(32px)',
@@ -372,7 +375,7 @@ export default function RecommendedProducts() {
 
   return (
     <>
-      <div className="container mx-auto p-4 py-24" ref={containerRef}>
+      <div className={`container mx-auto p-4 py-24 ${sora.className}`} ref={containerRef}>
         <h2 className="text-4xl font-bold mb-12">WE ALSO RECOMMEND</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {isLoading

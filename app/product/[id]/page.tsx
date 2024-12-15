@@ -19,6 +19,9 @@ import { ShippingFeatures } from '@/components/ShippingFeatures'
 import { FloatingProductBox } from '@/components/FloatingProductBox'
 import RecommendedProducts from '@/components/RecommendedProducts';
 import { BellIcon } from 'lucide-react'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface Product {
   _id: string
@@ -120,14 +123,14 @@ export default function ProductPage() {
   }
 
   if (!product) {
-    return <div>Loading...</div>
+    return <div className={sora.className}>Loading...</div>
   }
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
   const isProductAvailable = product.sizes.length > 0
 
   return (
-    <>
+    <div className={sora.className}>
       <WhiteHeader onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className="container mx-auto px-4 py-24" ref={productRef}>
         <div className="flex flex-col lg:flex-row gap-8">
@@ -299,7 +302,7 @@ export default function ProductPage() {
                     variant="ghost"
                     className="flex w-full justify-between py-6 transition-all duration-300 ease-in-out"
                   >
-                    <span>Description</span>
+                    <h4 className="text-base font-medium">Description</h4>
                     <motion.div
                       initial={false}
                       animate={{ rotate: isDescriptionOpen ? 180 : 0 }}
@@ -345,7 +348,7 @@ export default function ProductPage() {
                     variant="ghost"
                     className="flex w-full justify-between py-6 transition-all duration-300 ease-in-out"
                   >
-                    <span>Payment & Shipping</span>
+                    <h4 className="text-base font-medium">Payment & Shipping</h4>
                     <motion.div
                       initial={false}
                       animate={{ rotate: isPaymentShippingOpen ? 180 : 0 }}
@@ -372,10 +375,10 @@ export default function ProductPage() {
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
                             className="text-gray-600 space-y-4"
                           >
-                            <h3 className="font-semibold">Payment Options:</h3>
+                            <h4 className="text-sm font-semibold">Payment Options:</h4>
                             <p>We accept all major credit cards (Visa, MasterCard, American Express, Discover) through our secure payment processor, Stripe. Apple Pay and Google Pay are also available on supported devices for a seamless checkout experience.</p>
                             
-                            <h3 className="font-semibold mt-4">Shipping Information:</h3>
+                            <h4 className="text-sm font-semibold mt-4">Shipping Information:</h4>
                             <p>We take great care in packing your items to ensure they arrive safely. Our standard shipping typically takes 5-7 business days to reach you.</p>
                           </motion.div>
                         </div>
@@ -407,6 +410,7 @@ export default function ProductPage() {
       />
       <ShippingFeatures />
       <RecommendedProducts />
-    </>
+    </div>
   )
 }
+

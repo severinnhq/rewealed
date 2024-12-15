@@ -11,6 +11,9 @@ import { useRouter } from 'next/navigation'
 import { ShoppingCart, BellIcon } from 'lucide-react'
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface Product {
   _id: string
@@ -211,7 +214,7 @@ export default function ProductList() {
       key={product._id}
       id={product._id}
       ref={(el: HTMLDivElement | null) => { productRefs.current[index] = el }}
-      className="rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-8"
+      className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer opacity-0 translate-y-8 ${sora.className}`}
       onClick={() => handleProductClick(product._id)}
     >
       <div className="relative aspect-square overflow-hidden">
@@ -346,7 +349,7 @@ export default function ProductList() {
         <div className="mt-2 flex items-center justify-between">
           <div>
             {product.sizes.length === 0 ? (
-              <span className="text-base text-black">
+              <span className="text-sm sm:text-base lg:text-lg text-black">
                 Sold Out
               </span>
             ) : product.salePrice ? (
@@ -359,7 +362,7 @@ export default function ProductList() {
                 </span>
               </>
             ) : (
-              <span className="text-base sm:text-lg lg:text-xl font-bold text-black">
+              <span className="text-base sm:text-lg lg:text-xl font-semibold text-black">
                 €{product.price.toFixed(2)}
               </span>
             )}
@@ -370,7 +373,7 @@ export default function ProductList() {
   )
 
   const renderSkeletonCard = () => (
-    <div className="rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer">
+    <div className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer ${sora.className}`}>
       <div className="relative aspect-square overflow-hidden">
         <Skeleton className="absolute inset-0" />
       </div>
@@ -384,8 +387,8 @@ export default function ProductList() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className="container mx-auto p-4 pt-40 pb-24" ref={containerRef}>
-        <h1 className="text-5xl font-bold mb-12 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
+      <div className={`container mx-auto p-4 pt-40 pb-24 ${sora.className}`} ref={containerRef}>
+        <h1 className="text-4xl sm:text-5xl font-bold mb-12 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
           {isLoading
             ? Array(8).fill(null).map((_, index) => <div key={index}>{renderSkeletonCard()}</div>)

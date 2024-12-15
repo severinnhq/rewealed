@@ -5,6 +5,9 @@ import Image from 'next/image'
 import { X } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from 'framer-motion'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface Product {
   _id: string
@@ -71,7 +74,7 @@ const CartModal: React.FC<CartModalProps> = ({ product, onClose, onAddToCart }) 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="fixed bg-white rounded-t-lg md:rounded-lg shadow-lg w-full md:w-96 z-[60] overflow-hidden bottom-0 left-0 right-0 md:right-4 md:left-auto max-w-full max-h-[90vh] md:max-h-[80vh] overflow-y-auto"
+            className={`fixed bg-white rounded-t-lg md:rounded-lg shadow-lg w-full md:w-96 z-[60] overflow-hidden bottom-0 left-0 right-0 md:right-4 md:left-auto max-w-full max-h-[90vh] md:max-h-[80vh] overflow-y-auto ${sora.className}`}
           >
             <motion.div
               initial={{ opacity: 0 }}

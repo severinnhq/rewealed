@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useCheckout } from '@/lib/useCheckout'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface CartItem {
   product: {
@@ -103,11 +106,11 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
         >
           <div className="relative w-full md:w-[400px] flex">
             <div className="absolute inset-0 bg-white shadow-xl rounded-lg" />
-            <div className="relative flex-1 flex flex-col h-full p-4 md:p-4 bg-white rounded-lg md:rounded-lg overflow-hidden">
+            <div className={`relative flex-1 flex flex-col h-full p-4 md:p-4 bg-white rounded-lg md:rounded-lg overflow-hidden ${sora.className}`}>
               <div className="flex-shrink-0 py-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center">
-                    <h2 className="text-lg font-medium text-gray-900">Cart</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">Cart</h2>
                     <div className="ml-2 bg-black rounded-full w-6 h-6 flex items-center justify-center">
                       <span className="text-xs text-white">{cartItems.length}</span>
                     </div>
@@ -134,8 +137,8 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                   {cartItems.length === 0 ? (
                     <div className="text-center py-12">
                       <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">Your cart is empty</h3>
-                      <p className="mt-1 text-sm text-gray-500">Start adding some items to your cart!</p>
+                      <h3 className="mt-2 text-base font-semibold text-gray-900">Your cart is empty</h3>
+                      <p className="mt-1 text-sm text-gray-600">Start adding some items to your cart!</p>
                       <div className="mt-6">
                         <Button onClick={onClose} variant="outline" className="w-full">
                           Continue Shopping
@@ -167,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                             <div className="ml-4 flex-1 flex flex-col">
                               <div>
                                 <div className="flex justify-between text-base font-medium text-gray-900">
-                                  <h3>
+                                  <h3 className="text-base font-semibold">
                                     <Link
                                       href={`/product/${item.product._id}`}
                                       onClick={(e) => {
@@ -219,7 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
 
               {cartItems.length > 0 && (
                 <div className="flex-shrink-0 border-t border-gray-200 pt-6">
-                  <div className="flex justify-between text-base font-medium text-gray-900">
+                  <div className="flex justify-between text-lg font-semibold text-gray-900">
                     <p>Subtotal</p>
                     <p>
                       €{cartTotal.toFixed(2)}
@@ -250,3 +253,4 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
 }
 
 export default Sidebar
+

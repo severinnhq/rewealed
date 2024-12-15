@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { CartItem } from '@/types/cart'
 import Menu from '@/components/Menu'
 import Link from 'next/link'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -40,7 +43,7 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
     <>
       <header className={`fixed top-0 left-0 right-0 z-[90] transition-all duration-300 ${
         isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
-      }`}>
+      } ${sora.className}`}>
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
           <Button 
             variant="ghost" 
@@ -84,3 +87,4 @@ export function Header({ onCartClick, cartItems }: HeaderProps) {
     </>
   )
 }
+

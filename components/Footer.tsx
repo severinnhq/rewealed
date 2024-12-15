@@ -1,7 +1,12 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Instagram, Twitter } from 'lucide-react'
 import { useEffect } from 'react'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 const TikTokIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +44,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12 px-4">
+    <footer className={`bg-gray-900 text-gray-300 py-12 px-4 ${sora.className}`}>
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="space-y-4">
           <div className="mb-4">
@@ -95,7 +100,6 @@ const Footer = () => {
       </div>
       <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
         <p>&copy; {new Date().getFullYear()} Rewealed. All rights reserved.</p>
-  
       </div>
     </footer>
   )

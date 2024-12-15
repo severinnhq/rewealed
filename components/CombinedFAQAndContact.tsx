@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { motion, AnimatePresence } from 'framer-motion'
 import SuccessModal from './SuccessModal'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 interface FAQItem {
   question: string
@@ -83,7 +86,7 @@ const CombinedFAQAndContact: React.FC = () => {
   }
 
   return (
-    <section className="bg-white py-24">
+    <section className={`bg-white py-24 ${sora.className}`}>
       <div className="container mx-auto px-4 max-w-[1140px]">
         <div className="flex flex-col items-center mb-16">
           <div className="w-full max-w-[300px] aspect-square relative overflow-hidden mb-8">
@@ -96,12 +99,12 @@ const CombinedFAQAndContact: React.FC = () => {
               draggable="false"
             />
           </div>
-          <h2 className="text-3xl font-bold text-center">FAQ & Contact</h2>
+          <h2 className="text-3xl font-semibold text-center">FAQ & Contact</h2>
         </div>
         <div className="flex flex-col lg:flex-row gap-12">
           {/* FAQ Section */}
           <div className="w-full lg:w-1/2">
-            <h3 className="text-2xl font-bold mb-6">Frequently Asked Questions</h3>
+            <h3 className="text-2xl font-semibold mb-6">Frequently Asked Questions</h3>
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-4">
               {faqData.map((item, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -152,7 +155,7 @@ const CombinedFAQAndContact: React.FC = () => {
 
           {/* Contact Section */}
           <div className="w-full lg:w-1/2">
-            <h3 className="text-2xl font-bold mb-6">Contact Us</h3>
+            <h3 className="text-2xl font-semibold mb-6">Contact Us</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -213,3 +216,4 @@ const CombinedFAQAndContact: React.FC = () => {
 }
 
 export default CombinedFAQAndContact
+

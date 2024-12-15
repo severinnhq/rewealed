@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Sora } from 'next/font/google'
+
+const sora = Sora({ subsets: ['latin'] })
 
 export default function HeroSection() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -34,7 +37,7 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="relative h-screen w-full overflow-hidden">
+    <section className={`relative h-screen w-full overflow-hidden ${sora.className}`}>
       <AnimatePresence>
         {isLoaded && (
           <motion.div

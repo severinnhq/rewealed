@@ -3,7 +3,7 @@ import { CountdownProvider } from '@/lib/CountdownContext'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
 import './globals.css'
 
-// Initialize the font
+// Initialize the Sora font
 const sora = Sora({ 
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
@@ -17,7 +17,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={sora.variable}>
+    <html lang="en" className={`${sora.variable} font-sans`}>
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/good-times.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <CountdownProvider>
           <LayoutWrapper>{children}</LayoutWrapper>
@@ -26,3 +35,4 @@ export default function RootLayout({
     </html>
   )
 }
+
