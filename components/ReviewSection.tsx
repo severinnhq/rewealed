@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
@@ -37,13 +38,13 @@ const ReviewSection = () => {
 
   return (
     <>
-      <div ref={scrollTargetRef} className="h-16" /> {/* Adjust the height as needed */}
-      <div ref={topRef} id="review-section" className={`relative w-full max-w-7xl mx-auto px-4 pt-0 ${sora.className}`}>
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-2xl lg:text-3xl flex flex-col md:flex-row items-center justify-center relative font-normal">
-            <div className="relative flex flex-col md:flex-row items-center">
-              <span className="md:absolute md:right-full md:pr-3 text-2xl md:text-xl lg:text-2xl mb-0.5 md:mb-0 font-medium">The</span>
-              <div className="relative w-48 h-12 md:w-40 md:h-10 lg:w-48 lg:h-12 my-0.5 md:my-0">
+
+      <div ref={topRef} id="review-section" className={`relative w-full max-w-7xl mx-auto px-4 ${sora.className}`} style={{ marginTop: '0rem', marginBottom: '0rem' }}>
+        <div className="text-center">
+          <h2 className="flex items-center justify-center relative font-normal">
+            <div className="flex items-center">
+              <span className="mr-2 md:mr-3 font-medium whitespace-nowrap" style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.875rem)' }}>The</span>
+              <div className="relative w-[clamp(8rem,25vw,12rem)] h-[clamp(2rem,6.25vw,3rem)]">
                 <Image 
                   src="/blacklogo.png" 
                   alt="Logo" 
@@ -52,11 +53,11 @@ const ReviewSection = () => {
                   priority
                 />
               </div>
-              <span className="md:absolute md:left-full md:pl-3 text-2xl md:text-xl lg:text-2xl mt-0.5 md:mt-0 font-medium">effect</span>
+              <span className="ml-2 md:ml-3 font-medium whitespace-nowrap" style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.875rem)' }}>effect</span>
             </div>
           </h2>
         </div>
-        <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden pt-20">
+        <div className="bg-white rounded-2xl p-0 mt-[4rem]  relative overflow-hidden">
           {/* Mobile layout */}
           <div className="sm:hidden relative overflow-hidden">
             <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[400px]'}`}>

@@ -37,7 +37,7 @@ export default function HeroSection() {
   }
 
   return (
-    <section className={`relative h-screen w-full overflow-hidden ${sora.className}`}>
+    <section className={`relative h-screen w-full mb-0 overflow-hidden ${sora.className}`}>
       <AnimatePresence>
         {isLoaded && (
           <motion.div
@@ -85,7 +85,7 @@ export default function HeroSection() {
             custom={0}
             variants={textVariants}
           >
-            Welcome to Our Site
+    
           </motion.h1>
           <motion.p 
             className="text-xl md:text-2xl"
@@ -94,7 +94,7 @@ export default function HeroSection() {
             custom={1}
             variants={textVariants}
           >
-            Discover amazing content and experiences
+    
           </motion.p>
         </div>
       </div>

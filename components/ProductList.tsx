@@ -344,7 +344,7 @@ export default function ProductList() {
           </>
         )}
       </div>
-      <div className="p-4 sm:p-5 md:p-6 lg:p-7">
+      <div className="p-3 sm:p-4 md:p-5 lg:p-6">
         <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-black">{product.name}</h2>
         <div className="mt-2 flex items-center justify-between">
           <div>
@@ -377,7 +377,7 @@ export default function ProductList() {
       <div className="relative aspect-square overflow-hidden">
         <Skeleton className="absolute inset-0" />
       </div>
-      <div className="p-4 sm:p-5 md:p-6 lg:p-7">
+      <div className="p-3 sm:p-4 md:p-5 lg:p-6">
         <Skeleton className="h-6 w-3/4 mb-2" />
         <Skeleton className="h-4 w-1/4" />
       </div>
@@ -387,9 +387,9 @@ export default function ProductList() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className={`container mx-auto p-4 pt-40 pb-24 ${sora.className}`} ref={containerRef}>
-        <h1 className="text-4xl sm:text-5xl font-bold mb-12 text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
+      <div className={`container mx-auto p-4 py-0 mt-[8rem] mb-[8rem] ${sora.className}`} ref={containerRef}>
+        <h1 className="text-4xl sm:text-5xl font-bold mb-[4rem] text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {isLoading
             ? Array(8).fill(null).map((_, index) => <div key={index}>{renderSkeletonCard()}</div>)
             : products.map((product, index) => renderProductCard(product, index))}

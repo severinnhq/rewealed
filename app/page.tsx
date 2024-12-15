@@ -29,12 +29,10 @@ export default function Home() {
       <section id="products">
         <ProductList />
       </section>
-      <section id="review" className="py-16 w-full">
+      <section id="review">
         <ReviewSection />
       </section>
-      <section id="faq-and-contact" className="py-16">
-        <CombinedFAQAndContact />
-      </section>
+    
     </main>
   )
 }

@@ -20,6 +20,7 @@ import { FloatingProductBox } from '@/components/FloatingProductBox'
 import RecommendedProducts from '@/components/RecommendedProducts';
 import { BellIcon } from 'lucide-react'
 import { Sora } from 'next/font/google'
+import { Skeleton } from "@/components/ui/skeleton"
 
 const sora = Sora({ subsets: ['latin'] })
 
@@ -123,7 +124,34 @@ export default function ProductPage() {
   }
 
   if (!product) {
-    return <div className={sora.className}>Loading...</div>
+    return (
+      <div className={`${sora.className} min-h-screen flex flex-col`}>
+        <Skeleton className="h-16 w-full" /> {/* Header skeleton */}
+        <div className="flex-grow container mx-auto px-4 py-24">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="lg:w-3/5">
+              <Skeleton className="w-full aspect-square mb-6" />
+              <div className="flex gap-2">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="w-20 h-20" />
+                ))}
+              </div>
+            </div>
+            <div className="lg:w-2/5 space-y-4">
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="space-y-2">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
