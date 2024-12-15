@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
@@ -42,7 +41,7 @@ const ReviewSection = () => {
       <div ref={topRef} id="review-section" className={`relative w-full max-w-7xl mx-auto px-4 ${sora.className}`} style={{ marginTop: '0rem', marginBottom: '0rem' }}>
         <div className="text-center">
           <h2 className="flex items-center justify-center relative font-normal">
-            <div className="flex items-center">
+            <div className="flex items-center justify-center w-full">
               <span className="mr-2 md:mr-3 font-medium whitespace-nowrap" style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.875rem)' }}>The</span>
               <div className="relative w-[clamp(8rem,25vw,12rem)] h-[clamp(2rem,6.25vw,3rem)]">
                 <Image 

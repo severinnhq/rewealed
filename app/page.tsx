@@ -32,7 +32,9 @@ export default function Home() {
       <section id="review">
         <ReviewSection />
       </section>
-    
+      <section id="faq-and-contact" >
+        <CombinedFAQAndContact />
+      </section>
     </main>
   )
 }
