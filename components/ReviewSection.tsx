@@ -62,7 +62,7 @@ const ReviewSection = () => {
 
   return (
     <>
-
+      <div ref={scrollTargetRef} className="h-[4rem]"/>
       <div ref={topRef} className={`container mx-auto p-4 py-0  ${sora.className}`}>
         <div id="review-section" className="relative w-full">
           <div className="text-center">
