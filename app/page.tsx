@@ -6,7 +6,8 @@ import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
 import ReviewSection from '@/components/ReviewSection'
-import CombinedFAQAndContact from '../components/CombinedFAQAndContact'
+
+import FAQSection from '../components/faq'
 
 const SHOW_COUNTDOWN = false // Set this to false to show the normal page
 
@@ -32,9 +33,8 @@ export default function Home() {
       <section id="review">
         <ReviewSection />
       </section>
-      <section id="faq-and-contact" >
-        <CombinedFAQAndContact />
-      </section>
+  
+      <FAQSection />
     </main>
   )
 }

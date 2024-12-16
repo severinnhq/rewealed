@@ -9,12 +9,7 @@ import { useCart } from '@/lib/CartContext'
 import { WhiteHeader } from '@/components/WhiteHeader';
 import Sidebar from '@/components/Sidebar'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { ChevronDown } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { ShippingFeatures } from '@/components/ShippingFeatures'
 import { FloatingProductBox } from '@/components/FloatingProductBox'
 import RecommendedProducts from '@/components/RecommendedProducts';
@@ -44,8 +39,7 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState<string>('')
   const { id } = useParams()
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart()
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
-  const [isPaymentShippingOpen, setIsPaymentShippingOpen] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const productRef = useRef<HTMLDivElement>(null);
   const [activeEmailInput, setActiveEmailInput] = useState<boolean>(false)
@@ -123,6 +117,18 @@ export default function ProductPage() {
     }
   }
 
+  const toggleItem = (index: number) => {
+    setExpandedItems((prevItems) => {
+      const newItems = new Set(prevItems)
+      if (newItems.has(index)) {
+        newItems.delete(index)
+      } else {
+        newItems.add(index)
+      }
+      return newItems
+    })
+  }
+
   if (!product) {
     return (
       <div className={`${sora.className} min-h-screen flex flex-col`}>
@@ -156,6 +162,25 @@ export default function ProductPage() {
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
   const isProductAvailable = product.sizes.length > 0
+
+  const faqs = [
+    {
+      question: "Description",
+      answer: product.description
+    },
+    {
+      question: "Payment & Shipping",
+      answer: (
+        <>
+          <h5 className="font-medium text-black mb-2">Payment Options:</h5>
+          <p className="mb-4">We accept all major credit cards (Visa, MasterCard, American Express, Discover) through our secure payment processor, Stripe. Apple Pay and Google Pay are also available on supported devices for a seamless checkout experience.</p>
+          
+          <h5 className="font-medium text-black mb-2">Shipping Information:</h5>
+          <p>We take great care in packing your items to ensure they arrive safely. Our standard shipping typically takes 5-7 business days to reach you.</p>
+        </>
+      )
+    }
+  ]
 
   return (
     <div className={sora.className}>
@@ -320,101 +345,35 @@ export default function ProductPage() {
               </div>
             )}
             <div className="mt-6 space-y-4">
-              <Collapsible
-                open={isDescriptionOpen}
-                onOpenChange={setIsDescriptionOpen}
-                className="border-t border-b"
-              >
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex w-full justify-between py-6 transition-all duration-300 ease-in-out"
+              {faqs.map((faq, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg overflow-hidden border border-gray-200"
+                >
+                  <button
+                    onClick={() => toggleItem(index)}
+                    className="w-full px-8 py-3 flex justify-between items-center text-left"
                   >
-                    <h4 className="text-base font-medium">Description</h4>
-                    <motion.div
-                      initial={false}
-                      animate={{ rotate: isDescriptionOpen ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </motion.div>
-                  </Button>
-                </CollapsibleTrigger>
-                <AnimatePresence initial={false}>
-                  {isDescriptionOpen && (
-                    <CollapsibleContent forceMount asChild>
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      >
-                        <div className="py-4 overflow-hidden">
-                          <motion.p
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -10, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="text-gray-600"
-                          >
-                            {product.description}
-                          </motion.p>
-                        </div>
-                      </motion.div>
-                    </CollapsibleContent>
-                  )}
-                </AnimatePresence>
-              </Collapsible>
-              
-              <Collapsible
-                open={isPaymentShippingOpen}
-                onOpenChange={setIsPaymentShippingOpen}
-                className="border-t border-b"
-              >
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex w-full justify-between py-6 transition-all duration-300 ease-in-out"
+                    <span className="font-medium text-lg">{faq.question}</span>
+                    <Plus
+                      className={`h-5 w-5 transition-transform duration-200 ${
+                        expandedItems.has(index) ? 'rotate-45' : ''
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`px-8 transition-all duration-300 ease-in-out ${
+                      expandedItems.has(index)
+                        ? 'max-h-80 opacity-100 py-3'
+                        : 'max-h-0 opacity-0 py-0'
+                    }`}
                   >
-                    <h4 className="text-base font-medium">Payment & Shipping</h4>
-                    <motion.div
-                      initial={false}
-                      animate={{ rotate: isPaymentShippingOpen ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </motion.div>
-                  </Button>
-                </CollapsibleTrigger>
-                <AnimatePresence initial={false}>
-                  {isPaymentShippingOpen && (
-                    <CollapsibleContent forceMount asChild>
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      >
-                        <div className="py-4 overflow-hidden">
-                          <motion.div
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -10, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="text-gray-600 space-y-4"
-                          >
-                            <h4 className="text-sm font-semibold">Payment Options:</h4>
-                            <p>We accept all major credit cards (Visa, MasterCard, American Express, Discover) through our secure payment processor, Stripe. Apple Pay and Google Pay are also available on supported devices for a seamless checkout experience.</p>
-                            
-                            <h4 className="text-sm font-semibold mt-4">Shipping Information:</h4>
-                            <p>We take great care in packing your items to ensure they arrive safely. Our standard shipping typically takes 5-7 business days to reach you.</p>
-                          </motion.div>
-                        </div>
-                      </motion.div>
-                    </CollapsibleContent>
-                  )}
-                </AnimatePresence>
-              </Collapsible>
+                    <div className="text-gray-600 text-base leading-relaxed">
+                      {typeof faq.answer === 'string' ? faq.answer : faq.answer}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
