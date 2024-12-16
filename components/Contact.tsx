@@ -49,7 +49,7 @@ const ContactComponent: React.FC = () => {
   return (
     <section className={`bg-white px-4 mb-[4rem] md:mb-[8rem] ${sora.className}`}>
       <div className="max-w-6xl mx-auto px-4">
-      <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">STILL HAVE ANY QUESTION?</h1>
+      <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">STILL HAVE ANY QUESTIONS?</h1>
         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-20">
           {/* Image Section */}
           <div className="w-full lg:w-1/2 flex justify-center lg:justify-start">

@@ -39,7 +39,7 @@ export default function FAQSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 mt-[4rem] mb-[4rem] md:mt-[8rem] md:mb-[8rem]">
-      <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">STRAIGHT TO THE POINT</h1>
+      <h1 className="text-4xl sm:text-5xl font-bold mb-[1rem] md:mb-[1rem] text-center uppercase tracking-wider">STRAIGHT TO THE POINT</h1>
       <p className="text-center text-gray-600 mb-[4rem] text-lg mx-auto max-w-[600px] w-full px-4 sm:px-6 md:px-8">
   If you're new to Genie or looking to supercharge your current stack, this section will help you learn more about the platform and its features.
 </p>
