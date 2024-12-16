@@ -190,12 +190,11 @@ function Pagination({ currentPage, totalPages }: { currentPage: number; totalPag
 
 type SearchParams = { [key: string]: string | string[] | undefined }
 
-interface PageProps {
-  params: { slug: string }
+export default async function AdminOrders({
+  searchParams,
+}: {
   searchParams: SearchParams
-}
-
-export default async function AdminOrders({ searchParams }: PageProps) {
+}) {
   const currentPage = Number(searchParams.page || '1')
   const { orders, totalPages } = await getOrders(currentPage)
 
