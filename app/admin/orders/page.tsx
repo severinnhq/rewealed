@@ -1,5 +1,4 @@
 import { parseISO, format } from 'date-fns'
-import Image from 'next/image'
 import { OrderFulfillmentCheckbox } from '@/components/OrderFulfillmentCheckbox'
 import { MongoClient, ObjectId } from 'mongodb'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,7 +14,6 @@ interface OrderItem {
   s: string
   q: number
   p: number
-  mainImage?: string
 }
 
 interface Address {
@@ -165,7 +163,6 @@ export default async function AdminOrders() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Image</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Size</TableHead>
                           <TableHead>Quantity</TableHead>
@@ -175,21 +172,6 @@ export default async function AdminOrders() {
                       <TableBody>
                         {order.items.map((item, index) => (
                           <TableRow key={index}>
-                            <TableCell>
-                              {item.mainImage && item.mainImage !== '' ? (
-                                <Image
-                                  src={item.mainImage}
-                                  alt={item.n}
-                                  width={50}
-                                  height={50}
-                                  className="object-cover rounded"
-                                />
-                              ) : (
-                                <div className="w-[50px] h-[50px] bg-gray-200 rounded flex items-center justify-center">
-                                  <span className="text-gray-400 text-xs">No image</span>
-                                </div>
-                              )}
-                            </TableCell>
                             <TableCell>{item.n}</TableCell>
                             <TableCell>{item.s}</TableCell>
                             <TableCell>{item.q}</TableCell>
