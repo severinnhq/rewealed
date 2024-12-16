@@ -193,7 +193,7 @@ export default async function AdminOrders({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const currentPage = Number(searchParams?.page as string) || 1
+  const currentPage = Number(searchParams?.page || '1')
   const { orders, totalPages } = await getOrders(currentPage)
 
   if (orders.length === 0) {
