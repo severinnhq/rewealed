@@ -188,8 +188,6 @@ function Pagination({ currentPage, totalPages }: { currentPage: number; totalPag
   )
 }
 
-type SearchParams = { [key: string]: string | string[] | undefined }
-
 interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined }
 }
