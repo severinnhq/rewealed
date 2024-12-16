@@ -5,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import Link from 'next/link'
 
 const mongoUri = process.env.MONGODB_URI!
+const ORDERS_PER_PAGE = 10
 
 interface OrderItem {
   id: string
@@ -59,17 +62,27 @@ interface Order {
   fulfilled?: boolean
 }
 
-async function getOrders(): Promise<Order[]> {
+async function getOrders(page: number): Promise<{ orders: Order[], totalPages: number }> {
   const client = new MongoClient(mongoUri)
   try {
     await client.connect()
     const db = client.db('webstore')
     const ordersCollection = db.collection('orders')
-    const orders = await ordersCollection.find().sort({ createdAt: -1 }).toArray()
-    return orders as Order[]
+
+    const totalOrders = await ordersCollection.countDocuments()
+    const totalPages = Math.ceil(totalOrders / ORDERS_PER_PAGE)
+
+    const orders = await ordersCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * ORDERS_PER_PAGE)
+      .limit(ORDERS_PER_PAGE)
+      .toArray()
+
+    return { orders: orders as Order[], totalPages }
   } catch (error) {
     console.error('Failed to fetch orders:', error)
-    return []
+    return { orders: [], totalPages: 0 }
   } finally {
     await client.close()
   }
@@ -114,8 +127,65 @@ function AddressDisplay({ address, name }: { address: Address; name: string }) {
   )
 }
 
-export default async function AdminOrders() {
-  const orders = await getOrders()
+function Pagination({ currentPage, totalPages }: { currentPage: number; totalPages: number }) {
+  const pageNumbers = []
+  const maxPagesToShow = 7
+
+  if (totalPages <= maxPagesToShow) {
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i)
+    }
+  } else {
+    if (currentPage <= 3) {
+      for (let i = 1; i <= 5; i++) {
+        pageNumbers.push(i)
+      }
+      pageNumbers.push('...')
+      pageNumbers.push(totalPages)
+    } else if (currentPage >= totalPages - 2) {
+      pageNumbers.push(1)
+      pageNumbers.push('...')
+      for (let i = totalPages - 4; i <= totalPages; i++) {
+        pageNumbers.push(i)
+      }
+    } else {
+      pageNumbers.push(1)
+      pageNumbers.push('...')
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+        pageNumbers.push(i)
+      }
+      pageNumbers.push('...')
+      pageNumbers.push(totalPages)
+    }
+  }
+
+  return (
+    <div className="flex justify-center space-x-2 mt-8">
+      {pageNumbers.map((number, index) => (
+        number === '...' ? (
+          <span key={index} className="px-3 py-2">...</span>
+        ) : (
+          <Link key={index} href={`/admin/orders?page=${number}`} passHref>
+            <Button 
+              variant={currentPage === number ? "default" : "outline"}
+              className={`px-3 py-2 border ${
+                currentPage === number 
+                  ? 'border-2 border-black' 
+                  : 'border-gray-200'
+              }`}
+            >
+              {number}
+            </Button>
+          </Link>
+        )
+      ))}
+    </div>
+  )
+}
+
+export default async function AdminOrders({ searchParams }: { searchParams: { page?: string } }) {
+  const currentPage = Number(searchParams.page) || 1
+  const { orders, totalPages } = await getOrders(currentPage)
 
   if (orders.length === 0) {
     return (
@@ -221,6 +291,7 @@ export default async function AdminOrders() {
           </Card>
         ))}
       </div>
+      <Pagination currentPage={currentPage} totalPages={totalPages} />
     </div>
   )
 }
