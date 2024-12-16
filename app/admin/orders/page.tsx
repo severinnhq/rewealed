@@ -188,7 +188,6 @@ function Pagination({ currentPage, totalPages }: { currentPage: number; totalPag
   )
 }
 
-type SearchParams = { [key: string]: string | string[] | undefined };
 
 export default async function AdminOrders({ 
   searchParams 
