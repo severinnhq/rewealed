@@ -62,11 +62,11 @@ const ReviewSection = () => {
 
   return (
     <>
-      <div ref={scrollTargetRef} className="h-[4rem]"/>
-      <div ref={topRef} className={`container mx-auto p-4 py-0  ${sora.className}`}>
+      <div ref={scrollTargetRef} className="h-[2rem] md:h-[4rem]"/>
+      <div ref={topRef} className={`container mx-auto px-4 py-0 ${sora.className}`}>
         <div id="review-section" className="relative w-full">
           <div className="text-center">
-            <h2 className="flex items-center justify-center relative font-normal logo-container">
+            <h2 className="flex items-center justify-center  relative font-normal logo-container">
               <div className="flex items-center justify-center w-full relative">
                 <span 
                   className="absolute whitespace-nowrap font-light left-text" 
@@ -100,7 +100,7 @@ const ReviewSection = () => {
               </div>
             </h2>
           </div>
-          <div className="bg-white rounded-2xl p-0 mt-[4rem] relative overflow-hidden">
+          <div className="bg-white rounded-2xl p-0 mt-[3rem] md:mt-[4rem] relative overflow-hidden">
             {/* Mobile layout */}
             <div className="sm:hidden relative overflow-hidden">
               <div className={`grid grid-cols-10 gap-2 auto-rows-[minmax(80px,auto)] transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isExpanded ? 'h-[1400px]' : 'h-[400px]'}`}>

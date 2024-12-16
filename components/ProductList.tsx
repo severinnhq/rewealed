@@ -387,8 +387,8 @@ export default function ProductList() {
   return (
     <>
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
-      <div className={`container mx-auto p-4 py-0 mt-[8rem] mb-[4rem] ${sora.className}`} ref={containerRef}>
-        <h1 className="text-4xl sm:text-5xl font-bold mb-[4rem] text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
+      <div className={`container mx-auto p-4 py-0 mt-[4rem] mb-[2rem] md:mt-[8rem] md:mb-[4rem] ${sora.className}`} ref={containerRef}>
+        <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">LAST SALE OF THE YEAR</h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {isLoading
             ? Array(8).fill(null).map((_, index) => <div key={index}>{renderSkeletonCard()}</div>)

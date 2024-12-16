@@ -47,15 +47,15 @@ const ContactComponent: React.FC = () => {
   }
 
   return (
-    <section className={`bg-white px-4 mb-[8rem] ${sora.className}`}>
+    <section className={`bg-white px-4 mb-[4rem] md:mb-[8rem] ${sora.className}`}>
       <div className="max-w-6xl mx-auto px-4">
-      <h1 className="text-5xl font-bold text-center mb-[4rem]">
-      STILL HAVE ANY QUESTION?
-      </h1>
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-20">
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-[2rem] md:mb-[4rem]">
+          STILL HAVE ANY QUESTION?
+        </h1>
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-20">
           {/* Image Section */}
           <div className="w-full lg:w-1/2 flex justify-center lg:justify-start">
-            <div className="w-full max-w-[400px] aspect-square relative overflow-hidden">
+            <div className="w-full max-w-[300px] md:max-w-[400px] aspect-square relative overflow-hidden">
               <Image
                 src="/uploads/contact.png"
                 alt="Contact Image"
@@ -69,7 +69,7 @@ const ContactComponent: React.FC = () => {
 
           {/* Contact Form Section */}
           <div className="w-full lg:w-1/2">
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-[500px] ml-auto">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-[500px] mx-auto lg:ml-auto">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   Name

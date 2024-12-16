@@ -38,7 +38,7 @@ export default function FAQSection() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 my-[8rem]">
+    <div className="max-w-6xl mx-auto px-4 mt-[4rem] mb-[4rem] md:mt-[8rem] md:mb-[8rem]">
       <h2 className="text-5xl font-bold text-center mb-[1rem]">
       STRAIGHT TO THE POINT
       </h2>
