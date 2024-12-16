@@ -1,3 +1,4 @@
+import { Metadata } from 'next'
 import { parseISO, format } from 'date-fns'
 import { OrderFulfillmentCheckbox } from '@/components/OrderFulfillmentCheckbox'
 import { MongoClient, ObjectId } from 'mongodb'
@@ -7,6 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Admin: Order Management',
+}
 
 const mongoUri = process.env.MONGODB_URI!
 const ORDERS_PER_PAGE = 10
@@ -188,7 +193,7 @@ export default async function AdminOrders({
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
-  const currentPage = Number(Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page) || 1
+  const currentPage = Number(searchParams.page as string) || 1
   const { orders, totalPages } = await getOrders(currentPage)
 
   if (orders.length === 0) {
