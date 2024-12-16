@@ -6,6 +6,7 @@ import ProductList from '../components/ProductList'
 import BlackFridayCountdown from '../components/BlackFridayCountdown'
 import { useCountdown } from '@/lib/CountdownContext'
 import ReviewSection from '@/components/ReviewSection'
+import ConatactComponent from '@/components/Contact'
 
 import FAQSection from '../components/faq'
 
@@ -33,8 +34,15 @@ export default function Home() {
       <section id="review">
         <ReviewSection />
       </section>
-  
+      <section id="faq">
       <FAQSection />
+      </section>
+
+      <section id="contact">
+      <ConatactComponent />
+      </section>
+  
+  
     </main>
   )
 }
