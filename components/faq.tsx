@@ -39,9 +39,7 @@ export default function FAQSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 mt-[4rem] mb-[4rem] md:mt-[8rem] md:mb-[8rem]">
-      <h2 className="text-5xl font-bold text-center mb-[1rem]">
-      STRAIGHT TO THE POINT
-      </h2>
+      <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">STRAIGHT TO THE POINT</h1>
       <p className="text-center text-gray-600 mb-[4rem] text-lg mx-auto max-w-[600px] w-full px-4 sm:px-6 md:px-8">
   If you're new to Genie or looking to supercharge your current stack, this section will help you learn more about the platform and its features.
 </p>
@@ -56,7 +54,7 @@ export default function FAQSection() {
               onClick={() => toggleItem(index)}
               className="w-full px-10 py-3 flex justify-between items-center text-left"
             >
-              <span className="font-medium text-lg">{faq.question}</span>
+              <span className="font-medium text-md">{faq.question}</span>
               <Plus
                 className={`h-6 w-6 transition-transform duration-200 ${
                   expandedItems.has(index) ? 'rotate-45' : ''

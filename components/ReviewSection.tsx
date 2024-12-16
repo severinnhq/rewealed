@@ -12,13 +12,14 @@ const ReviewSection = () => {
   const [isExpanded, setIsExpanded] = useState(false)
   const topRef = useRef<HTMLDivElement>(null)
   const scrollTargetRef = useRef<HTMLDivElement>(null);
+  const higherScrollTargetRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false)
 
   const handleExpandClick = () => {
     if (isExpanded) {
       setIsScrolling(true);
       setIsExpanded(false);
-      scrollTargetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      higherScrollTargetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setTimeout(() => {
         setIsScrolling(false);
       }, 1000); // Adjust this timeout to match your scroll and animation duration
@@ -62,7 +63,8 @@ const ReviewSection = () => {
 
   return (
     <>
-      <div ref={scrollTargetRef} className="h-[2rem] md:h-[4rem]"/>
+      <div ref={higherScrollTargetRef} className="h-[4rem] md:h-[6rem]"/>
+      <div ref={scrollTargetRef} className="h-[1rem] md:h-[2rem]"/>
       <div ref={topRef} className={`container mx-auto px-4 py-0 ${sora.className}`}>
         <div id="review-section" className="relative w-full">
           <div className="text-center">
