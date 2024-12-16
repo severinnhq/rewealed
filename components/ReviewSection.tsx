@@ -11,7 +11,6 @@ const sora = Sora({ subsets: ['latin'] })
 const ReviewSection = () => {
   const [isExpanded, setIsExpanded] = useState(false)
   const topRef = useRef<HTMLDivElement>(null)
-  const scrollTargetRef = useRef<HTMLDivElement>(null);
   const higherScrollTargetRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false)
 
