@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { useCart } from '@/lib/CartContext'
 import { WhiteHeader } from '@/components/WhiteHeader';
 import Sidebar from '@/components/Sidebar'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { ShippingFeatures } from '@/components/ShippingFeatures'
 import { FloatingProductBox } from '@/components/FloatingProductBox'
@@ -395,6 +395,7 @@ export default function ProductPage() {
         onRemoveItem={removeFromCart}
         onUpdateQuantity={updateQuantity}
       />
+
       <ShippingFeatures />
       <RecommendedProducts />
     </div>
