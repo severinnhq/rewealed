@@ -1,9 +1,11 @@
 import { parseISO, format } from 'date-fns'
+import Image from 'next/image'
 import { OrderFulfillmentCheckbox } from '@/components/OrderFulfillmentCheckbox'
 import { MongoClient, ObjectId } from 'mongodb'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 
 const mongoUri = process.env.MONGODB_URI!
 
@@ -13,18 +15,35 @@ interface OrderItem {
   s: string
   q: number
   p: number
+  mainImage?: string
+}
+
+interface Address {
+  city: string
+  country: string
+  line1: string
+  line2: string | null
+  postal_code: string
+  state: string
 }
 
 interface ShippingDetails {
-  address: {
-    city: string
-    country: string
-    line1: string
-    line2: string | null
-    postal_code: string
-    state: string
-  }
+  address: Address
   name: string
+}
+
+interface BillingDetails {
+  address: Address
+  name: string
+}
+
+interface StripeDetails {
+  paymentId: string
+  customerId: string | null
+  paymentMethodId: string | null
+  paymentMethodFingerprint: string | null
+  riskScore: number | null
+  riskLevel: string | null
 }
 
 interface Order {
@@ -35,7 +54,9 @@ interface Order {
   status: string
   items?: OrderItem[]
   shippingDetails?: ShippingDetails
+  billingDetails?: BillingDetails
   shippingType?: string
+  stripeDetails?: StripeDetails
   createdAt?: Date | string
   fulfilled?: boolean
 }
@@ -67,6 +88,32 @@ function formatCreatedDate(dateString?: string | Date): string {
     console.error('Error formatting date:', error)
     return 'Invalid date'
   }
+}
+
+function areAddressesSame(shipping?: ShippingDetails, billing?: BillingDetails): boolean {
+  if (!shipping || !billing) return false
+  const shippingAddress = shipping.address
+  const billingAddress = billing.address
+  return (
+    shippingAddress.line1 === billingAddress.line1 &&
+    shippingAddress.line2 === billingAddress.line2 &&
+    shippingAddress.city === billingAddress.city &&
+    shippingAddress.state === billingAddress.state &&
+    shippingAddress.postal_code === billingAddress.postal_code &&
+    shippingAddress.country === billingAddress.country
+  )
+}
+
+function AddressDisplay({ address, name }: { address: Address; name: string }) {
+  return (
+    <>
+      <p>{name}</p>
+      <p>{address.line1}</p>
+      {address.line2 && <p>{address.line2}</p>}
+      <p>{address.city}, {address.state} {address.postal_code}</p>
+      <p>{address.country}</p>
+    </>
+  )
 }
 
 export default async function AdminOrders() {
@@ -118,6 +165,7 @@ export default async function AdminOrders() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Image</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Size</TableHead>
                           <TableHead>Quantity</TableHead>
@@ -127,6 +175,21 @@ export default async function AdminOrders() {
                       <TableBody>
                         {order.items.map((item, index) => (
                           <TableRow key={index}>
+                            <TableCell>
+                              {item.mainImage && item.mainImage !== '' ? (
+                                <Image
+                                  src={item.mainImage}
+                                  alt={item.n}
+                                  width={50}
+                                  height={50}
+                                  className="object-cover rounded"
+                                />
+                              ) : (
+                                <div className="w-[50px] h-[50px] bg-gray-200 rounded flex items-center justify-center">
+                                  <span className="text-gray-400 text-xs">No image</span>
+                                </div>
+                              )}
+                            </TableCell>
                             <TableCell>{item.n}</TableCell>
                             <TableCell>{item.s}</TableCell>
                             <TableCell>{item.q}</TableCell>
@@ -139,17 +202,37 @@ export default async function AdminOrders() {
                     <p>No items available for this order.</p>
                   )}
                 </div>
-                {order.shippingDetails ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {order.shippingDetails && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Shipping Details</h3>
+                      <AddressDisplay address={order.shippingDetails.address} name={order.shippingDetails.name} />
+                    </div>
+                  )}
                   <div>
-                    <h3 className="font-semibold mb-2">Shipping Details</h3>
-                    <p>{order.shippingDetails.name}</p>
-                    <p>{order.shippingDetails.address.line1}</p>
-                    {order.shippingDetails.address.line2 && <p>{order.shippingDetails.address.line2}</p>}
-                    <p>{order.shippingDetails.address.city}, {order.shippingDetails.address.state} {order.shippingDetails.address.postal_code}</p>
-                    <p>{order.shippingDetails.address.country}</p>
+                    <h3 className="font-semibold mb-2">Billing Details</h3>
+                    {order.billingDetails ? (
+                      areAddressesSame(order.shippingDetails, order.billingDetails) ? (
+                        <p>Same as shipping</p>
+                      ) : (
+                        <AddressDisplay address={order.billingDetails.address} name={order.billingDetails.name} />
+                      )
+                    ) : (
+                      <p>No billing details available for this order.</p>
+                    )}
                   </div>
-                ) : (
-                  <p>No shipping details available for this order.</p>
+                </div>
+                <Separator />
+                {order.stripeDetails && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Stripe Details</h3>
+                    <p>Payment ID: {order.stripeDetails.paymentId}</p>
+                    <p>Customer ID: {order.stripeDetails?.customerId || 'Guest User'}</p>
+                    <p>Payment Method ID: {order.stripeDetails.paymentMethodId || 'N/A'}</p>
+                    <p>Payment Method Fingerprint: {order.stripeDetails.paymentMethodFingerprint || 'N/A'}</p>
+                    <p>Risk Score: {order.stripeDetails.riskScore !== null ? order.stripeDetails.riskScore : 'N/A'}</p>
+                    <p>Risk Level: {order.stripeDetails.riskLevel || 'N/A'}</p>
+                  </div>
                 )}
               </div>
             </CardContent>

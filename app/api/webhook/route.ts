@@ -71,6 +71,30 @@ async function saveOrder(session: Stripe.Checkout.Session) {
     }
   }
 
+  // Retrieve billing details and additional Stripe data
+  let billingDetails = null
+  let stripeDetails = null
+  if (session.payment_intent && typeof session.payment_intent === 'string') {
+    try {
+      const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent, {
+        expand: ['latest_charge', 'payment_method', 'customer']
+      })
+      if (paymentIntent.latest_charge && typeof paymentIntent.latest_charge !== 'string') {
+        billingDetails = paymentIntent.latest_charge.billing_details
+      }
+      stripeDetails = {
+        paymentId: paymentIntent.id,
+        customerId: paymentIntent.customer && typeof paymentIntent.customer === 'object' ? paymentIntent.customer.id : null,
+        paymentMethodId: paymentIntent.payment_method && typeof paymentIntent.payment_method === 'object' ? paymentIntent.payment_method.id : null,
+        paymentMethodFingerprint: paymentIntent.payment_method && typeof paymentIntent.payment_method === 'object' && paymentIntent.payment_method.card ? paymentIntent.payment_method.card.fingerprint : null,
+        riskScore: paymentIntent.latest_charge && typeof paymentIntent.latest_charge === 'object' && paymentIntent.latest_charge.outcome ? paymentIntent.latest_charge.outcome.risk_score : null,
+        riskLevel: paymentIntent.latest_charge && typeof paymentIntent.latest_charge === 'object' && paymentIntent.latest_charge.outcome ? paymentIntent.latest_charge.outcome.risk_level : null
+      }
+    } catch (error) {
+      console.error('Error retrieving payment details:', error)
+    }
+  }
+
   const order = {
     sessionId: session.id,
     customerId: session.customer,
@@ -79,7 +103,9 @@ async function saveOrder(session: Stripe.Checkout.Session) {
     status: session.payment_status,
     items: JSON.parse(session.metadata?.cartItemsSummary || '[]'),
     shippingDetails: session.shipping_details,
+    billingDetails: billingDetails,
     shippingType: shippingType,
+    stripeDetails: stripeDetails,
     createdAt: new Date()
   }
 
