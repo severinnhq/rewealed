@@ -112,7 +112,9 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                   <div className="flex items-center">
                     <h2 className="text-xl font-semibold text-gray-900">Cart</h2>
                     <div className="ml-2 bg-black rounded-full w-6 h-6 flex items-center justify-center">
-                      <span className="text-xs text-white">{cartItems.length}</span>
+                      <span className="text-xs text-white">
+                        {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                      </span>
                     </div>
                   </div>
                   <button
@@ -203,11 +205,11 @@ const Sidebar: React.FC<SidebarProps> = ({ cartItems, isOpen, onClose, onRemoveI
                                 <div className="flex">
                                   <button
                                     onClick={() => onRemoveItem(index)}
-                                    className="text-sm font-medium text-black hover:text-gray-700 relative group"
+                                    className="text-[13px] font-normal text-black hover:text-gray-800 relative group"
                                     aria-label={`Remove ${item.product.name} from cart`}
                                   >
                                     Remove
-                                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-black transform origin-left transition-transform duration-300 ease-out group-hover:scale-x-0"></span>
+                                    <span className="absolute bottom-0 left-0 w-full h-[0.5px] bg-black transform origin-left transition-transform duration-300 ease-out group-hover:scale-x-0"></span>
                                   </button>
                                 </div>
                               </div>
