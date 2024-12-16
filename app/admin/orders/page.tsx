@@ -193,7 +193,7 @@ export default async function AdminOrders({
   searchParams 
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
-}): Promise<JSX.Element> {
+}) {
   const currentPage = Number(searchParams.page as string) || 1
   const { orders, totalPages } = await getOrders(currentPage)
 
