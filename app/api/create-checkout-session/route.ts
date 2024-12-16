@@ -80,11 +80,11 @@ export async function POST(request: NextRequest) {
           delivery_estimate: {
             minimum: {
               unit: 'business_day',
-              value: 5,
+              value: 6,
             },
             maximum: {
               unit: 'business_day',
-              value: 7,
+              value: 10,
             },
           },
         },
@@ -93,18 +93,18 @@ export async function POST(request: NextRequest) {
         shipping_rate_data: {
           type: 'fixed_amount',
           fixed_amount: {
-            amount: 1500,
+            amount: 1000,
             currency: 'eur',
           },
           display_name: 'Express Shipping',
           delivery_estimate: {
             minimum: {
               unit: 'business_day',
-              value: 1,
+              value: 3,
             },
             maximum: {
               unit: 'business_day',
-              value: 3,
+              value: 5,
             },
           },
         },
