@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
-import { headers } from 'next/headers';
 import crypto from 'crypto';
 
 const mongoUri = process.env.MONGODB_URI!;
@@ -42,7 +41,6 @@ function verifyResponse(challenge: string, response: string): boolean {
 }
 
 export async function GET(request: Request) {
-  const headersList = await headers();
   const { searchParams } = new URL(request.url);
   const challenge = searchParams.get('challenge');
   const response = searchParams.get('response');
