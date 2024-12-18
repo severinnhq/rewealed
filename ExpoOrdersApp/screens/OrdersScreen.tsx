@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { format } from 'date-fns/format';
+import Constants from 'expo-constants';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -34,6 +35,7 @@ export default function OrdersScreen() {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Origin': Constants.expoConfig?.hostUri ? `exp://${Constants.expoConfig.hostUri}` : 'exp://unknown',
         },
         redirect: 'follow',
       });
@@ -47,8 +49,9 @@ export default function OrdersScreen() {
       setError(null);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      setError('Failed to fetch orders. Please try again.');
-      Alert.alert('Error', 'Failed to fetch orders. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(`Failed to fetch orders. ${errorMessage}`);
+      Alert.alert('Error', `Failed to fetch orders. ${errorMessage}`);
     } finally {
       setLoading(false);
       setRefreshing(false);

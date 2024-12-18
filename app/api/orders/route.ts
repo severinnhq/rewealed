@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
+import { headers } from 'next/headers';
 
 const mongoUri = process.env.MONGODB_URI!;
+const APP_SECRET = process.env.APP_SECRET || 'your-app-secret';
 
 interface Order {
   _id: ObjectId;
@@ -31,6 +33,17 @@ interface Order {
 }
 
 export async function GET(request: Request) {
+  const headersList = await headers();
+  const origin = headersList.get('origin');
+  const authToken = headersList.get('x-auth-token');
+
+  // Check if the request is coming from your Expo app or your web admin
+  const allowedOrigins = ['exp://your-expo-app-url', 'https://your-web-admin-url'];
+  
+  if (!allowedOrigins.includes(origin || '') && authToken !== APP_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
@@ -44,14 +57,11 @@ export async function GET(request: Request) {
     let orders: Order[];
 
     if (id) {
-      // Fetch a single order
       const order = await ordersCollection.findOne({ _id: new ObjectId(id) });
       orders = order ? [order as Order] : [];
     } else {
-      // Fetch all orders
       const fetchedOrders = await ordersCollection.find().sort({ createdAt: -1 }).toArray();
       
-      // Validate and cast each order
       orders = fetchedOrders.filter((order): order is Order => {
         return (
           typeof order.sessionId === 'string' &&
