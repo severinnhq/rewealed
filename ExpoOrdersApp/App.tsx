@@ -29,7 +29,7 @@ export default function App() {
       if (token) {
         AsyncStorage.setItem('expoPushToken', token);
         console.log('Expo Push Token:', token);
-        Alert.alert('Expo Push Token', token); // Add this line to show an alert with the token
+        Alert.alert('Expo Push Token', token);
       }
     });
 
