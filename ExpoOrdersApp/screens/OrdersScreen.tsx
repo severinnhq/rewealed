@@ -1,28 +1,39 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, View, Text, StyleSheet, RefreshControl, Button, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, View, Text, StyleSheet, RefreshControl } from 'react-native';
 import OrderCard from '../components/OrderCard';
 import { Order } from '../types/Order';
 import { API_URL } from '../utils/config';
+
+// const API_URL = 'https://your-ngrok-url.ngrok-free.app/api/orders'; // Update this with your actual ngrok URL
 
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = async () => {
     setIsLoading(true);
     setError(null);
     try {
       console.log('Fetching orders from:', API_URL);
       const response = await fetch(API_URL);
       
+      const textResponse = await response.text();
+      console.log('Raw response:', textResponse);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${textResponse}`);
       }
 
-      const data = await response.json();
-      console.log('Fetched orders:', data.length);
+      let data;
+      try {
+        data = JSON.parse(textResponse);
+      } catch (parseError) {
+        console.error('Error parsing JSON:', parseError);
+        throw new Error(`Failed to parse JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+      }
+
+      console.log('Parsed data:', JSON.stringify(data, null, 2));
       setOrders(data);
     } catch (e) {
       console.error('Error fetching orders:', e);
@@ -30,22 +41,11 @@ export default function OrdersScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchOrders();
-    const intervalId = setInterval(fetchOrders, 60 * 1000); // Check every minute
-    return () => clearInterval(intervalId);
-  }, [fetchOrders]);
-
-  const showExpoToken = async () => {
-    const token = await AsyncStorage.getItem('expoPushToken');
-    if (token) {
-      Alert.alert('Expo Push Token', token);
-    } else {
-      Alert.alert('Token Not Found', 'Expo Push Token is not stored in AsyncStorage');
-    }
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -72,18 +72,16 @@ export default function OrdersScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Button title="Show Expo Token" onPress={showExpoToken} />
-      <ScrollView 
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={fetchOrders} />
-        }
-      >
-        {orders.map((order) => (
-          <OrderCard key={order._id.toString()} order={order} />
-        ))}
-      </ScrollView>
-    </View>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={isLoading} onRefresh={fetchOrders} />
+      }
+    >
+      {orders.map((order) => (
+        <OrderCard key={order._id.toString()} order={order} />
+      ))}
+    </ScrollView>
   );
 }
 
