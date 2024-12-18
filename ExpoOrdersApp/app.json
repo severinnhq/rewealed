@@ -1,45 +1,28 @@
 {
   "expo": {
-    "name": "Rewealed Orders",
-    "slug": "rewealed",
+    "name": "ExpoOrdersApp",
+    "slug": "ExpoOrdersApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.rewealed.orders"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.rewealed.orders"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "cbb05378-6e19-40d5-af6f-252364ff6ead"
-      }
-    },
-    "owner": "severinn",
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/cbb05378-6e19-40d5-af6f-252364ff6ead"
     }
   }
 }
-
