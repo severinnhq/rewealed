@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { format } from 'date-fns/format';
-import Constants from 'expo-constants';
+import crypto from 'crypto-js';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -30,21 +30,23 @@ export default function OrdersScreen() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Origin': Constants.expoConfig?.hostUri ? `exp://${Constants.expoConfig.hostUri}` : 'exp://unknown',
-        },
-        redirect: 'follow',
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // First, get the challenge
+      const challengeResponse = await fetch(`${API_URL}?`);
+      const challengeData = await challengeResponse.json();
+      const challenge = challengeData.challenge;
+
+      // Generate the response
+      const response = crypto.SHA256(challenge + 'rewealed_secret').toString();
+
+      // Now fetch the orders with the challenge-response
+      const ordersResponse = await fetch(`${API_URL}?challenge=${challenge}&response=${response}`);
+
+      if (!ordersResponse.ok) {
+        throw new Error(`HTTP error! status: ${ordersResponse.status}`);
       }
       
-      const data = await response.json();
+      const data = await ordersResponse.json();
       setOrders(data);
       setError(null);
     } catch (error) {
@@ -73,7 +75,7 @@ export default function OrdersScreen() {
       return format(date, "yyyy-MM-dd HH:mm:ss");
     } catch (error) {
       console.error('Error formatting date:', error);
-      return dateString; // Return the original string if formatting fails
+      return dateString;
     }
   };
 

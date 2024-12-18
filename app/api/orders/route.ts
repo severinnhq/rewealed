@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 import { headers } from 'next/headers';
+import crypto from 'crypto';
 
 const mongoUri = process.env.MONGODB_URI!;
-const APP_SECRET = process.env.APP_SECRET || 'your-app-secret';
 
 interface Order {
   _id: ObjectId;
@@ -32,19 +32,30 @@ interface Order {
   shippingType?: string;
 }
 
+function generateChallenge(): string {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+function verifyResponse(challenge: string, response: string): boolean {
+  const expectedResponse = crypto.createHash('sha256').update(challenge + 'rewealed_secret').digest('hex');
+  return response === expectedResponse;
+}
+
 export async function GET(request: Request) {
   const headersList = await headers();
-  const origin = headersList.get('origin');
-  const authToken = headersList.get('x-auth-token');
+  const { searchParams } = new URL(request.url);
+  const challenge = searchParams.get('challenge');
+  const response = searchParams.get('response');
 
-  // Check if the request is coming from your Expo app or your web admin
-  const allowedOrigins = ['exp://your-expo-app-url', 'https://your-web-admin-url'];
-  
-  if (!allowedOrigins.includes(origin || '') && authToken !== APP_SECRET) {
+  if (!challenge && !response) {
+    const newChallenge = generateChallenge();
+    return NextResponse.json({ challenge: newChallenge }, { status: 200 });
+  }
+
+  if (!challenge || !response || !verifyResponse(challenge, response)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
   const client = new MongoClient(mongoUri);
