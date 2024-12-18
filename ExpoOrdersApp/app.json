@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ExpoOrdersApp",
-    "slug": "ExpoOrdersApp",
+    "slug": "rewealed",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,6 +23,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6c584754-575f-4694-81d0-f39ff55e0b5f"
+      }
+    },
+    "owner": "severinn",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6c584754-575f-4694-81d0-f39ff55e0b5f"
     }
   }
 }
