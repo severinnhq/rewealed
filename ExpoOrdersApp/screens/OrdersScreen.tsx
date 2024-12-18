@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { format } from 'date-fns/format';
-import SHA256 from 'crypto-js/sha256';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -19,6 +18,17 @@ interface Order {
 }
 
 const API_URL = 'https://rewealed.com/api/orders';
+
+// Simple hash function
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16);
+}
 
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -37,7 +47,7 @@ export default function OrdersScreen() {
       const challenge = challengeData.challenge;
 
       // Generate the response
-      const response = SHA256(challenge + 'rewealed_secret').toString();
+      const response = simpleHash(challenge + 'rewealed_secret');
 
       // Now fetch the orders with the challenge-response
       const ordersResponse = await fetch(`${API_URL}?challenge=${challenge}&response=${response}`);

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
-import crypto from 'crypto';
 
 const mongoUri = process.env.MONGODB_URI!;
 
@@ -32,11 +31,21 @@ interface Order {
 }
 
 function generateChallenge(): string {
-  return crypto.randomBytes(16).toString('hex');
+  return Math.random().toString(36).substring(2, 15);
+}
+
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16);
 }
 
 function verifyResponse(challenge: string, response: string): boolean {
-  const expectedResponse = crypto.createHash('sha256').update(challenge + 'rewealed_secret').digest('hex');
+  const expectedResponse = simpleHash(challenge + 'rewealed_secret');
   return response === expectedResponse;
 }
 
