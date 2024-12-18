@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
 
 const mongoUri = process.env.MONGODB_URI as string;
+const API_KEY = process.env.API_KEY as string;
 
 export async function GET(req: NextRequest) {
+  // Check for API key
+  const authHeader = req.headers.get('authorization');
+  if (authHeader !== `Bearer ${API_KEY}`) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
   const client = new MongoClient(mongoUri);
 
   try {
