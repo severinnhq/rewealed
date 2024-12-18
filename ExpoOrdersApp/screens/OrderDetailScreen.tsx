@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
+import { format } from 'date-fns/format';
 
 type OrderDetailRouteProp = RouteProp<RootStackParamList, 'OrderDetail'>;
 
@@ -29,6 +30,26 @@ interface OrderDetail {
       country: string;
     };
   };
+  billingDetails?: {
+    name: string;
+    address: {
+      line1: string;
+      line2: string | null;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+  };
+  shippingType?: string;
+  stripeDetails?: {
+    paymentId: string;
+    customerId: string | null;
+    paymentMethodId: string | null;
+    paymentMethodFingerprint: string | null;
+    riskScore: number | null;
+    riskLevel: string | null;
+  };
 }
 
 interface OrderDetailScreenProps {
@@ -37,6 +58,7 @@ interface OrderDetailScreenProps {
 
 export default function OrderDetailScreen({ route }: OrderDetailScreenProps) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [loading, setLoading] = useState(true);
   const { orderId } = route.params;
 
   useEffect(() => {
@@ -50,35 +72,85 @@ export default function OrderDetailScreen({ route }: OrderDetailScreenProps) {
       setOrder(data);
     } catch (error) {
       console.error('Error fetching order detail:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const formatCreatedDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "yyyy-MM-dd HH:mm:ss");
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString; // Return the original string if formatting fails
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   if (!order) {
-    return <Text>Loading...</Text>;
+    return <Text style={styles.centered}>Order not found</Text>;
   }
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Order ID: {order.sessionId}</Text>
-      <Text style={styles.subtitle}>Status: {order.status}</Text>
-      <Text style={styles.subtitle}>Amount: {order.amount.toFixed(2)} {order.currency.toUpperCase()}</Text>
-      <Text style={styles.subtitle}>Created: {new Date(order.createdAt).toLocaleString()}</Text>
+      <View style={[styles.card, order.shippingType?.toLowerCase().includes('express') && styles.expressShipping]}>
+        <Text style={styles.title}>Order ID: {order.sessionId}</Text>
+        <Text style={styles.subtitle}>Status: {order.status}</Text>
+        <Text style={styles.subtitle}>Amount: {order.amount.toFixed(2)} {order.currency.toUpperCase()}</Text>
+        <Text style={styles.subtitle}>Created: {formatCreatedDate(order.createdAt)}</Text>
+        {order.shippingType && <Text style={styles.subtitle}>Shipping Type: {order.shippingType}</Text>}
 
-      <Text style={styles.sectionTitle}>Items</Text>
-      {order.items.map((item, index) => (
-        <View key={index} style={styles.item}>
-          <Text>{item.n} - {item.s}</Text>
-          <Text>Quantity: {item.q}</Text>
-          <Text>Price: {item.p.toFixed(2)} {order.currency.toUpperCase()}</Text>
+        <Text style={styles.sectionTitle}>Items</Text>
+        {order.items.map((item, index) => (
+          <View key={index} style={styles.item}>
+            <Text>{item.n} - {item.s}</Text>
+            <Text>Quantity: {item.q}</Text>
+            <Text>Price: {item.p.toFixed(2)} {order.currency.toUpperCase()}</Text>
+          </View>
+        ))}
+
+        <Text style={styles.sectionTitle}>Shipping Details</Text>
+        <View style={styles.addressBlock}>
+          <Text>{order.shippingDetails.name}</Text>
+          <Text>{order.shippingDetails.address.line1}</Text>
+          {order.shippingDetails.address.line2 && <Text>{order.shippingDetails.address.line2}</Text>}
+          <Text>{order.shippingDetails.address.city}, {order.shippingDetails.address.state} {order.shippingDetails.address.postal_code}</Text>
+          <Text>{order.shippingDetails.address.country}</Text>
         </View>
-      ))}
 
-      <Text style={styles.sectionTitle}>Shipping Details</Text>
-      <Text>{order.shippingDetails.name}</Text>
-      <Text>{order.shippingDetails.address.line1}</Text>
-      {order.shippingDetails.address.line2 && <Text>{order.shippingDetails.address.line2}</Text>}
-      <Text>{order.shippingDetails.address.city}, {order.shippingDetails.address.state} {order.shippingDetails.address.postal_code}</Text>
-      <Text>{order.shippingDetails.address.country}</Text>
+        {order.billingDetails && (
+          <>
+            <Text style={styles.sectionTitle}>Billing Details</Text>
+            <View style={styles.addressBlock}>
+              <Text>{order.billingDetails.name}</Text>
+              <Text>{order.billingDetails.address.line1}</Text>
+              {order.billingDetails.address.line2 && <Text>{order.billingDetails.address.line2}</Text>}
+              <Text>{order.billingDetails.address.city}, {order.billingDetails.address.state} {order.billingDetails.address.postal_code}</Text>
+              <Text>{order.billingDetails.address.country}</Text>
+            </View>
+          </>
+        )}
+
+        {order.stripeDetails && (
+          <>
+            <Text style={styles.sectionTitle}>Stripe Details</Text>
+            <Text>Payment ID: {order.stripeDetails.paymentId}</Text>
+            <Text>Customer ID: {order.stripeDetails.customerId || 'Guest User'}</Text>
+            <Text>Payment Method ID: {order.stripeDetails.paymentMethodId || 'N/A'}</Text>
+            <Text>Payment Method Fingerprint: {order.stripeDetails.paymentMethodFingerprint || 'N/A'}</Text>
+            <Text>Risk Score: {order.stripeDetails.riskScore !== null ? order.stripeDetails.riskScore : 'N/A'}</Text>
+            <Text>Risk Level: {order.stripeDetails.riskLevel || 'N/A'}</Text>
+          </>
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -87,6 +159,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
+  },
+  card: {
+    backgroundColor: '#f9f9f9',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  expressShipping: {
+    backgroundColor: '#fff9c4',
   },
   title: {
     fontSize: 20,
@@ -104,10 +185,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   item: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffffff',
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
+  },
+  addressBlock: {
+    marginBottom: 10,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

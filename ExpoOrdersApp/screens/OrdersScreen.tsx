@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import { format } from 'date-fns/format';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -13,21 +14,17 @@ interface Order {
   currency: string;
   status: string;
   createdAt: string;
+  shippingType?: string;
 }
 
-// Updated API URL to match your domain exactly
 const API_URL = 'https://rewealed.com/api/orders';
-const API_KEY = '0ccdf3e234516d4ff02ff87937ff0506b56cd1068fad70732baf1ff480dde343';
 
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<OrdersScreenNavigationProp>();
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
 
   const fetchOrders = async () => {
     try {
@@ -35,22 +32,17 @@ export default function OrdersScreen() {
       const response = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         redirect: 'follow',
       });
 
-      console.log('Response status:', response.status);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Data received:', data);
-      
       setOrders(data);
       setError(null);
     } catch (error) {
@@ -59,22 +51,46 @@ export default function OrdersScreen() {
       Alert.alert('Error', 'Failed to fetch orders. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+  };
+
+  const formatCreatedDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "yyyy-MM-dd HH:mm:ss");
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString; // Return the original string if formatting fails
     }
   };
 
   const renderOrderItem = ({ item }: { item: Order }) => (
     <TouchableOpacity
-      style={styles.orderItem}
+      style={[
+        styles.orderItem,
+        item.shippingType?.toLowerCase().includes('express') && styles.expressShipping
+      ]}
       onPress={() => navigation.navigate('OrderDetail', { orderId: item._id })}
     >
       <Text style={styles.orderTitle}>Order ID: {item.sessionId}</Text>
       <Text>Amount: {item.amount.toFixed(2)} {item.currency.toUpperCase()}</Text>
       <Text>Status: {item.status}</Text>
-      <Text>Created: {new Date(item.createdAt).toLocaleString()}</Text>
+      <Text>Created: {formatCreatedDate(item.createdAt)}</Text>
+      {item.shippingType && <Text>Shipping: {item.shippingType}</Text>}
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
       <View style={styles.centered}>
         <Text>Loading orders...</Text>
@@ -100,6 +116,9 @@ export default function OrdersScreen() {
           data={orders}
           renderItem={renderOrderItem}
           keyExtractor={(item) => item._id}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       ) : (
         <Text style={styles.noOrders}>No orders found.</Text>
@@ -118,6 +137,9 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10,
     borderRadius: 5,
+  },
+  expressShipping: {
+    backgroundColor: '#fff9c4',
   },
   orderTitle: {
     fontSize: 16,
