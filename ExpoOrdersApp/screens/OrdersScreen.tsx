@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { format } from 'date-fns/format';
-import crypto from 'crypto-js';
+import SHA256 from 'crypto-js/sha256';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -37,7 +37,7 @@ export default function OrdersScreen() {
       const challenge = challengeData.challenge;
 
       // Generate the response
-      const response = crypto.SHA256(challenge + 'rewealed_secret').toString();
+      const response = SHA256(challenge + 'rewealed_secret').toString();
 
       // Now fetch the orders with the challenge-response
       const ordersResponse = await fetch(`${API_URL}?challenge=${challenge}&response=${response}`);
