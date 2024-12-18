@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
+import AccessDenied from '@/components/AccessDenied';
+import { renderToString } from 'react-dom/server';
 
 const mongoUri = process.env.MONGODB_URI!;
 
@@ -60,7 +62,11 @@ export async function GET(request: Request) {
   }
 
   if (!challenge || !response || !verifyResponse(challenge, response)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const html = renderToString(AccessDenied({}));
+    return new NextResponse(html, {
+      status: 401,
+      headers: { 'Content-Type': 'text/html' },
+    });
   }
 
   const id = searchParams.get('id');
