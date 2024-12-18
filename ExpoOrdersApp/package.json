@@ -6,19 +6,23 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "expo export:web"
   },
   "dependencies": {
     "expo": "~48.0.18",
     "expo-status-bar": "~1.4.4",
-    "react": "18.2.0",
-    "react-native": "0.71.8",
     "expo-notifications": "~0.18.1",
     "expo-device": "~5.2.1",
     "expo-constants": "~14.2.1",
+    "react": "18.2.0",
+    "react-native": "0.71.8",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/native-stack": "^6.9.12",
-    "@react-native-async-storage/async-storage": "1.17.11"
+    "@react-native-async-storage/async-storage": "1.17.11",
+    "react-native-web": "~0.18.10",
+    "react-dom": "18.2.0",
+    "@expo/webpack-config": "^18.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -27,4 +31,3 @@
   },
   "private": true
 }
-

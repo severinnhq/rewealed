@@ -16,23 +16,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rewealed.orders",
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "fetch"
-        ]
-      }
+      "bundleIdentifier": "com.rewealed.orders"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.rewealed.orders",
-      "permissions": [
-        "VIBRATE",
-        "RECEIVE_BOOT_COMPLETED"
-      ]
+      "package": "com.rewealed.orders"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -44,20 +35,11 @@
     },
     "owner": "severinn",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "sdkVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/cbb05378-6e19-40d5-af6f-252364ff6ead"
-    },
-    "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#ffffff"
-        }
-      ]
-    ]
+    }
   }
 }
 
