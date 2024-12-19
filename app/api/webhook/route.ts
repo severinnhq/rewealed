@@ -162,6 +162,11 @@ async function sendPushNotification(order: Order) {
 
   const pushTokens = await pushTokensCollection.find({}).toArray()
 
+  // Get the first item from the order (assuming there's at least one item)
+  const firstItem = order.items[0]
+  const productName = firstItem ? firstItem.n : 'Unknown product'
+  const productPrice = firstItem ? firstItem.p : 0
+
   for (const { token } of pushTokens) {
     if (!Expo.isExpoPushToken(token)) {
       console.error(`Push token ${token} is not a valid Expo push token`)
@@ -172,8 +177,12 @@ async function sendPushNotification(order: Order) {
       to: token,
       sound: 'default',
       title: 'New Order Received',
-      body: `Order ID: ${order._id ? order._id.toString() : 'Unknown'}, Amount: ${order.amount} ${order.currency}`,
-      data: { orderId: order._id ? order._id.toString() : 'Unknown' },
+      body: `Product: ${productName}, Price: $${productPrice.toFixed(2)}`,
+      data: { 
+        orderId: order._id ? order._id.toString() : 'Unknown',
+        productName,
+        productPrice
+      },
     }
 
     try {
