@@ -159,7 +159,7 @@ export async function POST(request: Request) {
     const pushTokens = await pushTokensCollection.find({}).toArray();
 
     // Send push notifications
-    for (let { token } of pushTokens) {
+    for (const { token } of pushTokens) {
       if (!Expo.isExpoPushToken(token)) {
         console.error(`Push token ${token} is not a valid Expo push token`);
         continue;
