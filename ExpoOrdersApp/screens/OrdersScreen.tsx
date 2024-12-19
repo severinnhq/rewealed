@@ -1,102 +1,132 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, RefreshControl, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { format } from 'date-fns';
-import CryptoJS from 'crypto-js';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import format from 'date-fns/format';
 
-type OrdersScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Orders'>;
+type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
 interface Order {
   _id: string;
+  sessionId: string;
   amount: number;
   currency: string;
   status: string;
   createdAt: string;
+  shippingType?: string;
 }
 
-const OrdersScreen: React.FC = () => {
+const API_URL = 'https://rewealed.com/api/orders';
+
+// Simple hash function
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16);
+}
+
+export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<OrdersScreenNavigationProp>();
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = async () => {
     try {
-      setError(null);
-      // Step 1: Get the challenge
-      const challengeResponse = await fetch('https://rewealed.com/api/orders');
-      if (!challengeResponse.ok) {
-        throw new Error(`Challenge request failed with status ${challengeResponse.status}`);
-      }
+      setLoading(true);
+
+      // First, get the challenge
+      const challengeResponse = await fetch(`${API_URL}?`);
       const challengeData = await challengeResponse.json();
-      if (!challengeData.challenge) {
-        throw new Error('Challenge not received from the server');
-      }
-      const { challenge } = challengeData;
+      const challenge = challengeData.challenge;
 
-      // Step 2: Generate the response
-      const secret = 'rewealed_secret';
-      const response = CryptoJS.SHA256(challenge + secret).toString(CryptoJS.enc.Hex);
+      // Generate the response
+      const response = simpleHash(challenge + 'rewealed_secret');
 
-      // Step 3: Fetch orders with the challenge-response
-      const ordersResponse = await fetch(`https://rewealed.com/api/orders?challenge=${challenge}&response=${response}`);
+      // Now fetch the orders with the challenge-response
+      const ordersResponse = await fetch(`${API_URL}?challenge=${challenge}&response=${response}`);
+
       if (!ordersResponse.ok) {
-        throw new Error(`Orders request failed with status ${ordersResponse.status}`);
+        throw new Error(`HTTP error! status: ${ordersResponse.status}`);
       }
-      const fetchedOrders = await ordersResponse.json();
-
-      if (Array.isArray(fetchedOrders)) {
-        setOrders(fetchedOrders);
-        if (fetchedOrders.length === 0) {
-          setError('No orders found');
-        }
-      } else {
-        console.error('Fetched orders is not an array:', fetchedOrders);
-        setError('Invalid data received from server');
-        setOrders([]);
-      }
+      
+      const data = await ordersResponse.json();
+      setOrders(data);
+      setError(null);
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
-      setOrders([]);
+      console.error('Error fetching orders:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(`Failed to fetch orders. ${errorMessage}`);
+      Alert.alert('Error', `Failed to fetch orders. ${errorMessage}`);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+  }, []);
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = () => {
     setRefreshing(true);
-    await fetchOrders();
-    setRefreshing(false);
-  }, [fetchOrders]);
+    fetchOrders();
+  };
+
+  const formatCreatedDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "yyyy-MM-dd HH:mm:ss");
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
+    }
+  };
 
   const renderOrderItem = ({ item }: { item: Order }) => (
     <TouchableOpacity
-      style={styles.orderItem}
+      style={[
+        styles.orderItem,
+        item.shippingType?.toLowerCase().includes('express') && styles.expressShipping
+      ]}
       onPress={() => navigation.navigate('OrderDetail', { orderId: item._id })}
     >
-      <Text style={styles.orderAmount}>{item.currency} {item.amount.toFixed(2)}</Text>
-      <Text style={styles.orderStatus}>{item.status}</Text>
-      <Text style={styles.orderDate}>{format(new Date(item.createdAt), 'MMM d, yyyy HH:mm')}</Text>
+      <Text style={styles.orderTitle}>Order ID: {item.sessionId}</Text>
+      <Text>Amount: {item.amount.toFixed(2)} {item.currency.toUpperCase()}</Text>
+      <Text>Status: {item.status}</Text>
+      <Text>Created: {formatCreatedDate(item.createdAt)}</Text>
+      {item.shippingType && <Text>Shipping: {item.shippingType}</Text>}
     </TouchableOpacity>
   );
 
+  if (loading && !refreshing) {
+    return (
+      <View style={styles.centered}>
+        <Text>Loading orders...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchOrders}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchOrders}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : orders.length === 0 ? (
-        <Text style={styles.noOrders}>No orders found</Text>
-      ) : (
+      {orders.length > 0 ? (
         <FlatList
           data={orders}
           renderItem={renderOrderItem}
@@ -105,69 +135,50 @@ const OrdersScreen: React.FC = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         />
+      ) : (
+        <Text style={styles.noOrders}>No orders found.</Text>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    padding: 10,
   },
   orderItem: {
-    backgroundColor: 'white',
+    backgroundColor: '#f9f9f9',
     padding: 15,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    marginBottom: 10,
     borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  orderAmount: {
-    fontSize: 18,
+  expressShipping: {
+    backgroundColor: '#fff9c4',
+  },
+  orderTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 5,
   },
-  orderStatus: {
-    fontSize: 14,
-    color: 'gray',
-    marginTop: 5,
-  },
-  orderDate: {
-    fontSize: 12,
-    color: 'gray',
-    marginTop: 5,
-  },
-  noOrders: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 50,
-  },
-  errorContainer: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  errorText: {
-    fontSize: 16,
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
   retryButton: {
+    marginTop: 10,
+    padding: 10,
     backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
     borderRadius: 5,
   },
   retryButtonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  noOrders: {
+    textAlign: 'center',
+    marginTop: 20,
     fontSize: 16,
   },
 });
-
-export default OrdersScreen;
-

@@ -13,8 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.severinn.rewealed"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
