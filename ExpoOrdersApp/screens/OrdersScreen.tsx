@@ -24,7 +24,7 @@ const OrdersScreen: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     try {
       // Step 1: Get the challenge
-      const challengeResponse = await fetch('https://your-nextjs-app-url.com/api/orders');
+      const challengeResponse = await fetch('https://rewealed.com/api/orders');
       const { challenge } = await challengeResponse.json();
 
       // Step 2: Generate the response
@@ -32,12 +32,18 @@ const OrdersScreen: React.FC = () => {
       const response = CryptoJS.SHA256(challenge + secret).toString(CryptoJS.enc.Hex);
 
       // Step 3: Fetch orders with the challenge-response
-      const ordersResponse = await fetch(`https://your-nextjs-app-url.com/api/orders?challenge=${challenge}&response=${response}`);
+      const ordersResponse = await fetch(`https://rewealed.com/api/orders?challenge=${challenge}&response=${response}`);
       const fetchedOrders = await ordersResponse.json();
 
-      setOrders(fetchedOrders);
+      if (Array.isArray(fetchedOrders)) {
+        setOrders(fetchedOrders);
+      } else {
+        console.error('Fetched orders is not an array:', fetchedOrders);
+        setOrders([]);
+      }
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      setOrders([]);
     }
   }, []);
 
@@ -64,14 +70,18 @@ const OrdersScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={orders}
-        renderItem={renderOrderItem}
-        keyExtractor={(item) => item._id}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      />
+      {orders.length === 0 ? (
+        <Text style={styles.noOrders}>No orders found</Text>
+      ) : (
+        <FlatList
+          data={orders}
+          renderItem={renderOrderItem}
+          keyExtractor={(item) => item._id}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      )}
     </View>
   );
 };
@@ -106,6 +116,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'gray',
     marginTop: 5,
+  },
+  noOrders: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 50,
   },
 });
 

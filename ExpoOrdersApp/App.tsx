@@ -26,7 +26,16 @@ Notifications.setNotificationHandler({
 async function registerForPushNotificationsAsync() {
   let token;
 
-  if (Constants.isDevice) {
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Platform.OS === 'ios' || Platform.OS === 'android') {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {
@@ -37,18 +46,16 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
+    if (Constants.expoConfig?.extra?.eas?.projectId) {
+      token = (await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig.extra.eas.projectId
+      })).data;
+    } else {
+      console.warn('Project ID is not available. Push notifications may not work correctly.');
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+    }
   } else {
-    alert('Must use physical device for Push Notifications');
-  }
-
-  if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
+    alert('Must use physical iOS or Android device for Push Notifications');
   }
 
   return token;
@@ -81,7 +88,7 @@ export default function App() {
 
   async function registerWebhook(token: string) {
     try {
-      const response = await fetch('https://your-nextjs-app-url.com/api/orders', {
+      const response = await fetch('https://rewealed.com/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
