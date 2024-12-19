@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-nat
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 import { format } from 'date-fns/format';
+import CryptoJS from 'crypto-js';
 
 type OrderDetailRouteProp = RouteProp<RootStackParamList, 'OrderDetail'>;
 
@@ -67,9 +68,18 @@ export default function OrderDetailScreen({ route }: OrderDetailScreenProps) {
 
   const fetchOrderDetail = async () => {
     try {
-      const response = await fetch(`https://rewealed.com/api/orders?id=${orderId}`);
-      const data = await response.json();
-      setOrder(data);
+      // Step 1: Get the challenge
+      const challengeResponse = await fetch('https://rewealed.com/api/orders');
+      const { challenge } = await challengeResponse.json();
+
+      // Step 2: Generate the response
+      const secret = 'rewealed_secret';
+      const response = CryptoJS.SHA256(challenge + secret).toString(CryptoJS.enc.Hex);
+
+      // Step 3: Fetch order detail with the challenge-response
+      const orderResponse = await fetch(`https://rewealed.com/api/orders?id=${orderId}&challenge=${challenge}&response=${response}`);
+      const data = await orderResponse.json();
+      setOrder(data[0]); // Assuming the API returns an array with a single order
     } catch (error) {
       console.error('Error fetching order detail:', error);
     } finally {

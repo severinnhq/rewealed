@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
+import { Expo } from 'expo-server-sdk';
 
 const mongoUri = process.env.MONGODB_URI!;
+const expo = new Expo();
 
 interface Order {
   _id: ObjectId;
@@ -49,6 +51,22 @@ function verifyResponse(challenge: string, response: string): boolean {
   return response === expectedResponse;
 }
 
+async function sendPushNotification(pushToken: string) {
+  const messages = [{
+    to: pushToken,
+    sound: 'default',
+    title: 'New Order',
+    body: 'A new order has been placed!',
+    data: { type: 'new_order' },
+  }];
+
+  try {
+    await expo.sendPushNotificationsAsync(messages);
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const challenge = searchParams.get('challenge');
@@ -94,7 +112,7 @@ export async function GET(request: Request) {
     );
   }
 
-  // Handle the challenge-response for API requestsf
+  // Handle the challenge-response for API requests
   if (!challenge && !response) {
     const newChallenge = generateChallenge();
     return NextResponse.json({ challenge: newChallenge }, { status: 200 });
@@ -138,6 +156,35 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   } finally {
     await client.close();
+  }
+}
+
+export async function POST(request: Request) {
+  const { pushToken } = await request.json();
+  
+  if (!pushToken) {
+    return NextResponse.json({ error: 'Push token is required' }, { status: 400 });
+  }
+
+  const client = new MongoClient(mongoUri);
+
+  try {
+    await client.connect();
+    const db = client.db('webstore');
+    const ordersCollection = db.collection('orders');
+
+    const changeStream = ordersCollection.watch();
+
+    changeStream.on('change', async (change) => {
+      if (change.operationType === 'insert') {
+        await sendPushNotification(pushToken);
+      }
+    });
+
+    return NextResponse.json({ message: 'Webhook registered successfully' });
+  } catch (error) {
+    console.error('Failed to register webhook:', error);
+    return NextResponse.json({ error: 'Failed to register webhook' }, { status: 500 });
   }
 }
 

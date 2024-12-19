@@ -1,185 +1,113 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { format } from 'date-fns';
+import CryptoJS from 'crypto-js';
 import { RootStackParamList } from '../App';
-import { format } from 'date-fns/format';
 
-type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
+type OrdersScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Orders'>;
 
 interface Order {
   _id: string;
-  sessionId: string;
   amount: number;
   currency: string;
   status: string;
   createdAt: string;
-  shippingType?: string;
 }
 
-const API_URL = 'https://rewealed.com/api/orders';
-
-// Simple hash function
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(16);
-}
-
-export default function OrdersScreen() {
+const OrdersScreen: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<OrdersScreenNavigationProp>();
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true);
+      // Step 1: Get the challenge
+      const challengeResponse = await fetch('https://your-nextjs-app-url.com/api/orders');
+      const { challenge } = await challengeResponse.json();
 
-      // First, get the challenge
-      const challengeResponse = await fetch(`${API_URL}?`);
-      const challengeData = await challengeResponse.json();
-      const challenge = challengeData.challenge;
+      // Step 2: Generate the response
+      const secret = 'rewealed_secret';
+      const response = CryptoJS.SHA256(challenge + secret).toString(CryptoJS.enc.Hex);
 
-      // Generate the response
-      const response = simpleHash(challenge + 'rewealed_secret');
+      // Step 3: Fetch orders with the challenge-response
+      const ordersResponse = await fetch(`https://your-nextjs-app-url.com/api/orders?challenge=${challenge}&response=${response}`);
+      const fetchedOrders = await ordersResponse.json();
 
-      // Now fetch the orders with the challenge-response
-      const ordersResponse = await fetch(`${API_URL}?challenge=${challenge}&response=${response}`);
-
-      if (!ordersResponse.ok) {
-        throw new Error(`HTTP error! status: ${ordersResponse.status}`);
-      }
-      
-      const data = await ordersResponse.json();
-      setOrders(data);
-      setError(null);
+      setOrders(fetchedOrders);
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      setError(`Failed to fetch orders. ${errorMessage}`);
-      Alert.alert('Error', `Failed to fetch orders. ${errorMessage}`);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      console.error('Failed to fetch orders:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchOrders();
-  };
-
-  const formatCreatedDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      return format(date, "yyyy-MM-dd HH:mm:ss");
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return dateString;
-    }
-  };
+    await fetchOrders();
+    setRefreshing(false);
+  }, [fetchOrders]);
 
   const renderOrderItem = ({ item }: { item: Order }) => (
     <TouchableOpacity
-      style={[
-        styles.orderItem,
-        item.shippingType?.toLowerCase().includes('express') && styles.expressShipping
-      ]}
+      style={styles.orderItem}
       onPress={() => navigation.navigate('OrderDetail', { orderId: item._id })}
     >
-      <Text style={styles.orderTitle}>Order ID: {item.sessionId}</Text>
-      <Text>Amount: {item.amount.toFixed(2)} {item.currency.toUpperCase()}</Text>
-      <Text>Status: {item.status}</Text>
-      <Text>Created: {formatCreatedDate(item.createdAt)}</Text>
-      {item.shippingType && <Text>Shipping: {item.shippingType}</Text>}
+      <Text style={styles.orderAmount}>{item.currency} {item.amount.toFixed(2)}</Text>
+      <Text style={styles.orderStatus}>{item.status}</Text>
+      <Text style={styles.orderDate}>{format(new Date(item.createdAt), 'MMM d, yyyy HH:mm')}</Text>
     </TouchableOpacity>
   );
 
-  if (loading && !refreshing) {
-    return (
-      <View style={styles.centered}>
-        <Text>Loading orders...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchOrders}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {orders.length > 0 ? (
-        <FlatList
-          data={orders}
-          renderItem={renderOrderItem}
-          keyExtractor={(item) => item._id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
-      ) : (
-        <Text style={styles.noOrders}>No orders found.</Text>
-      )}
+      <FlatList
+        data={orders}
+        renderItem={renderOrderItem}
+        keyExtractor={(item) => item._id}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    backgroundColor: '#f5f5f5',
   },
   orderItem: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'white',
     padding: 15,
-    marginBottom: 10,
+    marginVertical: 8,
+    marginHorizontal: 16,
     borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  expressShipping: {
-    backgroundColor: '#fff9c4',
-  },
-  orderTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  retryButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-  },
-  retryButtonText: {
-    color: 'white',
+  orderAmount: {
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  noOrders: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
+  orderStatus: {
+    fontSize: 14,
+    color: 'gray',
+    marginTop: 5,
+  },
+  orderDate: {
+    fontSize: 12,
+    color: 'gray',
+    marginTop: 5,
   },
 });
+
+export default OrdersScreen;
 
