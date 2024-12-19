@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
-import { sendPushNotification } from '../utils/pushNotifications';
+import { Expo } from 'expo-server-sdk';
 
 const mongoUri = process.env.MONGODB_URI!;
+const expo = new Expo();
 
 interface Order {
   _id: ObjectId;
@@ -149,24 +150,69 @@ export async function POST(request: Request) {
     await client.connect();
     const db = client.db('webstore');
     const ordersCollection = db.collection('orders');
+    const pushTokensCollection = db.collection('push_tokens');
 
     const newOrder = await request.json();
     const result = await ordersCollection.insertOne(newOrder);
 
-    // Send push notification for new order
-    const pushToken = process.env.EXPO_PUSH_TOKEN;
-    if (pushToken) {
-      await sendPushNotification(
-        pushToken,
-        'New Order Received',
-        `Order ID: ${result.insertedId}`
-      );
+    // Fetch all registered push tokens
+    const pushTokens = await pushTokensCollection.find({}).toArray();
+
+    // Send push notifications
+    for (let { token } of pushTokens) {
+      if (!Expo.isExpoPushToken(token)) {
+        console.error(`Push token ${token} is not a valid Expo push token`);
+        continue;
+      }
+
+      const message = {
+        to: token,
+        sound: 'default',
+        title: 'New Order Received',
+        body: `Order ID: ${result.insertedId}`,
+        data: { orderId: result.insertedId.toString() },
+      };
+
+      try {
+        await expo.sendPushNotificationsAsync([message]);
+      } catch (error) {
+        console.error('Error sending push notification:', error);
+      }
     }
 
     return NextResponse.json({ success: true, orderId: result.insertedId }, { status: 201 });
   } catch (error) {
     console.error('Failed to create order:', error);
     return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+  } finally {
+    await client.close();
+  }
+}
+
+export async function PUT(request: Request) {
+  const client = new MongoClient(mongoUri);
+
+  try {
+    await client.connect();
+    const db = client.db('webstore');
+    const pushTokensCollection = db.collection('push_tokens');
+
+    const { token } = await request.json();
+
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 400 });
+    }
+
+    await pushTokensCollection.updateOne(
+      { token },
+      { $set: { token, updatedAt: new Date() } },
+      { upsert: true }
+    );
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error('Failed to register push token:', error);
+    return NextResponse.json({ error: 'Failed to register push token' }, { status: 500 });
   } finally {
     await client.close();
   }
