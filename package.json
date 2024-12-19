@@ -54,7 +54,7 @@
     "react-native-safe-area-context": "^5.0.0",
     "react-native-screens": "^4.3.0",
     "sharp": "^0.33.5",
-    "stripe": "^17.4.0",
+    "stripe": "^17.5.0",
     "tailwind-merge": "^2.5.5",
     "three": "^0.171.0"
   },
