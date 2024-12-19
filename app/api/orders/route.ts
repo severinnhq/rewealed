@@ -62,7 +62,7 @@ async function sendPushNotification(pushToken: string) {
 
   try {
     const chunks = expo.chunkPushNotifications(messages);
-    for (let chunk of chunks) {
+    for (const chunk of chunks) {
       try {
         const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
         console.log('Push notification sent:', ticketChunk);
