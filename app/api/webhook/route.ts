@@ -3,6 +3,23 @@ import Stripe from 'stripe'
 import { MongoClient, ObjectId } from 'mongodb'
 import { Expo } from 'expo-server-sdk'
 
+interface OrderItem {
+  id: string;
+  n: string;
+  s: string;
+  q: number;
+  p: number;
+}
+
+interface StripeDetails {
+  paymentId: string;
+  customerId: string | null;
+  paymentMethodId: string | null;
+  paymentMethodFingerprint: string | null;
+  riskScore: number | null;
+  riskLevel: string | null;
+}
+
 interface Order {
   _id?: ObjectId;
   sessionId: string;
@@ -10,11 +27,11 @@ interface Order {
   amount: number;
   currency: string | null;
   status: Stripe.Checkout.Session.PaymentStatus;
-  items: any[];
+  items: OrderItem[];
   shippingDetails: Stripe.Checkout.Session.ShippingDetails | null;
-  billingDetails: any;
+  billingDetails: Stripe.Charge.BillingDetails | null;
   shippingType: string;
-  stripeDetails: any;
+  stripeDetails: StripeDetails | null;
   createdAt: Date;
 }
 
@@ -92,8 +109,8 @@ async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
   }
 
   // Retrieve billing details and additional Stripe data
-  let billingDetails = null
-  let stripeDetails = null
+  let billingDetails: Stripe.Charge.BillingDetails | null = null
+  let stripeDetails: StripeDetails | null = null
   if (session.payment_intent && typeof session.payment_intent === 'string') {
     try {
       const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent, {
@@ -118,11 +135,11 @@ async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
   const order: Omit<Order, '_id'> = {
     sessionId: session.id,
     customerId: session.customer,
-    amount: session.amount_total ? session.amount_total / 100 : 0,
-    currency: session.currency,
+    amount: session.amount_total != null ? session.amount_total / 100 : 0,
+    currency: session.currency ?? null,
     status: session.payment_status,
     items: JSON.parse(session.metadata?.cartItemsSummary || '[]'),
-    shippingDetails: session.shipping_details,
+    shippingDetails: session.shipping_details ?? null,
     billingDetails: billingDetails,
     shippingType: shippingType,
     stripeDetails: stripeDetails,
