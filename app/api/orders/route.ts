@@ -64,47 +64,32 @@ export async function GET(request: Request) {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Rewealed Orders</title>
+        <title>404 - Page Not Found</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <style>
-          body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-          }
-          .container {
-            text-align: center;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          }
-          .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+          .bg-404::before {
+            content: '404';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20vw;
             font-weight: bold;
-            margin-top: 20px;
+            opacity: 0.1;
+            z-index: -1;
           }
         </style>
       </head>
-      <body>
-        <div class="container">
-          <h1>Rewealed Orders</h1>
-          <p>This page is not accessible directly.</p>
-          <a href="/" class="button">Continue Shopping</a>
-        </div>
+      <body class="bg-white flex items-center justify-center min-h-screen bg-404">
+        <a href="/" class="text-2xl bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded transition duration-300 ease-in-out z-10">
+          Continue Shopping
+        </a>
       </body>
       </html>
       `,
       {
         headers: { 'Content-Type': 'text/html' },
+        status: 404,
       }
     );
   }
