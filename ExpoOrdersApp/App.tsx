@@ -35,10 +35,6 @@ async function registerForPushNotificationsAsync() {
     });
   }
 
-  console.log('isDevice:', Constants.isDevice);
-  console.log('deviceName:', Constants.deviceName);
-  console.log('platform:', Constants.platform);
-
   if (Constants.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -53,7 +49,6 @@ async function registerForPushNotificationsAsync() {
     token = (await Notifications.getExpoPushTokenAsync({ 
       projectId: Constants.expoConfig?.extra?.eas?.projectId ?? undefined 
     })).data;
-    Alert.alert('Expo Push Token:', token);
     console.log('Expo Push Token:', token);
   } else {
     Alert.alert('Must use physical device for Push Notifications');
@@ -84,9 +79,7 @@ export default function App() {
       console.log('Notification response received:', response);
     });
 
-    if (!__DEV__) {
-      checkForUpdates();
-    }
+    checkForUpdates();
 
     return () => {
       Notifications.removeNotificationSubscription(notificationListener);

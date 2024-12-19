@@ -55,7 +55,8 @@
     "sharp": "^0.33.5",
     "stripe": "^17.4.0",
     "tailwind-merge": "^2.5.5",
-    "three": "^0.171.0"
+    "three": "^0.171.0",
+    "expo-updates": "~0.26.10"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
