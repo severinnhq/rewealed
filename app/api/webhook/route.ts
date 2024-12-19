@@ -3,21 +3,13 @@ import Stripe from 'stripe'
 import { MongoClient, ObjectId } from 'mongodb'
 import { Expo } from 'expo-server-sdk'
 
-interface OrderItem {
-  id: string;
-  n: string;
-  s: string;
-  q: number;
-  p: number;
-}
-
 interface StripeDetails {
   paymentId: string;
   customerId: string | null;
   paymentMethodId: string | null;
-  paymentMethodFingerprint: string | null;
-  riskScore: number | null;
-  riskLevel: string | null;
+  paymentMethodFingerprint: string | null | undefined;
+  riskScore: number | null | undefined;
+  riskLevel: string | null | undefined;
 }
 
 interface Order {
@@ -27,9 +19,9 @@ interface Order {
   amount: number;
   currency: string | null;
   status: Stripe.Checkout.Session.PaymentStatus;
-  items: OrderItem[];
+  items: any[];
   shippingDetails: Stripe.Checkout.Session.ShippingDetails | null;
-  billingDetails: Stripe.Charge.BillingDetails | null;
+  billingDetails: any;
   shippingType: string;
   stripeDetails: StripeDetails | null;
   createdAt: Date;
@@ -109,7 +101,7 @@ async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
   }
 
   // Retrieve billing details and additional Stripe data
-  let billingDetails: Stripe.Charge.BillingDetails | null = null
+  let billingDetails = null
   let stripeDetails: StripeDetails | null = null
   if (session.payment_intent && typeof session.payment_intent === 'string') {
     try {
