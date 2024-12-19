@@ -94,7 +94,7 @@ export async function GET(request: Request) {
     );
   }
 
-  // Handle the challenge-response for API requests
+  // Handle the challenge-response for API requestsf
   if (!challenge && !response) {
     const newChallenge = generateChallenge();
     return NextResponse.json({ challenge: newChallenge }, { status: 200 });
