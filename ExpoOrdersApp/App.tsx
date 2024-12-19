@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as Notifications from 'expo-notifications';
+import * as TaskManager from 'expo-task-manager';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
@@ -14,6 +15,20 @@ export type RootStackParamList = {
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
+
+const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
+
+TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error, executionInfo }) => {
+  if (error) {
+    console.error("Background task failed:", error);
+    return;
+  }
+  if (data) {
+    const notificationData = data as any;
+    console.log("Received background notification:", notificationData);
+    // Handle the notification data here
+  }
+});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -59,6 +74,8 @@ async function registerForPushNotificationsAsync() {
 
 export default function App() {
   const [expoPushToken, setExpoPushToken] = useState('');
+  const notificationListener = useRef<any>();
+  const responseListener = useRef<any>();
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => {
@@ -68,17 +85,21 @@ export default function App() {
       }
     });
 
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
     });
 
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification response:', response);
+      // Handle notification response (e.g., navigate to a specific screen)
     });
 
+    Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
+
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener);
-      Notifications.removeNotificationSubscription(responseListener);
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+      Notifications.unregisterTaskAsync(BACKGROUND_NOTIFICATION_TASK);
     };
   }, []);
 

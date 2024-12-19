@@ -46,7 +46,7 @@ function verifyResponse(challenge: string, response: string): boolean {
   return response === expectedResponse;
 }
 
-async function sendPushNotification(pushToken: string) {
+async function sendPushNotification(pushToken: string, order: Order) {
   if (!Expo.isExpoPushToken(pushToken)) {
     console.error(`Push token ${pushToken} is not a valid Expo push token`);
     return;
@@ -56,8 +56,8 @@ async function sendPushNotification(pushToken: string) {
     to: pushToken,
     sound: 'default',
     title: 'New Order',
-    body: 'A new order has been placed!',
-    data: { type: 'new_order' },
+    body: `A new order (${order.sessionId}) has been placed!`,
+    data: { type: 'new_order', orderId: order._id.toString() },
   }];
 
   try {
@@ -81,13 +81,11 @@ export async function GET(request: Request) {
   const response = searchParams.get('response');
   const id = searchParams.get('id');
 
-  // If there's no challenge or response, generate a new challenge
   if (!challenge && !response) {
     const newChallenge = generateChallenge();
     return NextResponse.json({ challenge: newChallenge }, { status: 200 });
   }
 
-  // Verify the challenge-response
   if (!challenge || !response || !verifyResponse(challenge, response)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -146,14 +144,11 @@ export async function POST(request: Request) {
     changeStream.on('change', async (change) => {
       if (change.operationType === 'insert') {
         console.log('New order detected:', change.fullDocument);
-        await sendPushNotification(pushToken);
+        await sendPushNotification(pushToken, change.fullDocument as Order);
       }
     });
 
-    // Send a test notification immediately
-    await sendPushNotification(pushToken);
-
-    return NextResponse.json({ message: 'Webhook registered successfully and test notification sent' });
+    return NextResponse.json({ message: 'Webhook registered successfully' });
   } catch (error) {
     console.error('Failed to register webhook:', error);
     return NextResponse.json({ error: 'Failed to register webhook' }, { status: 500 });
