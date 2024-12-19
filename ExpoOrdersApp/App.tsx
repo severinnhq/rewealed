@@ -46,14 +46,10 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    if (Constants.expoConfig?.extra?.eas?.projectId) {
-      token = (await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig.extra.eas.projectId
-      })).data;
-    } else {
-      console.warn('Project ID is not available. Push notifications may not work correctly.');
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-    }
+    token = (await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig?.extra?.eas?.projectId,
+    })).data;
+    console.log('Expo Push Token:', token);
   } else {
     alert('Must use physical iOS or Android device for Push Notifications');
   }
@@ -100,7 +96,8 @@ export default function App() {
         throw new Error('Failed to register webhook');
       }
 
-      console.log('Webhook registered successfully');
+      const result = await response.json();
+      console.log('Webhook registration result:', result);
     } catch (error) {
       console.error('Error registering webhook:', error);
     }

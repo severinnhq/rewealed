@@ -47,6 +47,11 @@ function verifyResponse(challenge: string, response: string): boolean {
 }
 
 async function sendPushNotification(pushToken: string) {
+  if (!Expo.isExpoPushToken(pushToken)) {
+    console.error(`Push token ${pushToken} is not a valid Expo push token`);
+    return;
+  }
+
   const messages = [{
     to: pushToken,
     sound: 'default',
@@ -56,7 +61,15 @@ async function sendPushNotification(pushToken: string) {
   }];
 
   try {
-    await expo.sendPushNotificationsAsync(messages);
+    const chunks = expo.chunkPushNotifications(messages);
+    for (let chunk of chunks) {
+      try {
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+        console.log('Push notification sent:', ticketChunk);
+      } catch (error) {
+        console.error('Error sending chunk:', error);
+      }
+    }
   } catch (error) {
     console.error('Error sending push notification:', error);
   }
@@ -132,11 +145,15 @@ export async function POST(request: Request) {
 
     changeStream.on('change', async (change) => {
       if (change.operationType === 'insert') {
+        console.log('New order detected:', change.fullDocument);
         await sendPushNotification(pushToken);
       }
     });
 
-    return NextResponse.json({ message: 'Webhook registered successfully' });
+    // Send a test notification immediately
+    await sendPushNotification(pushToken);
+
+    return NextResponse.json({ message: 'Webhook registered successfully and test notification sent' });
   } catch (error) {
     console.error('Failed to register webhook:', error);
     return NextResponse.json({ error: 'Failed to register webhook' }, { status: 500 });
