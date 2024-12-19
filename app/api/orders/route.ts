@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
+import { sendPushNotification } from '../utils/pushNotifications';
 
 const mongoUri = process.env.MONGODB_URI!;
 
@@ -94,7 +95,7 @@ export async function GET(request: Request) {
     );
   }
 
-  // Handle the challenge-response for API requestsf
+  // Handle the challenge-response for API requests
   if (!challenge && !response) {
     const newChallenge = generateChallenge();
     return NextResponse.json({ challenge: newChallenge }, { status: 200 });
@@ -140,3 +141,34 @@ export async function GET(request: Request) {
     await client.close();
   }
 }
+
+export async function POST(request: Request) {
+  const client = new MongoClient(mongoUri);
+
+  try {
+    await client.connect();
+    const db = client.db('webstore');
+    const ordersCollection = db.collection('orders');
+
+    const newOrder = await request.json();
+    const result = await ordersCollection.insertOne(newOrder);
+
+    // Send push notification for new order
+    const pushToken = process.env.EXPO_PUSH_TOKEN;
+    if (pushToken) {
+      await sendPushNotification(
+        pushToken,
+        'New Order Received',
+        `Order ID: ${result.insertedId}`
+      );
+    }
+
+    return NextResponse.json({ success: true, orderId: result.insertedId }, { status: 201 });
+  } catch (error) {
+    console.error('Failed to create order:', error);
+    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+  } finally {
+    await client.close();
+  }
+}
+
