@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Updates from 'expo-updates';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import OrdersScreen from './screens/OrdersScreen';
 import OrderDetailScreen from './screens/OrderDetailScreen';
 
@@ -35,7 +36,7 @@ async function registerForPushNotificationsAsync() {
     });
   }
 
-  if (Constants.isDevice) {
+  if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {
@@ -47,7 +48,7 @@ async function registerForPushNotificationsAsync() {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync({ 
-      projectId: Constants.expoConfig?.extra?.eas?.projectId ?? undefined 
+      projectId: Constants.expoConfig?.extra?.eas?.projectId 
     })).data;
     console.log('Expo Push Token:', token);
   } else {
@@ -65,7 +66,6 @@ export default function App() {
     registerForPushNotificationsAsync().then(token => {
       setExpoPushToken(token);
       if (token) {
-        // Send the token to your server
         sendPushTokenToServer(token);
       }
     });
@@ -77,6 +77,8 @@ export default function App() {
 
     const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification response received:', response);
+      // Navigate to the Orders screen or specific order detail
+      // You might need to implement this navigation logic
     });
 
     checkForUpdates();

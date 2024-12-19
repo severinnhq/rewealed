@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectId } from 'mongodb'
+import { Expo } from 'expo-server-sdk'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -10,6 +11,7 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 const mongoUri = process.env.MONGODB_URI!
 
 let cachedClient: MongoClient | null = null
+const expo = new Expo()
 
 async function connectToDatabase() {
   if (cachedClient) {
@@ -41,7 +43,10 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session
-        await saveOrder(session)
+        const order = await saveOrder(session)
+        if (order) {
+          await sendPushNotification(order)
+        }
         break
       // ... other event handlers ...
     }
@@ -112,9 +117,40 @@ async function saveOrder(session: Stripe.Checkout.Session) {
   try {
     const result = await ordersCollection.insertOne(order)
     console.log(`Order saved with ID: ${result.insertedId}`)
+    return { ...order, _id: result.insertedId }
   } catch (err) {
     console.error('Error saving order to database:', err)
     throw err
+  }
+}
+
+async function sendPushNotification(order: any) {
+  const client = await connectToDatabase()
+  const db = client.db('webstore')
+  const pushTokensCollection = db.collection('push_tokens')
+
+  const pushTokens = await pushTokensCollection.find({}).toArray()
+
+  for (const { token } of pushTokens) {
+    if (!Expo.isExpoPushToken(token)) {
+      console.error(`Push token ${token} is not a valid Expo push token`)
+      continue
+    }
+
+    const message = {
+      to: token,
+      sound: 'default',
+      title: 'New Order Received',
+      body: `Order ID: ${order._id}, Amount: ${order.amount} ${order.currency}`,
+      data: { orderId: order._id.toString() },
+    }
+
+    try {
+      const ticket = await expo.sendPushNotificationsAsync([message])
+      console.log('Push notification sent:', ticket)
+    } catch (error) {
+      console.error('Error sending push notification:', error)
+    }
   }
 }
 
