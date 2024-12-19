@@ -12,6 +12,13 @@ interface StripeDetails {
   riskLevel: string | null | undefined;
 }
 
+interface OrderItem {
+  n: string; // name
+  s: string; // size
+  q: number; // quantity
+  p: number; // price
+}
+
 interface Order {
   _id?: ObjectId;
   sessionId: string;
@@ -19,9 +26,9 @@ interface Order {
   amount: number;
   currency: string | null;
   status: Stripe.Checkout.Session.PaymentStatus;
-  items: any[];
+  items: OrderItem[];
   shippingDetails: Stripe.Checkout.Session.ShippingDetails | null;
-  billingDetails: any;
+  billingDetails: Stripe.Charge.BillingDetails | null;
   shippingType: string;
   stripeDetails: StripeDetails | null;
   createdAt: Date;
@@ -101,7 +108,7 @@ async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
   }
 
   // Retrieve billing details and additional Stripe data
-  let billingDetails = null
+  let billingDetails: Stripe.Charge.BillingDetails | null = null
   let stripeDetails: StripeDetails | null = null
   if (session.payment_intent && typeof session.payment_intent === 'string') {
     try {
@@ -130,7 +137,7 @@ async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
     amount: session.amount_total != null ? session.amount_total / 100 : 0,
     currency: session.currency ?? null,
     status: session.payment_status,
-    items: JSON.parse(session.metadata?.cartItemsSummary || '[]'),
+    items: JSON.parse(session.metadata?.cartItemsSummary || '[]') as OrderItem[],
     shippingDetails: session.shipping_details ?? null,
     billingDetails: billingDetails,
     shippingType: shippingType,
