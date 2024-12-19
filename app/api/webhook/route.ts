@@ -3,6 +3,21 @@ import Stripe from 'stripe'
 import { MongoClient, ObjectId } from 'mongodb'
 import { Expo } from 'expo-server-sdk'
 
+interface Order {
+  _id?: ObjectId;
+  sessionId: string;
+  customerId: string | Stripe.Customer | Stripe.DeletedCustomer | null;
+  amount: number;
+  currency: string | null;
+  status: Stripe.Checkout.Session.PaymentStatus;
+  items: any[];
+  shippingDetails: Stripe.Checkout.Session.ShippingDetails | null;
+  billingDetails: any;
+  shippingType: string;
+  stripeDetails: any;
+  createdAt: Date;
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 })
@@ -58,7 +73,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ received: true })
 }
 
-async function saveOrder(session: Stripe.Checkout.Session) {
+async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
   console.log('Saving order:', session.id)
 
   const client = await connectToDatabase()
@@ -100,7 +115,7 @@ async function saveOrder(session: Stripe.Checkout.Session) {
     }
   }
 
-  const order = {
+  const order: Omit<Order, '_id'> = {
     sessionId: session.id,
     customerId: session.customer,
     amount: session.amount_total ? session.amount_total / 100 : 0,
@@ -124,7 +139,7 @@ async function saveOrder(session: Stripe.Checkout.Session) {
   }
 }
 
-async function sendPushNotification(order: any) {
+async function sendPushNotification(order: Order) {
   const client = await connectToDatabase()
   const db = client.db('webstore')
   const pushTokensCollection = db.collection('push_tokens')
@@ -141,8 +156,8 @@ async function sendPushNotification(order: any) {
       to: token,
       sound: 'default',
       title: 'New Order Received',
-      body: `Order ID: ${order._id}, Amount: ${order.amount} ${order.currency}`,
-      data: { orderId: order._id.toString() },
+      body: `Order ID: ${order._id ? order._id.toString() : 'Unknown'}, Amount: ${order.amount} ${order.currency}`,
+      data: { orderId: order._id ? order._id.toString() : 'Unknown' },
     }
 
     try {
