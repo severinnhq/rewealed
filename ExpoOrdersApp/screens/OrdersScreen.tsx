@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, RefreshControl, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { format } from 'date-fns';
@@ -19,13 +19,22 @@ interface Order {
 const OrdersScreen: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<OrdersScreenNavigationProp>();
 
   const fetchOrders = useCallback(async () => {
     try {
+      setError(null);
       // Step 1: Get the challenge
       const challengeResponse = await fetch('https://rewealed.com/api/orders');
-      const { challenge } = await challengeResponse.json();
+      if (!challengeResponse.ok) {
+        throw new Error(`Challenge request failed with status ${challengeResponse.status}`);
+      }
+      const challengeData = await challengeResponse.json();
+      if (!challengeData.challenge) {
+        throw new Error('Challenge not received from the server');
+      }
+      const { challenge } = challengeData;
 
       // Step 2: Generate the response
       const secret = 'rewealed_secret';
@@ -33,16 +42,24 @@ const OrdersScreen: React.FC = () => {
 
       // Step 3: Fetch orders with the challenge-response
       const ordersResponse = await fetch(`https://rewealed.com/api/orders?challenge=${challenge}&response=${response}`);
+      if (!ordersResponse.ok) {
+        throw new Error(`Orders request failed with status ${ordersResponse.status}`);
+      }
       const fetchedOrders = await ordersResponse.json();
 
       if (Array.isArray(fetchedOrders)) {
         setOrders(fetchedOrders);
+        if (fetchedOrders.length === 0) {
+          setError('No orders found');
+        }
       } else {
         console.error('Fetched orders is not an array:', fetchedOrders);
+        setError('Invalid data received from server');
         setOrders([]);
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
       setOrders([]);
     }
   }, []);
@@ -70,7 +87,14 @@ const OrdersScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {orders.length === 0 ? (
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchOrders}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : orders.length === 0 ? (
         <Text style={styles.noOrders}>No orders found</Text>
       ) : (
         <FlatList
@@ -121,6 +145,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginTop: 50,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
 
