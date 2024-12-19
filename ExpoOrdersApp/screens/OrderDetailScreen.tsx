@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
-import { format } from 'date-fns/format';
+import { format } from 'date-fns';
 import CryptoJS from 'crypto-js';
 
 type OrderDetailRouteProp = RouteProp<RootStackParamList, 'OrderDetail'>;
