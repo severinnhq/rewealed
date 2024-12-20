@@ -28,8 +28,28 @@ interface Order {
       country: string;
     };
   };
+  billingDetails?: {
+    name: string;
+    address: {
+      line1: string;
+      line2: string | null;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+  };
   createdAt: Date;
   shippingType?: string;
+  stripeDetails?: {
+    paymentId: string;
+    customerId: string | null;
+    paymentMethodId: string | null;
+    paymentMethodFingerprint: string | null;
+    riskScore: number | null;
+    riskLevel: string | null;
+  };
+  fulfilled?: boolean;
 }
 
 function generateChallenge(): string {
@@ -129,7 +149,13 @@ export async function GET(request: Request) {
           typeof order.amount === 'number' &&
           typeof order.currency === 'string' &&
           typeof order.status === 'string' &&
-          order.createdAt instanceof Date
+          order.createdAt instanceof Date &&
+          (!order.items || Array.isArray(order.items)) &&
+          (!order.shippingDetails || typeof order.shippingDetails === 'object') &&
+          (!order.billingDetails || typeof order.billingDetails === 'object') &&
+          (!order.shippingType || typeof order.shippingType === 'string') &&
+          (!order.stripeDetails || typeof order.stripeDetails === 'object') &&
+          (typeof order.fulfilled === 'undefined' || typeof order.fulfilled === 'boolean')
         );
       });
     }

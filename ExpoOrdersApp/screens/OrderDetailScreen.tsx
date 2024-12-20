@@ -50,6 +50,7 @@ interface OrderDetail {
     riskScore: number | null;
     riskLevel: string | null;
   };
+  fulfilled?: boolean;
 }
 
 interface OrderDetailScreenProps {
@@ -69,7 +70,7 @@ export default function OrderDetailScreen({ route }: OrderDetailScreenProps) {
     try {
       const response = await fetch(`https://rewealed.com/api/orders?id=${orderId}`);
       const data = await response.json();
-      setOrder(data);
+      setOrder(data[0]); // Assuming the API returns an array with a single order
     } catch (error) {
       console.error('Error fetching order detail:', error);
     } finally {
@@ -83,7 +84,7 @@ export default function OrderDetailScreen({ route }: OrderDetailScreenProps) {
       return format(date, "yyyy-MM-dd HH:mm:ss");
     } catch (error) {
       console.error('Error formatting date:', error);
-      return dateString; // Return the original string if formatting fails
+      return dateString;
     }
   };
 
@@ -107,6 +108,7 @@ export default function OrderDetailScreen({ route }: OrderDetailScreenProps) {
         <Text style={styles.subtitle}>Amount: {order.amount.toFixed(2)} {order.currency.toUpperCase()}</Text>
         <Text style={styles.subtitle}>Created: {formatCreatedDate(order.createdAt)}</Text>
         {order.shippingType && <Text style={styles.subtitle}>Shipping Type: {order.shippingType}</Text>}
+        {order.fulfilled !== undefined && <Text style={styles.subtitle}>Fulfilled: {order.fulfilled ? 'Yes' : 'No'}</Text>}
 
         <Text style={styles.sectionTitle}>Items</Text>
         {order.items.map((item, index) => (
@@ -199,3 +201,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
