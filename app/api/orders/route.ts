@@ -5,6 +5,34 @@ import { Expo } from 'expo-server-sdk';
 const mongoUri = process.env.MONGODB_URI!;
 const expo = new Expo();
 
+interface Address {
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
+interface ShippingDetails {
+  name: string;
+  address: Address;
+}
+
+interface BillingDetails {
+  name: string;
+  address: Address;
+}
+
+interface StripeDetails {
+  paymentId: string;
+  customerId: string | null;
+  paymentMethodId: string | null;
+  paymentMethodFingerprint: string | null;
+  riskScore: number | null;
+  riskLevel: string | null;
+}
+
 interface Order {
   _id: ObjectId;
   sessionId: string;
@@ -17,17 +45,9 @@ interface Order {
     q: number;
     p: number;
   }>;
-  shippingDetails?: {
-    name: string;
-    address: {
-      line1: string;
-      line2: string | null;
-      city: string;
-      state: string;
-      postal_code: string;
-      country: string;
-    };
-  };
+  shippingDetails?: ShippingDetails;
+  billingDetails?: BillingDetails;
+  stripeDetails?: StripeDetails;
   createdAt: Date;
   shippingType?: string;
 }
@@ -57,7 +77,6 @@ export async function GET(request: Request) {
   const response = searchParams.get('response');
   const acceptHeader = request.headers.get('accept');
 
-  // If the request is from a browser (HTML), serve the HTML page
   if (acceptHeader && acceptHeader.includes('text/html')) {
     return new NextResponse(
       `
@@ -68,73 +87,40 @@ export async function GET(request: Request) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>404 - Page Not Found</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-          .bg-404::before {
-            content: '404';
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20vw;
-            font-weight: bold;
-            opacity: 0.1;
-            z-index: -1;
-          }
-        </style>
       </head>
-      <body class="bg-white flex items-center justify-center min-h-screen bg-404">
-        <a href="/" class="text-2xl bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded transition duration-300 ease-in-out z-10">
-          Continue Shopping
-        </a>
+      <body class="flex items-center justify-center h-screen bg-gray-100">
+        <h1 class="text-4xl font-bold text-gray-700">404 - Page Not Found</h1>
       </body>
       </html>
       `,
-      {
-        headers: { 'Content-Type': 'text/html' },
-        status: 404,
-      }
+      { headers: { 'Content-Type': 'text/html' } }
     );
   }
 
-  // Handle the challenge-response for API requests
-  if (!challenge && !response) {
-    const newChallenge = generateChallenge();
-    return NextResponse.json({ challenge: newChallenge }, { status: 200 });
-  }
-
   if (!challenge || !response || !verifyResponse(challenge, response)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Invalid verification' }, { status: 403 });
   }
-
-  const id = searchParams.get('id');
 
   const client = new MongoClient(mongoUri);
 
   try {
     await client.connect();
     const db = client.db('webstore');
-    const ordersCollection = db.collection('orders');
+    const ordersCollection = db.collection<Order>('orders');
 
-    let orders: Order[];
+    const orders = await ordersCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    if (id) {
-      const order = await ordersCollection.findOne({ _id: new ObjectId(id) });
-      orders = order ? [order as Order] : [];
-    } else {
-      const fetchedOrders = await ordersCollection.find().sort({ createdAt: -1 }).toArray();
-      
-      orders = fetchedOrders.filter((order): order is Order => {
-        return (
-          typeof order.sessionId === 'string' &&
-          typeof order.amount === 'number' &&
-          typeof order.currency === 'string' &&
-          typeof order.status === 'string' &&
-          order.createdAt instanceof Date
-        );
-      });
-    }
-
-    return NextResponse.json(orders);
+    return NextResponse.json(
+      orders.map((order) => ({
+        ...order,
+        shippingDetails: order.shippingDetails || 'No shipping details available',
+        billingDetails: order.billingDetails || 'No billing details available',
+        stripeDetails: order.stripeDetails || 'No Stripe details available',
+      }))
+    );
   } catch (error) {
     console.error('Failed to fetch orders:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
@@ -142,79 +128,3 @@ export async function GET(request: Request) {
     await client.close();
   }
 }
-
-export async function POST(request: Request) {
-  const client = new MongoClient(mongoUri);
-
-  try {
-    await client.connect();
-    const db = client.db('webstore');
-    const ordersCollection = db.collection('orders');
-    const pushTokensCollection = db.collection('push_tokens');
-
-    const newOrder = await request.json();
-    const result = await ordersCollection.insertOne(newOrder);
-
-    // Fetch all registered push tokens
-    const pushTokens = await pushTokensCollection.find({}).toArray();
-
-    // Send push notifications
-    for (const { token } of pushTokens) {
-      if (!Expo.isExpoPushToken(token)) {
-        console.error(`Push token ${token} is not a valid Expo push token`);
-        continue;
-      }
-
-      const message = {
-        to: token,
-        sound: 'default',
-        title: 'New Order Received',
-        body: `Order ID: ${result.insertedId}`,
-        data: { orderId: result.insertedId.toString() },
-      };
-
-      try {
-        await expo.sendPushNotificationsAsync([message]);
-      } catch (error) {
-        console.error('Error sending push notification:', error);
-      }
-    }
-
-    return NextResponse.json({ success: true, orderId: result.insertedId }, { status: 201 });
-  } catch (error) {
-    console.error('Failed to create order:', error);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
-  } finally {
-    await client.close();
-  }
-}
-
-export async function PUT(request: Request) {
-  const client = new MongoClient(mongoUri);
-
-  try {
-    await client.connect();
-    const db = client.db('webstore');
-    const pushTokensCollection = db.collection('push_tokens');
-
-    const { token } = await request.json();
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 400 });
-    }
-
-    await pushTokensCollection.updateOne(
-      { token },
-      { $set: { token, updatedAt: new Date() } },
-      { upsert: true }
-    );
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error('Failed to register push token:', error);
-    return NextResponse.json({ error: 'Failed to register push token' }, { status: 500 });
-  } finally {
-    await client.close();
-  }
-}
-
