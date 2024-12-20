@@ -188,12 +188,14 @@ export async function POST(request: Request) {
     let notificationBody = '';
     if (newOrder.items && newOrder.items.length > 0) {
       const firstItem = newOrder.items[0];
-      notificationBody = `${firstItem.n} - €${firstItem.p.toFixed(2)}`;
-      
-      if (newOrder.items.length === 2) {
-        notificationBody += ` + 1 other`;
-      } else if (newOrder.items.length > 2) {
-        notificationBody += ` + ${newOrder.items.length - 1} others`;
+      const total = newOrder.amount + (newOrder.shippingType === 'express' ? 10 : 5); // Assuming express shipping is €10 and standard is €5
+
+      if (newOrder.items.length === 1) {
+        notificationBody = `${firstItem.n} - Totaling €${total.toFixed(2)}`;
+      } else if (newOrder.items.length === 2) {
+        notificationBody = `${firstItem.n} + 1 other - Totaling €${total.toFixed(2)}`;
+      } else {
+        notificationBody = `${firstItem.n} + ${newOrder.items.length - 1} others - Totaling €${total.toFixed(2)}`;
       }
     }
 

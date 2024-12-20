@@ -373,10 +373,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 8,
-    marginTop: 15,
+    marginTop: 30, 
+    marginBottom: 5, 
   },
   expressShipping: {
-    backgroundColor: '#E6F7FF', // A light blue color for express shipping
+    backgroundColor: '#E6F7FF', 
   },
   orderHeader: {
     flexDirection: 'row',
@@ -494,6 +495,7 @@ const styles = StyleSheet.create({
   },
   orderList: {
     paddingHorizontal: 10,
+    paddingTop: 5, 
   },
   errorText: {
     color: 'red',
@@ -513,13 +515,15 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ddd',
     marginVertical: 15,
-    width: '100%',
+    width: '95%',
+    alignSelf: 'center', 
   },
   separatorBelowShipping: {
     height: 1, 
     backgroundColor: '#000',
     marginVertical: 15,
-    width: '100%',
+    width: '100%', 
+    alignSelf: 'center', 
   },
   totalContainer: {
     alignItems: 'flex-end',
