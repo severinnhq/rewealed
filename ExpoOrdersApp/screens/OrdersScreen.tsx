@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl, Image, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent, StatusBar, ActivityIndicator, Vibration } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl, Image, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent, StatusBar, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, OrdersScreenProps } from '../types/navigation';
 import { format } from 'date-fns';
+import * as Haptics from 'expo-haptics';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -111,9 +112,9 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
     fetchOrders();
   }, []);
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
-    Vibration.vibrate([0, 25], false); // Updated vibration
     fetchOrders();
   };
 
@@ -371,8 +372,8 @@ const styles = StyleSheet.create({
   orderItem: {
     backgroundColor: '#ffffff',
     padding: 20,
-    marginBottom: 15,
     borderRadius: 8,
+    marginTop: 15,
   },
   expressShipping: {
     backgroundColor: '#E6F7FF', // A light blue color for express shipping
@@ -381,16 +382,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
-  },
-  orderDate: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#555',
+    marginBottom: 16,
   },
   orderContent: {
     paddingTop: 12,
-    marginBottom: 20,
   },
   productItem: {
     flexDirection: 'row',
@@ -498,7 +493,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   orderList: {
-    padding: 10,
+    paddingHorizontal: 10,
   },
   errorText: {
     color: 'red',
@@ -529,6 +524,11 @@ const styles = StyleSheet.create({
   totalContainer: {
     alignItems: 'flex-end',
     marginBottom: 15,
+  },
+  orderDate: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#555',
   },
 });
 
