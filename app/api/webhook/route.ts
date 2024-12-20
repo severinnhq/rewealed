@@ -162,10 +162,16 @@ async function sendPushNotification(order: Order) {
 
   const pushTokens = await pushTokensCollection.find({}).toArray()
 
-  // Get the first item from the order (assuming there's at least one item)
-  const firstItem = order.items[0]
-  const productName = firstItem ? firstItem.n : 'Unknown product'
-  const productPrice = firstItem ? firstItem.p : 0
+  // Prepare notification body
+  let notificationBody = ''
+  if (order.items && order.items.length > 0) {
+    const firstItem = order.items[0]
+    notificationBody = `${firstItem.n} - €${firstItem.p.toFixed(2)}`
+    
+    if (order.items.length > 1) {
+      notificationBody += ` + ${order.items.length - 1} others`
+    }
+  }
 
   for (const { token } of pushTokens) {
     if (!Expo.isExpoPushToken(token)) {
@@ -176,12 +182,11 @@ async function sendPushNotification(order: Order) {
     const message = {
       to: token,
       sound: 'default',
-      title: 'New Order Received',
-      body: `Product: ${productName}, Price: $${productPrice.toFixed(2)}`,
+      title: 'REWEALED',
+      body: notificationBody,
       data: { 
         orderId: order._id ? order._id.toString() : 'Unknown',
-        productName,
-        productPrice
+        items: order.items
       },
     }
 

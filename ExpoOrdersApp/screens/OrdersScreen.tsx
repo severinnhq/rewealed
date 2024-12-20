@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl, Image, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl, Image, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent, StatusBar, ActivityIndicator, Vibration } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, OrdersScreenProps } from '../types/navigation';
@@ -113,6 +113,7 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
 
   const onRefresh = () => {
     setRefreshing(true);
+    Vibration.vibrate([0, 25], false); // Updated vibration
     fetchOrders();
   };
 
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   itemsSummary: {
-    backgroundColor: '#f0f0f0', 
+    backgroundColor: '#ffffff', 
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
