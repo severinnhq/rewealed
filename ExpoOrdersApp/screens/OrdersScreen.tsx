@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl, Image, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, RefreshControl, Image, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent, StatusBar, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, OrdersScreenProps } from '../types/navigation';
@@ -16,6 +16,24 @@ interface Order {
   createdAt: string;
   shippingType?: string;
   fulfilled?: boolean;
+  items: Array<{
+    n: string;
+    s: string;
+    q: number;
+    p: number;
+  }>;
+  shippingDetails: {
+    name: string;
+    address: {
+      line1: string;
+      line2: string | null;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+  };
+  shippingCost?: number;
 }
 
 interface CarComparison {
@@ -26,7 +44,7 @@ interface CarComparison {
 
 const API_URL = 'https://rewealed.com/api/orders';
 const CORVETTE_PRICE_EUR = 120000;
-const MASERATI_PRICE_EUR = 118421; // Converted from 45,000,000 HUF
+const MASERATI_PRICE_EUR = 118421;
 const LAMBORGHINI_PRICE_EUR = 200000;
 
 const carComparisons: CarComparison[] = [
@@ -42,7 +60,7 @@ function simpleHash(str: string): string {
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
   return Math.abs(hash).toString(16);
 }
@@ -59,16 +77,10 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-
-      // First, get the challenge
       const challengeResponse = await fetch(`${API_URL}?`);
       const challengeData = await challengeResponse.json();
       const challenge = challengeData.challenge;
-
-      // Generate the response
       const response = simpleHash(challenge + 'rewealed_secret');
-
-      // Now fetch the orders with the challenge-response
       const ordersResponse = await fetch(`${API_URL}?challenge=${challenge}&response=${response}`);
 
       if (!ordersResponse.ok) {
@@ -78,10 +90,8 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
       const data = await ordersResponse.json();
       setOrders(data);
       
-      // Calculate total amount in EUR
       const total = data.reduce((sum: number, order: Order) => {
-        // Assuming all amounts are in USD, convert to EUR
-        return sum + (order.amount * 0.85); // Using a fixed exchange rate for simplicity
+        return sum + (order.amount * 0.85);
       }, 0);
       setTotalAmountEUR(total);
       
@@ -109,29 +119,78 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
   const formatCreatedDate = (dateString: string): string => {
     try {
       const date = new Date(dateString);
-      return format(date, "yyyy-MM-dd HH:mm:ss");
+      return format(date, "MMM d, yyyy 'at' HH:mm:ss");
     } catch (error) {
       console.error('Error formatting date:', error);
       return dateString;
     }
   };
 
-  const renderOrderItem = ({ item }: { item: Order }) => (
-    <TouchableOpacity
-      style={[
-        styles.orderItem,
-        item.shippingType?.toLowerCase().includes('express') && styles.expressShipping
-      ]}
-      onPress={() => navigation.navigate('OrderDetail', { orderId: item._id })}
-    >
-      <Text style={styles.orderTitle}>Order ID: {item.sessionId}</Text>
-      <Text>Amount: €{(item.amount * 0.85).toFixed(2)} EUR</Text>
-      <Text>Status: {item.status}</Text>
-      <Text>Created: {formatCreatedDate(item.createdAt)}</Text>
-      {item.shippingType && <Text>Shipping: {item.shippingType}</Text>}
-      {item.fulfilled !== undefined && <Text>Fulfilled: {item.fulfilled ? 'Yes' : 'No'}</Text>}
-    </TouchableOpacity>
-  );
+  const renderOrderItem = ({ item }: { item: Order }) => {
+    const subtotal = item.items.reduce((sum, product) => sum + product.p * product.q, 0);
+    const isStandardShippingFree = subtotal >= 100;
+    const shippingCost = item.shippingType?.toLowerCase().includes('express') ? 10 : (isStandardShippingFree ? 0 : 5);
+    const isExpressShipping = item.shippingType?.toLowerCase().includes('express');
+    const total = subtotal + shippingCost;
+
+    return (
+      <TouchableOpacity
+        style={[styles.orderItem, isExpressShipping && styles.expressShipping]}
+        onPress={() => {
+          console.log('Navigating to OrderDetail with ID:', item._id);
+          navigation.navigate('OrderDetail', { orderId: item._id });
+        }}
+      >
+        <View style={styles.orderHeader}>
+          <Text style={styles.orderDate}>{formatCreatedDate(item.createdAt)}</Text>
+          <View style={styles.itemsSummary}>
+            <Text style={styles.itemsSummaryText}>
+              {item.items.reduce((total, product) => total + product.q, 0)} items
+            </Text>
+          </View>
+        </View>
+        <View style={styles.orderContent}>
+          {item.items.map((product, index) => (
+            <View key={index} style={styles.productItem}>
+              <View style={styles.productInfo}>
+                <Text style={styles.productName}>{product.n} - {product.s}</Text>
+                <Text style={styles.productQuantity}>Qty: {product.q}</Text>
+              </View>
+              <View style={styles.productPricing}>
+                <Text style={styles.productPrice}>€{(product.p * product.q).toFixed(2)}</Text>
+                {product.q > 1 && (
+                  <Text style={styles.productUnitPrice}>(€{product.p.toFixed(2)} each)</Text>
+                )}
+              </View>
+            </View>
+          ))}
+        </View>
+        <View style={styles.separatorAboveShipping} />
+        <View style={styles.shippingInfo}>
+          <Text style={styles.shippingType}>
+            {item.shippingType || 'Standard'}:
+          </Text>
+          <Text style={styles.shippingCost}>
+            {shippingCost === 0 ? 'Free' : `€${shippingCost.toFixed(2)}`}
+          </Text>
+        </View>
+        <View style={styles.separatorBelowShipping} />
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalAmount}>
+            Total: €{total.toFixed(2)}
+          </Text>
+        </View>
+        <View style={styles.shippingDetails}>
+          <Text style={styles.sectionTitle}>Shipping Details</Text>
+          <Text style={styles.text}>{item.shippingDetails.name}</Text>
+          <Text style={styles.text}>{item.shippingDetails.address.line1}</Text>
+          {item.shippingDetails.address.line2 && <Text style={styles.text}>{item.shippingDetails.address.line2}</Text>}
+          <Text style={styles.text}>{item.shippingDetails.address.city}, {item.shippingDetails.address.state} {item.shippingDetails.address.postal_code}</Text>
+          <Text style={styles.text}>{item.shippingDetails.address.country}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderComparison = (car: CarComparison, index: number) => {
     const progressPercentage = (totalAmountEUR / car.price) * 100;
@@ -140,7 +199,7 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
       <View key={index} style={styles.comparisonContainer}>
         <Image 
           source={car.image}
-          style={car.name === 'Lamborghini' ? styles.lamboImage : styles.carImage} 
+          style={[styles.carImage, car.name === 'Lamborghini' && styles.lamboImage]}
           resizeMode="contain"
         />
         <View style={styles.progressContainer}>
@@ -171,8 +230,10 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.centered}>
-        <Text>Loading orders...</Text>
+      <View style={styles.container}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#999999" />
+        </View>
       </View>
     );
   }
@@ -180,7 +241,7 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text>{error}</Text>
+        <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={fetchOrders}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
@@ -219,6 +280,7 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
           data={orders}
           renderItem={renderOrderItem}
           keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.orderList}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -234,6 +296,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f0f0',
+    paddingTop: StatusBar.currentHeight,
   },
   comparisonContainer: {
     flexDirection: 'column',
@@ -256,6 +319,7 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     width: '100%',
+    paddingHorizontal: 20,
   },
   totalText: {
     fontSize: 16,
@@ -276,27 +340,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     width: '80%',
     alignSelf: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#050120',
+    backgroundColor: '#000', // Black color
     borderRadius: 6,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-    elevation: 3,
   },
   progressRatioText: {
     fontSize: 11,
@@ -308,10 +356,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     backgroundColor: '#ffffff',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
   },
   paginationDot: {
     width: 8,
@@ -325,17 +369,108 @@ const styles = StyleSheet.create({
   },
   orderItem: {
     backgroundColor: '#ffffff',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 5,
+    padding: 20,
+    marginBottom: 15,
+    borderRadius: 8,
   },
   expressShipping: {
-    backgroundColor: '#fff9c4',
+    backgroundColor: '#E6F7FF', // A light blue color for express shipping
   },
-  orderTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  orderDate: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#555',
+  },
+  orderContent: {
+    paddingTop: 12,
+    marginBottom: 20,
+  },
+  productItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productPricing: {
+    alignItems: 'flex-end',
+  },
+  productName: {
+    fontSize: 14,
+  },
+  productQuantity: {
+    fontSize: 12,
+    color: '#555',
+  },
+  productPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  productUnitPrice: {
+    fontSize: 12,
+    color: '#555',
+  },
+  shippingDetails: {
+    marginTop: 10,
+  },
+  shippingAddressTitle: {
+    fontSize: 14,
+    fontWeight: '600',
     marginBottom: 5,
+  },
+  shippingAddressText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  orderFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  shippingInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+  },
+  shippingType: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  shippingCost: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  itemsSummary: {
+    backgroundColor: '#f0f0f0', 
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1, 
+    shadowRadius: 2.62,
+    elevation: 2, 
+  },
+  itemsSummaryText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  totalAmount: {
+    fontSize: 18,
+    fontWeight: '700',
   },
   centered: {
     flex: 1,
@@ -360,6 +495,39 @@ const styles = StyleSheet.create({
   comparisonWrapper: {
     position: 'relative',
     backgroundColor: '#ffffff',
+  },
+  orderList: {
+    padding: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  text: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  separatorAboveShipping: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 15,
+    width: '100%',
+  },
+  separatorBelowShipping: {
+    height: 1, 
+    backgroundColor: '#000',
+    marginVertical: 15,
+    width: '100%',
+  },
+  totalContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 15,
   },
 });
 

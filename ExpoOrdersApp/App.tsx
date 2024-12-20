@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Platform, Alert } from 'react-native';
+import { View, Text, Platform, Alert, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Updates from 'expo-updates';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OrdersScreen from './screens/OrdersScreen';
 import OrderDetailScreen from './screens/OrderDetailScreen';
 
@@ -72,13 +73,28 @@ export default function App() {
 
     const notificationListener = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
-      Alert.alert('New Order', 'You have received a new order!');
+      const data = notification.request.content.data;
+      const productName = data.productName;
+      const price = data.price;
+      const otherItems = data.otherItems;
+
+      let message = `New order: ${productName} - ${price}`;
+      if (otherItems > 0) {
+        message += ` + ${otherItems} other${otherItems === 1 ? '' : 's'}`;
+      }
+
+      Alert.alert('New Order', message);
     });
 
     const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification response received:', response);
-      // Navigate to the Orders screen or specific order detail
-      // You might need to implement this navigation logic
+      const orderId = response.notification.request.content.data.orderId;
+      if (orderId) {
+        // Navigate to the specific order detail
+        // You might need to implement this navigation logic
+        // For example:
+        // navigation.navigate('OrderDetail', { orderId });
+      }
     });
 
     checkForUpdates();
@@ -109,13 +125,30 @@ export default function App() {
     try {
       const update = await Updates.checkForUpdateAsync();
       if (update.isAvailable) {
-        setIsUpdating(true);
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync();
+        Alert.alert(
+          'Update Available',
+          'A new version is available. Would you like to update now?',
+          [
+            { text: 'Later', style: 'cancel' },
+            { 
+              text: 'Update', 
+              onPress: async () => {
+                setIsUpdating(true);
+                try {
+                  await Updates.fetchUpdateAsync();
+                  await Updates.reloadAsync();
+                } catch (error) {
+                  console.error('Error updating app:', error);
+                  setIsUpdating(false);
+                  Alert.alert('Update Failed', 'Please try again later.');
+                }
+              }
+            }
+          ]
+        );
       }
     } catch (error) {
       console.error('Error checking for updates:', error);
-      setIsUpdating(false);
     }
   }
 
@@ -128,12 +161,23 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Orders" component={OrdersScreen} />
-        <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <StatusBar barStyle="dark-content" backgroundColor="#f0f0f0" />
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen 
+            name="Orders" 
+            component={OrdersScreen}
+            options={{ title: 'Orders' }}
+          />
+          <Stack.Screen 
+            name="OrderDetail" 
+            component={OrderDetailScreen}
+            options={{ title: 'Order Details' }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 

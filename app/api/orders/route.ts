@@ -184,6 +184,17 @@ export async function POST(request: Request) {
     // Fetch all registered push tokens
     const pushTokens = await pushTokensCollection.find({}).toArray();
 
+    // Prepare notification body
+    let notificationBody = '';
+    if (newOrder.items && newOrder.items.length > 0) {
+      const firstItem = newOrder.items[0];
+      notificationBody = `${firstItem.n} - €${firstItem.p.toFixed(2)}`;
+      
+      if (newOrder.items.length > 1) {
+        notificationBody += ` + ${newOrder.items.length - 1} others`;
+      }
+    }
+
     // Send push notifications
     for (const { token } of pushTokens) {
       if (!Expo.isExpoPushToken(token)) {
@@ -194,8 +205,8 @@ export async function POST(request: Request) {
       const message = {
         to: token,
         sound: 'default',
-        title: 'New Order Received',
-        body: `Order ID: ${result.insertedId}`,
+        title: 'REWEALED',
+        body: notificationBody,
         data: { orderId: result.insertedId.toString() },
       };
 
