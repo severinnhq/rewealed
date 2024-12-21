@@ -186,7 +186,7 @@ async function sendPushNotification(order: Order) {
     const message = {
       to: token,
       sound: 'default',
-      title: 'New Order Received',
+      title: 'REWEALED',
       body: notificationBody,
       data: { 
         orderId: order._id ? order._id.toString() : 'Unknown',

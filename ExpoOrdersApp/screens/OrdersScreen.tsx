@@ -373,8 +373,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 8,
-    marginTop: 30, 
-    marginBottom: 5, 
+    marginTop: 30,
+    marginBottom: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
   },
   expressShipping: {
     backgroundColor: '#E6F7FF', 
@@ -451,14 +459,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1, 
-    shadowRadius: 2.62,
-    elevation: 2, 
   },
   itemsSummaryText: {
     fontSize: 12,

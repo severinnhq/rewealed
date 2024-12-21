@@ -62,10 +62,10 @@ interface OrderDetailScreenProps {
 
 const getRiskColor = (riskScore: number | null): string => {
   if (riskScore === null) return '#666';
-  if (riskScore < 25) return '#4caf50'; // Low risk - Green
-  if (riskScore < 50) return '#ff9800'; // Medium risk - Orange
-  if (riskScore < 75) return '#f44336'; // High risk - Red
-  return '#9c27b0'; // Very high risk - Purple
+  if (riskScore <= 4) return '#4caf50'; // 0-4: Green
+  if (riskScore <= 64) return '#d4af37'; // 5-64: Mustard yellow
+  if (riskScore <= 74) return '#f57c00'; // 65-74: Darker orange
+  return '#f44336'; // 75 or above: Red
 };
 
 function simpleHash(str: string): string {
