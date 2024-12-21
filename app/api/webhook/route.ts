@@ -1,261 +1,212 @@
-import { NextResponse } from 'next/server';
-import { MongoClient, ObjectId } from 'mongodb';
-import { Expo } from 'expo-server-sdk';
+import { NextRequest, NextResponse } from 'next/server'
+import Stripe from 'stripe'
+import { MongoClient, ObjectId } from 'mongodb'
+import { Expo } from 'expo-server-sdk'
 
-const mongoUri = process.env.MONGODB_URI!;
-const expo = new Expo();
+interface StripeDetails {
+  paymentId: string;
+  customerId: string | null;
+  paymentMethodId: string | null;
+  paymentMethodFingerprint: string | null | undefined;
+  riskScore: number | null | undefined;
+  riskLevel: string | null | undefined;
+}
+
+interface OrderItem {
+  n: string; // name
+  s: string; // size
+  q: number; // quantity
+  p: number; // price
+}
 
 interface Order {
-  _id: ObjectId;
+  _id?: ObjectId;
   sessionId: string;
+  customerId: string | Stripe.Customer | Stripe.DeletedCustomer | null;
   amount: number;
-  currency: string;
-  status: string;
-  items?: Array<{
-    n: string;
-    s: string;
-    q: number;
-    p: number;
-  }>;
-  shippingDetails?: {
-    name: string;
-    address: {
-      line1: string;
-      line2: string | null;
-      city: string;
-      state: string;
-      postal_code: string;
-      country: string;
-    };
-  };
-  billingDetails?: {
-    name: string;
-    address: {
-      line1: string;
-      line2: string | null;
-      city: string;
-      state: string;
-      postal_code: string;
-      country: string;
-    };
-  };
+  currency: string | null;
+  status: Stripe.Checkout.Session.PaymentStatus;
+  items: OrderItem[];
+  shippingDetails: Stripe.Checkout.Session.ShippingDetails | null;
+  billingDetails: Stripe.Charge.BillingDetails | null;
+  shippingType: string;
+  stripeDetails: StripeDetails | null;
   createdAt: Date;
-  shippingType?: string;
-  stripeDetails?: {
-    paymentId: string;
-    customerId: string | null;
-    paymentMethodId: string | null;
-    paymentMethodFingerprint: string | null;
-    riskScore: number | null;
-    riskLevel: string | null;
-  };
-  fulfilled?: boolean;
 }
 
-function generateChallenge(): string {
-  return Math.random().toString(36).substring(2, 15);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-12-18.acacia',
+})
+
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const mongoUri = process.env.MONGODB_URI!
+
+let cachedClient: MongoClient | null = null
+const expo = new Expo()
+
+async function connectToDatabase() {
+  if (cachedClient) {
+    return cachedClient
+  }
+
+  const client = new MongoClient(mongoUri)
+  await client.connect()
+  cachedClient = client
+  return client
 }
 
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(16);
-}
+export async function POST(req: NextRequest) {
+  const buf = await req.arrayBuffer()
+  const rawBody = Buffer.from(buf)
+  const sig = req.headers.get('stripe-signature')!
 
-function verifyResponse(challenge: string, response: string): boolean {
-  const expectedResponse = simpleHash(challenge + 'rewealed_secret');
-  return response === expectedResponse;
-}
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const challenge = searchParams.get('challenge');
-  const response = searchParams.get('response');
-  const acceptHeader = request.headers.get('accept');
-
-  // If the request is from a browser (HTML), serve the HTML page
-  if (acceptHeader && acceptHeader.includes('text/html')) {
-    return new NextResponse(
-      `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>404 - Page Not Found</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-          .bg-404::before {
-            content: '404';
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20vw;
-            font-weight: bold;
-            opacity: 0.1;
-            z-index: -1;
-          }
-        </style>
-      </head>
-      <body class="bg-white flex items-center justify-center min-h-screen bg-404">
-        <a href="/" class="text-2xl bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded transition duration-300 ease-in-out z-10">
-          Continue Shopping
-        </a>
-      </body>
-      </html>
-      `,
-      {
-        headers: { 'Content-Type': 'text/html' },
-        status: 404,
-      }
-    );
-  }
-
-  // Handle the challenge-response for API requests
-  if (!challenge && !response) {
-    const newChallenge = generateChallenge();
-    return NextResponse.json({ challenge: newChallenge }, { status: 200 });
-  }
-
-  if (!challenge || !response || !verifyResponse(challenge, response)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = searchParams.get('id');
-
-  const client = new MongoClient(mongoUri);
+  let event: Stripe.Event
 
   try {
-    await client.connect();
-    const db = client.db('webstore');
-    const ordersCollection = db.collection('orders');
+    event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret)
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err)
+    return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 })
+  }
 
-    let orders: Order[];
-
-    if (id) {
-      const order = await ordersCollection.findOne({ _id: new ObjectId(id) });
-      orders = order ? [order as Order] : [];
-    } else {
-      const fetchedOrders = await ordersCollection.find().sort({ createdAt: -1 }).toArray();
-      
-      orders = fetchedOrders.filter((order): order is Order => {
-        return (
-          typeof order.sessionId === 'string' &&
-          typeof order.amount === 'number' &&
-          typeof order.currency === 'string' &&
-          typeof order.status === 'string' &&
-          order.createdAt instanceof Date &&
-          (!order.items || Array.isArray(order.items)) &&
-          (!order.shippingDetails || typeof order.shippingDetails === 'object') &&
-          (!order.billingDetails || typeof order.billingDetails === 'object') &&
-          (!order.shippingType || typeof order.shippingType === 'string') &&
-          (!order.stripeDetails || typeof order.stripeDetails === 'object') &&
-          (typeof order.fulfilled === 'undefined' || typeof order.fulfilled === 'boolean')
-        );
-      });
+  // Handle the event
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object as Stripe.Checkout.Session
+        const order = await saveOrder(session)
+        if (order) {
+          await sendPushNotification(order)
+        }
+        break
+      // ... other event handlers ...
     }
+  } catch (err) {
+    console.error('Error processing webhook event:', err)
+    return NextResponse.json({ error: 'Error processing webhook event' }, { status: 500 })
+  }
 
-    return NextResponse.json(orders);
-  } catch (error) {
-    console.error('Failed to fetch orders:', error);
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
-  } finally {
-    await client.close();
+  return NextResponse.json({ received: true })
+}
+
+async function saveOrder(session: Stripe.Checkout.Session): Promise<Order> {
+  console.log('Saving order:', session.id)
+
+  const client = await connectToDatabase()
+  const db = client.db('webstore')
+  const ordersCollection = db.collection('orders')
+
+  let shippingType = 'Unknown'
+  if (session.shipping_cost && typeof session.shipping_cost.shipping_rate === 'string') {
+    try {
+      const shippingRateId = session.shipping_cost.shipping_rate
+      const shippingRateDetails = await stripe.shippingRates.retrieve(shippingRateId)
+      shippingType = shippingRateDetails.display_name || 'Unknown'
+    } catch (error) {
+      console.error('Error retrieving shipping rate details:', error)
+    }
+  }
+
+  // Retrieve billing details and additional Stripe data
+  let billingDetails: Stripe.Charge.BillingDetails | null = null
+  let stripeDetails: StripeDetails | null = null
+  if (session.payment_intent && typeof session.payment_intent === 'string') {
+    try {
+      const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent, {
+        expand: ['latest_charge', 'payment_method', 'customer']
+      })
+      if (paymentIntent.latest_charge && typeof paymentIntent.latest_charge !== 'string') {
+        billingDetails = paymentIntent.latest_charge.billing_details
+      }
+      stripeDetails = {
+        paymentId: paymentIntent.id,
+        customerId: paymentIntent.customer && typeof paymentIntent.customer === 'object' ? paymentIntent.customer.id : null,
+        paymentMethodId: paymentIntent.payment_method && typeof paymentIntent.payment_method === 'object' ? paymentIntent.payment_method.id : null,
+        paymentMethodFingerprint: paymentIntent.payment_method && typeof paymentIntent.payment_method === 'object' && paymentIntent.payment_method.card ? paymentIntent.payment_method.card.fingerprint : null,
+        riskScore: paymentIntent.latest_charge && typeof paymentIntent.latest_charge === 'object' && paymentIntent.latest_charge.outcome ? paymentIntent.latest_charge.outcome.risk_score : null,
+        riskLevel: paymentIntent.latest_charge && typeof paymentIntent.latest_charge === 'object' && paymentIntent.latest_charge.outcome ? paymentIntent.latest_charge.outcome.risk_level : null
+      }
+    } catch (error) {
+      console.error('Error retrieving payment details:', error)
+    }
+  }
+
+  const order: Omit<Order, '_id'> = {
+    sessionId: session.id,
+    customerId: session.customer,
+    amount: session.amount_total != null ? session.amount_total / 100 : 0,
+    currency: session.currency ?? null,
+    status: session.payment_status,
+    items: JSON.parse(session.metadata?.cartItemsSummary || '[]') as OrderItem[],
+    shippingDetails: session.shipping_details ?? null,
+    billingDetails: billingDetails,
+    shippingType: shippingType,
+    stripeDetails: stripeDetails,
+    createdAt: new Date()
+  }
+
+  try {
+    const result = await ordersCollection.insertOne(order)
+    console.log(`Order saved with ID: ${result.insertedId}`)
+    return { ...order, _id: result.insertedId }
+  } catch (err) {
+    console.error('Error saving order to database:', err)
+    throw err
   }
 }
 
-export async function POST(request: Request) {
-  const client = new MongoClient(mongoUri);
+async function sendPushNotification(order: Order) {
+  const client = await connectToDatabase()
+  const db = client.db('webstore')
+  const pushTokensCollection = db.collection('push_tokens')
 
-  try {
-    await client.connect();
-    const db = client.db('webstore');
-    const ordersCollection = db.collection('orders');
-    const pushTokensCollection = db.collection('push_tokens');
+  const pushTokens = await pushTokensCollection.find({}).toArray()
 
-    const newOrder = await request.json();
-    const result = await ordersCollection.insertOne(newOrder);
+  const itemCount = order.items.length
+  let notificationBody = ''
+  let totalAmount = order.amount // This includes shipping
 
-    // Fetch all registered push tokens
-    const pushTokens = await pushTokensCollection.find({}).toArray();
+  if (itemCount === 1) {
+    const item = order.items[0]
+    notificationBody = `${item.n}, totaling $${totalAmount.toFixed(2)}`
+  } else if (itemCount === 2) {
+    const item = order.items[0]
+    notificationBody = `${item.n} +1 other, totaling $${totalAmount.toFixed(2)}`
+  } else {
+    const item = order.items[0]
+    notificationBody = `${item.n} +${itemCount - 1} others, totaling $${totalAmount.toFixed(2)}`
+  }
 
-    // Prepare notification body
-    let notificationBody = '';
-    if (newOrder.items && newOrder.items.length > 0) {
-      const firstItem = newOrder.items[0];
-      const total = newOrder.amount + (newOrder.shippingType === 'express' ? 10 : 5); // Assuming express shipping is €10 and standard is €5
-
-      if (newOrder.items.length === 1) {
-        notificationBody = `${firstItem.n} - Totaling €${total.toFixed(2)}`;
-      } else if (newOrder.items.length === 2) {
-        notificationBody = `${firstItem.n} + 1 other - Totaling €${total.toFixed(2)}`;
-      } else {
-        notificationBody = `${firstItem.n} + ${newOrder.items.length - 1} others - Totaling €${total.toFixed(2)}`;
-      }
+  for (const { token } of pushTokens) {
+    if (!Expo.isExpoPushToken(token)) {
+      console.error(`Push token ${token} is not a valid Expo push token`)
+      continue
     }
 
-    // Send push notifications
-    for (const { token } of pushTokens) {
-      if (!Expo.isExpoPushToken(token)) {
-        console.error(`Push token ${token} is not a valid Expo push token`);
-        continue;
-      }
-
-      const message = {
-        to: token,
-        sound: 'default',
-        title: 'REWEALED',
-        body: notificationBody,
-        data: { orderId: result.insertedId.toString() },
-      };
-
-      try {
-        await expo.sendPushNotificationsAsync([message]);
-      } catch (error) {
-        console.error('Error sending push notification:', error);
-      }
+    const message = {
+      to: token,
+      sound: 'default',
+      title: 'New Order Received',
+      body: notificationBody,
+      data: { 
+        orderId: order._id ? order._id.toString() : 'Unknown',
+        itemCount,
+        totalAmount
+      },
     }
 
-    return NextResponse.json({ success: true, orderId: result.insertedId }, { status: 201 });
-  } catch (error) {
-    console.error('Failed to create order:', error);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
-  } finally {
-    await client.close();
+    try {
+      const ticket = await expo.sendPushNotificationsAsync([message])
+      console.log('Push notification sent:', ticket)
+    } catch (error) {
+      console.error('Error sending push notification:', error)
+    }
   }
 }
 
-export async function PUT(request: Request) {
-  const client = new MongoClient(mongoUri);
-
-  try {
-    await client.connect();
-    const db = client.db('webstore');
-    const pushTokensCollection = db.collection('push_tokens');
-
-    const { token } = await request.json();
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 400 });
-    }
-
-    await pushTokensCollection.updateOne(
-      { token },
-      { $set: { token, updatedAt: new Date() } },
-      { upsert: true }
-    );
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error('Failed to register push token:', error);
-    return NextResponse.json({ error: 'Failed to register push token' }, { status: 500 });
-  } finally {
-    await client.close();
-  }
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 }
 
