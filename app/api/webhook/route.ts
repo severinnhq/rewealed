@@ -162,19 +162,19 @@ async function sendPushNotification(order: Order) {
 
   const pushTokens = await pushTokensCollection.find({}).toArray()
 
-  const itemCount = order.items.length
+  const totalItemCount = order.items.reduce((sum, item) => sum + item.q, 0)
   let notificationBody = ''
   const totalAmount = order.amount // This includes shipping
 
-  if (itemCount === 1) {
+  if (totalItemCount === 1) {
     const item = order.items[0]
     notificationBody = `${item.n}, totaling $${totalAmount.toFixed(2)}`
-  } else if (itemCount === 2) {
+  } else if (totalItemCount === 2) {
     const item = order.items[0]
     notificationBody = `${item.n} +1 other, totaling $${totalAmount.toFixed(2)}`
   } else {
     const item = order.items[0]
-    notificationBody = `${item.n} +${itemCount - 1} others, totaling $${totalAmount.toFixed(2)}`
+    notificationBody = `${item.n} +${totalItemCount - 1} others, totaling $${totalAmount.toFixed(2)}`
   }
 
   for (const { token } of pushTokens) {
@@ -190,7 +190,7 @@ async function sendPushNotification(order: Order) {
       body: notificationBody,
       data: { 
         orderId: order._id ? order._id.toString() : 'Unknown',
-        itemCount,
+        totalItemCount,
         totalAmount
       },
     }
