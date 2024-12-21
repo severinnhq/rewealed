@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, OrdersScreenProps } from '../types/navigation';
 import { format } from 'date-fns';
 import * as Haptics from 'expo-haptics';
+import { OrderFulfillmentCheckbox } from '../components/OrderFulfillmentCheckbox';
 
 type OrdersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Orders'>;
 
@@ -128,6 +129,31 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
     }
   };
 
+  const updateOrderFulfillment = async (orderId: string, fulfilled: boolean) => {
+    try {
+      const response = await fetch('https://rewealed.com/api/update-order-fulfillment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId, fulfilled }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update order fulfillment');
+      }
+
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId ? { ...order, fulfilled } : order
+        )
+      );
+    } catch (error) {
+      console.error('Error updating order fulfillment:', error);
+      Alert.alert('Error', 'Failed to update order fulfillment');
+    }
+  };
+
   const renderOrderItem = ({ item }: { item: Order }) => {
     const subtotal = item.items.reduce((sum, product) => sum + product.p * product.q, 0);
     const isStandardShippingFree = subtotal >= 100;
@@ -144,12 +170,19 @@ export default function OrdersScreen({ navigation }: OrdersScreenProps) {
         }}
       >
         <View style={styles.orderHeader}>
-          <Text style={styles.orderDate}>{formatCreatedDate(item.createdAt)}</Text>
-          <View style={styles.itemsSummary}>
-            <Text style={styles.itemsSummaryText}>
-              {item.items.reduce((total, product) => total + product.q, 0)} items
-            </Text>
+          <View style={styles.orderHeaderLeft}>
+            <View style={styles.itemsBadge}>
+              <Text style={styles.itemsBadgeText}>
+                {item.items.reduce((total, product) => total + product.q, 0)} items
+              </Text>
+            </View>
+            <Text style={styles.orderDate}>{formatCreatedDate(item.createdAt)}</Text>
           </View>
+          <OrderFulfillmentCheckbox
+            orderId={item._id}
+            initialFulfilled={item.fulfilled || false}
+            onToggle={updateOrderFulfillment}
+          />
         </View>
         <View style={styles.orderContent}>
           {item.items.map((product, index) => (
@@ -314,7 +347,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   lamboImage: {
-    width: '140%',
+    width:'140%',
     height: 120,
     marginLeft: 0,
     marginBottom: 8,
@@ -345,7 +378,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#000', // Black color
+    backgroundColor: '#000', 
     borderRadius: 6,
   },
   progressRatioText: {
@@ -390,8 +423,32 @@ const styles = StyleSheet.create({
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 16,
+  },
+  orderHeaderLeft: {
+    flexDirection: 'column',
+  },
+  itemsBadge: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  itemsBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000000',
   },
   orderContent: {
     paddingTop: 12,

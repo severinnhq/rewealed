@@ -49,18 +49,19 @@ const ContactComponent: React.FC = () => {
   return (
     <section className={`bg-white px-4 mb-[4rem] md:mb-[8rem] ${sora.className}`}>
       <div className="max-w-6xl mx-auto px-4">
-      <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">STILL HAVE ANY QUESTIONS?</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">STILL HAVE ANY QUESTIONS?</h1>
         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-20">
           {/* Image Section */}
           <div className="w-full lg:w-1/2 flex justify-center lg:justify-start">
-            <div className="w-full max-w-[300px] md:max-w-[400px] aspect-square relative overflow-hidden">
+            <div className="w-full max-w-[300px] md:max-w-[400px] aspect-square relative overflow-hidden select-none touch-none">
               <Image
                 src="/uploads/contact.png"
                 alt="Contact Image"
                 layout="fill"
                 objectFit="cover"
-                className="rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%]"
-                draggable="false"
+                className="rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%] pointer-events-none"
+                draggable={false}
+                unoptimized={true}
               />
             </div>
           </div>

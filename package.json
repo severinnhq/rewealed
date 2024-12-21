@@ -44,6 +44,7 @@
     "expo-updates": "~0.26.10",
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.462.0",
+    "lucide-react-native": "^0.469.0",
     "mongodb": "^6.11.0",
     "next": "^15.1.0",
     "next-auth": "^4.24.10",

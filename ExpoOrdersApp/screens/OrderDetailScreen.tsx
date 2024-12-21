@@ -468,11 +468,11 @@ const styles = StyleSheet.create({
   },
   shippingLabelSmall: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   shippingAmountSmall: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   riskScoreCircle: {
     width: 40,
