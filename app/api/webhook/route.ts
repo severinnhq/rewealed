@@ -164,7 +164,7 @@ async function sendPushNotification(order: Order) {
 
   const itemCount = order.items.length
   let notificationBody = ''
-  let totalAmount = order.amount // This includes shipping
+  const totalAmount = order.amount // This includes shipping
 
   if (itemCount === 1) {
     const item = order.items[0]
