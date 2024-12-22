@@ -18,7 +18,14 @@ const ReviewSection = () => {
     if (isExpanded) {
       setIsScrolling(true);
       setIsExpanded(false);
-      higherScrollTargetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const targetElement = higherScrollTargetRef.current;
+      if (targetElement) {
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - 100; // Scroll 100px higher
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
       setTimeout(() => {
         setIsScrolling(false);
       }, 1000); // Adjust this timeout to match your scroll and animation duration

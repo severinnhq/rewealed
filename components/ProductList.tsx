@@ -219,7 +219,7 @@ export default function ProductList() {
     >
       <div className="relative aspect-square overflow-hidden">
         {product.salePrice && (
-          <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-20">
+          <div className="absolute top-2 left-2 bg-[#be2323] text-white text-xs font-bold px-3 py-1.5 rounded-lg z-20">
             SALE
           </div>
         )}
@@ -325,7 +325,7 @@ export default function ProductList() {
                   e.stopPropagation()
                   handleAddToCart(product)
                 }}
-                className="bg-black text-white hover:bg-gray-800 text-sm sm:text-base lg:text-lg py-2 px-3 sm:py-2 sm:px-4 lg:py-3 lg:px-5"
+                className="bg-black text-white hover:bg-gray-800 text-sm py-2 px-4 w-full"
               >
                 <span className="font-bold">+ Add to Cart</span>
               </Button>
@@ -336,9 +336,9 @@ export default function ProductList() {
                   e.stopPropagation()
                   handleAddToCart(product)
                 }}
-                className="bg-white text-black hover:bg-gray-100 p-3 rounded-full"
+                className="bg-white text-black hover:bg-gray-100 p-2 rounded-full w-10 h-10 flex items-center justify-center"
               >
-                <ShoppingCart size={24} className="sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
+                <ShoppingCart size={20} />
               </Button>
             </div>
           </>
@@ -354,7 +354,7 @@ export default function ProductList() {
               </span>
             ) : product.salePrice ? (
               <>
-                <span className="text-base sm:text-lg lg:text-xl font-bold text-red-600">
+                <span className="text-base sm:text-lg lg:text-xl font-bold text-[#be2323]">
                   €{product.salePrice.toFixed(2)}
                 </span>
                 <span className="text-sm sm:text-base lg:text-lg text-gray-500 line-through ml-2">
@@ -469,4 +469,3 @@ export default function ProductList() {
     </>
   )
 }
-

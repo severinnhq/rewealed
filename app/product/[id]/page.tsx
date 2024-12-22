@@ -231,7 +231,7 @@ export default function ProductPage() {
             <div className="mb-4">
               {product.salePrice ? (
                 <div>
-                  <span className="text-2xl font-bold text-red-600 mr-2">€{product.salePrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-[#be2323] mr-2">€{product.salePrice.toFixed(2)}</span>
                   <span className="text-lg text-gray-500 line-through">€{product.price.toFixed(2)}</span>
                 </div>
               ) : (
@@ -341,7 +341,7 @@ export default function ProductPage() {
                     )}
                   </div>
                 )}
-                <p className="text-red-500 font-semibold mt-4">This product is currently sold out.</p>
+                <p className="text-[#be2323] font-semibold mt-4">This product is currently sold out.</p>
               </div>
             )}
             <div className="mt-6 space-y-4">

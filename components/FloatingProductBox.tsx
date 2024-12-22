@@ -40,7 +40,7 @@ export function FloatingProductBox({ product, selectedSize, quantity, onAddToCar
         <p className="text-sm font-bold">
           {product.salePrice ? (
             <>
-              <span className="text-red-600">€{product.salePrice.toFixed(2)}</span>
+              <span className="text-[#be2323]">€{product.salePrice.toFixed(2)}</span>
               <span className="text-gray-500 line-through ml-2">€{product.price.toFixed(2)}</span>
             </>
           ) : (

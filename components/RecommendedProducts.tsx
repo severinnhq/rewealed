@@ -220,7 +220,7 @@ export default function RecommendedProducts() {
     >
       <div className="relative aspect-square overflow-hidden">
         {product.salePrice && (
-          <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-20">
+          <div className="absolute top-2 left-2 bg-[#be2323] text-white text-xs font-bold px-3 py-1.5 rounded-lg z-20">
             SALE
           </div>
         )}
@@ -314,7 +314,7 @@ export default function RecommendedProducts() {
                   e.stopPropagation()
                   handleAddToCart(product)
                 }}
-                className="bg-black text-white hover:bg-gray-800 text-sm py-1 px-3"
+                className="bg-black text-white hover:bg-gray-800 text-sm py-2 px-4 w-full"
               >
                 <span className="font-bold">+ Add to Cart</span>
               </Button>
@@ -325,7 +325,7 @@ export default function RecommendedProducts() {
                   e.stopPropagation()
                   handleAddToCart(product)
                 }}
-                className="bg-white text-black hover:bg-gray-100 p-2 rounded-full"
+                className="bg-white text-black hover:bg-gray-100 p-2 rounded-full w-10 h-10 flex items-center justify-center"
               >
                 <ShoppingCart size={20} />
               </Button>
@@ -343,7 +343,7 @@ export default function RecommendedProducts() {
               </span>
             ) : product.salePrice ? (
               <>
-                <span className="text-lg font-bold text-red-600">
+                <span className="text-lg font-bold text-[#be2323]">
                   €{product.salePrice.toFixed(2)}
                 </span>
                 <span className="text-sm text-gray-500 line-through ml-2">

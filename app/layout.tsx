@@ -1,3 +1,4 @@
+import { Metadata } from 'next'
 import { Sora } from 'next/font/google'
 import { CountdownProvider } from '@/lib/CountdownContext'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
@@ -10,6 +11,10 @@ const sora = Sora({
   display: 'swap',
   variable: '--font-sora',
 })
+
+export const metadata: Metadata = {
+  title: 'REWEALED | Not For Everyone',
+}
 
 export default function RootLayout({
   children,
