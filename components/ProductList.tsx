@@ -375,11 +375,11 @@ export default function ProductList() {
   const renderSkeletonCard = () => (
     <div className={`rounded-lg overflow-hidden bg-white relative group border-0 transition-all duration-500 ease-in-out cursor-pointer ${sora.className}`}>
       <div className="relative aspect-square overflow-hidden">
-        <Skeleton className="absolute inset-0" />
+        <Skeleton className="absolute inset-0 bg-gray-200 animate-pulse" />
       </div>
       <div className="p-3 sm:p-4 md:p-5 lg:p-6">
-        <Skeleton className="h-6 w-3/4 mb-2" />
-        <Skeleton className="h-4 w-1/4" />
+        <Skeleton className="h-6 w-3/4 mb-2 bg-gray-200 animate-pulse" />
+        <Skeleton className="h-4 w-1/4 bg-gray-200 animate-pulse" />
       </div>
     </div>
   )
@@ -389,6 +389,13 @@ export default function ProductList() {
       <Header onCartClick={() => setIsSidebarOpen(true)} cartItems={cartItems} />
       <div className={`container mx-auto p-4 py-0 mt-[4rem] mb-[2rem] md:mt-[8rem] md:mb-[4rem] ${sora.className}`} ref={containerRef}>
         <h1 className="text-4xl sm:text-5xl font-bold mb-[2rem] md:mb-[4rem] text-center uppercase tracking-wider">FIRST SALE OF THE YEAR</h1>
+        
+        {isLoading && (
+          <div className="text-center mb-6">
+            <p className="text-lg text-gray-600">Loading products...</p>
+          </div>
+        )}
+        
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {isLoading
             ? Array(8).fill(null).map((_, index) => <div key={index}>{renderSkeletonCard()}</div>)
@@ -439,6 +446,19 @@ export default function ProductList() {
 
         .animate-chainReaction {
           animation: chainReaction 0.2s ease-out forwards;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+
+        .animate-pulse {
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
         @media (max-width: 500px) {
