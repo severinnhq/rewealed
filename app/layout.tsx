@@ -2,10 +2,11 @@ import { Metadata } from 'next'
 import { Sora } from 'next/font/google'
 import { CountdownProvider } from '@/lib/CountdownContext'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
+import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 
 // Initialize the Sora font
-const sora = Sora({ 
+const sora = Sora({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
@@ -36,8 +37,8 @@ export default function RootLayout({
         <CountdownProvider>
           <LayoutWrapper>{children}</LayoutWrapper>
         </CountdownProvider>
+        <Analytics />
       </body>
     </html>
   )
 }
-
