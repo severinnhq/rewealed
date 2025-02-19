@@ -10,6 +10,7 @@ interface CustomModalProps {
 }
 
 
+
 const CustomModal: React.FC<CustomModalProps> = ({ isOpen, onClose, message }) => {
   return (
     <AnimatePresence>
