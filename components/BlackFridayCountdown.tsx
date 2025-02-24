@@ -15,7 +15,7 @@ interface TimeLeft {
   seconds: number;
 }
 
-const DROP_TIME = new Date('2024-12-06T21:00:00-05:00') // December 6, 2024, 9:00 PM ET
+const DROP_TIME = new Date('2025-03-01T21:00:00-05:00') // December 6, 2024, 9:00 PM ET
 
 export default function NextDropCountdown() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 })
@@ -25,7 +25,7 @@ export default function NextDropCountdown() {
   useEffect(() => {
     setIsClient(true)
     const calculateTimeLeft = () => {
-      const now = new Date('2024-11-29T21:30:00-05:00') // Current time set to November 29, 2024, 9:30 PM ET
+      const now = new Date('2025-02-24T19:30:00-05:00') // Current time set to November 29, 2024, 9:30 PM ET
       const difference = +DROP_TIME - +now
       
       if (difference > 0) {

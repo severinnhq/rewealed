@@ -10,7 +10,7 @@ import ConatactComponent from '@/components/Contact'
 
 import FAQSection from '../components/faq'
 
-const SHOW_COUNTDOWN = false // Set this to false to show the normal page
+const SHOW_COUNTDOWN = true // Set this to false to show the normal page
 
 export default function Home() {
   const { setIsCountdownActive } = useCountdown()
